@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+        <key>Label</key>
+        <string>com.sourceforge.macgpg2.gpg-agent</string>
+	<key>RunAtLoad</key>
+	<true/>
+        <key>ProgramArguments</key>
+        <array>
+                <string>/usr/local/bin/gpg-agent</string>
+		<string>--launchd</string>
+		<string>--write-env-file</string>
+		<string>--use-standard-socket</string>
+        </array>
+        <key>LimitLoadToSessionType</key>
+        <string>Background</string>
+        <key>ServiceIPC</key>
+        <true/>
+</dict>
+</plist>
