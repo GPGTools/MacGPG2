@@ -1,0 +1,129 @@
+#!/bin/sh
+#    Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+#
+# This file is free software; as a special exception the author gives
+# unlimited permission to copy and/or distribute it, with or without
+# modifications, as long as this notice is preserved.
+#
+# This file is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+PGM=ksba-config
+libs="@KSBA_CONFIG_LIBS@ @GPG_ERROR_LIBS@"
+cflags="@KSBA_CONFIG_CFLAGS@ @GPG_ERROR_CFLAGS@"
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+api_version="@KSBA_CONFIG_API_VERSION@"
+
+includes=""
+libdirs=""
+exec_prefix_set=no
+echo_libs=no
+echo_cflags=no
+echo_prefix=no
+echo_exec_prefix=no
+echo_api_version=no
+
+
+usage()
+{
+	cat <<EOF
+Usage: $PGM [OPTIONS]
+Options:
+	[--prefix[=DIR]]
+	[--exec-prefix[=DIR]]
+	[--version]
+        [--api-version]
+	[--libs]
+	[--cflags]
+EOF
+	exit $1
+}
+
+if test $# -eq 0; then
+	usage 1 1>&2
+fi
+
+while test $# -gt 0; do
+  case "$1" in
+  -*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'` ;;
+  *) optarg= ;;
+  esac
+
+  case $1 in
+    --prefix=*)
+      prefix=$optarg
+      if test $exec_prefix_set = no ; then
+	exec_prefix=$optarg
+      fi
+      ;;
+    --prefix)
+      echo_prefix=yes
+      ;;
+    --exec-prefix=*)
+      exec_prefix=$optarg
+      exec_prefix_set=yes
+      ;;
+    --exec-prefix)
+      echo_exec_prefix=yes
+      ;;
+    --version)
+      echo "@VERSION@"
+      exit 0
+      ;;
+    --api-version)
+      echo_api_version=yes
+      ;;
+    --cflags)
+      echo_cflags=yes
+      ;;
+    --libs)
+      echo_libs=yes
+      ;;
+    *)
+      usage 1 1>&2
+      ;;
+  esac
+  shift
+done
+
+if test "$echo_prefix" = "yes"; then
+    echo $prefix
+fi
+
+if test "$echo_exec_prefix" = "yes"; then
+    echo $exec_prefix
+fi
+
+if test "$echo_api_version" = "yes"; then
+    echo "$api_version"
+fi
+
+if test "$echo_cflags" = "yes"; then
+    includes=""
+    if test "@includedir@" != "/usr/include" ; then
+      includes="-I@includedir@"
+    fi
+    tmp=""
+    for i in $includes $cflags; do
+       if echo "$tmp" | fgrep -v -- "$i" >/dev/null; then
+           tmp="$tmp $i"
+       fi
+    done
+    echo $tmp
+fi
+
+if test "$echo_libs" = "yes"; then
+    libdirs=""
+    if test "@libdir@" != "/usr/lib" ; then
+      libdirs="-L@libdir@"
+    fi
+    tmp=""
+    for i in $libdirs $libs; do
+       if echo "$tmp" | fgrep -v -- "$i" >/dev/null; then
+           tmp="$tmp $i"
+       fi
+    done
+    echo $tmp
+fi

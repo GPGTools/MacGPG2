@@ -1,0 +1,454 @@
+-- cms.asn - CryptographicMessageSyntax ASN.1 Module
+--      Copyright (C) 2001 g10 Code GmbH
+--
+-- This file is part of KSBA.
+--
+-- KSBA is free software; you can redistribute it and/or modify
+-- it under the terms of the GNU General Public License as published by
+-- the Free Software Foundation; either version 3 of the License, or
+-- (at your option) any later version.
+--
+-- KSBA is distributed in the hope that it will be useful,
+-- but WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-- GNU General Public License for more details.
+--
+-- You should have received a copy of the GNU General Public License
+-- along with this program; if not, see <http://www.gnu.org/licenses/>.
+--
+-----------------------------------------------------------------------
+-- This module is based on the one given in appendix A of RFC2630 which
+-- exhibits this copyright notice:
+--
+-- Copyright (C) The Internet Society (1999).  All Rights Reserved.
+--
+-- This document and translations of it may be copied and furnished to
+-- others, and derivative works that comment on or otherwise explain it
+-- or assist in its implementation may be prepared, copied, published
+-- and distributed, in whole or in part, without restriction of any
+-- kind, provided that the above copyright notice and this paragraph are
+-- included on all such copies and derivative works.  However, this
+-- document itself may not be modified in any way, such as by removing
+-- the copyright notice or references to the Internet Society or other
+-- Internet organizations, except as needed for the purpose of
+-- developing Internet standards in which case the procedures for
+-- copyrights defined in the Internet Standards process must be
+-- followed, or as required to translate it into languages other than
+-- English.
+--
+-- The limited permissions granted above are perpetual and will not be
+-- revoked by the Internet Society or its successors or assigns.
+--
+-- This document and the information contained herein is provided on an
+-- "AS IS" basis and THE INTERNET SOCIETY AND THE INTERNET ENGINEERING
+-- TASK FORCE DISCLAIMS ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING
+-- BUT NOT LIMITED TO ANY WARRANTY THAT THE USE OF THE INFORMATION
+-- HEREIN WILL NOT INFRINGE ANY RIGHTS OR ANY IMPLIED WARRANTIES OF
+-- MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+------------------------------------------------------------------------
+
+
+CryptographicMessageSyntax
+    { iso(1) member-body(2) us(840) rsadsi(113549)
+      pkcs(1) pkcs-9(9) smime(16) modules(0) cms(1) }
+
+DEFINITIONS IMPLICIT TAGS ::=
+BEGIN
+
+-- EXPORTS All
+-- The types and values defined in this module are exported for use in
+-- the other ASN.1 modules.  Other applications may use them for their
+-- own purposes.
+
+-- Out parser does not support IMPORTS, instead we copy them verbatim
+-- at the end of this file
+--IMPORTS
+
+  -- Directory Information Framework (X.501)
+--        Name
+--           FROM InformationFramework { joint-iso-itu-t ds(5) modules(1)
+--                informationFramework(1) 3 }
+
+  -- Directory Authentication Framework (X.509)
+--        AlgorithmIdentifier, AttributeCertificate, Certificate,
+--        CertificateList, CertificateSerialNumber
+--           FROM AuthenticationFramework { joint-iso-itu-t ds(5)
+--                module(1) authenticationFramework(7) 3 } ;
+
+
+-- Cryptographic Message Syntax
+
+ContentInfo ::= SEQUENCE {
+  contentType ContentType,
+  content [0] EXPLICIT ANY DEFINED BY contentType }
+
+ContentType ::= OBJECT IDENTIFIER
+
+SignedData ::= SEQUENCE {
+  version CMSVersion,
+  digestAlgorithms DigestAlgorithmIdentifiers,
+  encapContentInfo EncapsulatedContentInfo,
+  certificates [0] IMPLICIT CertificateSet OPTIONAL,
+  crls [1] IMPLICIT CertificateRevocationLists OPTIONAL,
+  signerInfos SignerInfos }
+
+DigestAlgorithmIdentifiers ::= SET OF DigestAlgorithmIdentifier
+
+SignerInfos ::= SET OF SignerInfo
+
+
+EncapsulatedContentInfo ::= SEQUENCE {
+  eContentType ContentType,
+  eContent [0] EXPLICIT OCTET STRING OPTIONAL }
+
+SignerInfo ::= SEQUENCE {
+  version CMSVersion,
+  sid SignerIdentifier,
+  digestAlgorithm DigestAlgorithmIdentifier,
+  signedAttrs [0] IMPLICIT SignedAttributes OPTIONAL,
+  signatureAlgorithm SignatureAlgorithmIdentifier,
+  signature SignatureValue,
+  unsignedAttrs [1] IMPLICIT UnsignedAttributes OPTIONAL }
+
+SignerIdentifier ::= CHOICE {
+  issuerAndSerialNumber IssuerAndSerialNumber,
+  subjectKeyIdentifier [0] SubjectKeyIdentifier }
+
+SignedAttributes ::= SET SIZE (1..MAX) OF Attribute
+
+UnsignedAttributes ::= SET SIZE (1..MAX) OF Attribute
+
+Attribute ::= SEQUENCE {
+  attrType OBJECT IDENTIFIER,
+  attrValues SET OF AttributeValue }
+
+AttributeValue ::= ANY
+
+SignatureValue ::= OCTET STRING
+
+EnvelopedData ::= SEQUENCE {
+  version CMSVersion,
+  originatorInfo [0] IMPLICIT OriginatorInfo OPTIONAL,
+  recipientInfos RecipientInfos,
+  encryptedContentInfo EncryptedContentInfo,
+  unprotectedAttrs [1] IMPLICIT UnprotectedAttributes OPTIONAL }
+
+OriginatorInfo ::= SEQUENCE {
+  certs [0] IMPLICIT CertificateSet OPTIONAL,
+  crls [1] IMPLICIT CertificateRevocationLists OPTIONAL }
+
+RecipientInfos ::= SET OF RecipientInfo
+
+EncryptedContentInfo ::= SEQUENCE {
+  contentType ContentType,
+  contentEncryptionAlgorithm ContentEncryptionAlgorithmIdentifier,
+  encryptedContent [0] IMPLICIT EncryptedContent OPTIONAL }
+
+EncryptedContent ::= OCTET STRING
+
+
+UnprotectedAttributes ::= SET SIZE (1..MAX) OF Attribute
+
+RecipientInfo ::= CHOICE {
+   ktri KeyTransRecipientInfo,
+   kari [1] KeyAgreeRecipientInfo,
+   kekri [2] KEKRecipientInfo }
+ 
+EncryptedKey ::= OCTET STRING
+
+KeyTransRecipientInfo ::= SEQUENCE {
+  version CMSVersion,  -- always set to 0 or 2
+  rid RecipientIdentifier,
+  keyEncryptionAlgorithm KeyEncryptionAlgorithmIdentifier,
+  encryptedKey EncryptedKey }
+
+RecipientIdentifier ::= CHOICE {
+  issuerAndSerialNumber IssuerAndSerialNumber,
+  subjectKeyIdentifier [0] SubjectKeyIdentifier }
+
+KeyAgreeRecipientInfo ::= SEQUENCE {
+  version CMSVersion,  -- always set to 3
+  originator [0] EXPLICIT OriginatorIdentifierOrKey,
+  ukm [1] EXPLICIT UserKeyingMaterial OPTIONAL,
+  keyEncryptionAlgorithm KeyEncryptionAlgorithmIdentifier,
+  recipientEncryptedKeys RecipientEncryptedKeys }
+
+OriginatorIdentifierOrKey ::= CHOICE {
+  issuerAndSerialNumber IssuerAndSerialNumber,
+  subjectKeyIdentifier [0] SubjectKeyIdentifier,
+  originatorKey [1] OriginatorPublicKey }
+
+OriginatorPublicKey ::= SEQUENCE {
+  algorithm AlgorithmIdentifier,
+  publicKey BIT STRING }
+
+RecipientEncryptedKeys ::= SEQUENCE OF RecipientEncryptedKey
+
+RecipientEncryptedKey ::= SEQUENCE {
+  rid KeyAgreeRecipientIdentifier,
+  encryptedKey EncryptedKey }
+
+KeyAgreeRecipientIdentifier ::= CHOICE {
+  issuerAndSerialNumber IssuerAndSerialNumber,
+  rKeyId [0] IMPLICIT RecipientKeyIdentifier }
+
+
+RecipientKeyIdentifier ::= SEQUENCE {
+  subjectKeyIdentifier SubjectKeyIdentifier,
+  date GeneralizedTime OPTIONAL,
+  other OtherKeyAttribute OPTIONAL }
+
+SubjectKeyIdentifier ::= OCTET STRING
+
+KEKRecipientInfo ::= SEQUENCE {
+  version CMSVersion,  -- always set to 4
+  kekid KEKIdentifier,
+  keyEncryptionAlgorithm KeyEncryptionAlgorithmIdentifier,
+  encryptedKey EncryptedKey }
+
+KEKIdentifier ::= SEQUENCE {
+  keyIdentifier OCTET STRING,
+  date GeneralizedTime OPTIONAL,
+  other OtherKeyAttribute OPTIONAL }
+
+DigestedData ::= SEQUENCE {
+  version CMSVersion,
+  digestAlgorithm DigestAlgorithmIdentifier,
+  encapContentInfo EncapsulatedContentInfo,
+  digest Digest }
+
+Digest ::= OCTET STRING
+
+EncryptedData ::= SEQUENCE {
+  version CMSVersion,
+  encryptedContentInfo EncryptedContentInfo,
+  unprotectedAttrs [1] IMPLICIT UnprotectedAttributes OPTIONAL }
+
+AuthenticatedData ::= SEQUENCE {
+  version CMSVersion,
+  originatorInfo [0] IMPLICIT OriginatorInfo OPTIONAL,
+  recipientInfos RecipientInfos,
+  macAlgorithm MessageAuthenticationCodeAlgorithm,
+  digestAlgorithm [1] DigestAlgorithmIdentifier OPTIONAL,
+  encapContentInfo EncapsulatedContentInfo,
+  authenticatedAttributes [2] IMPLICIT AuthAttributes OPTIONAL,
+  mac MessageAuthenticationCode,
+  unauthenticatedAttributes [3] IMPLICIT UnauthAttributes OPTIONAL }
+
+AuthAttributes ::= SET SIZE (1..MAX) OF Attribute
+
+UnauthAttributes ::= SET SIZE (1..MAX) OF Attribute
+
+MessageAuthenticationCode ::= OCTET STRING
+
+
+DigestAlgorithmIdentifier ::= AlgorithmIdentifier
+
+SignatureAlgorithmIdentifier ::= AlgorithmIdentifier
+
+KeyEncryptionAlgorithmIdentifier ::= AlgorithmIdentifier
+
+ContentEncryptionAlgorithmIdentifier ::= AlgorithmIdentifier
+
+MessageAuthenticationCodeAlgorithm ::= AlgorithmIdentifier
+
+CertificateRevocationLists ::= SET OF CertificateList
+
+CertificateChoices ::= CHOICE {
+  certificate Certificate,  -- See X.509
+  extendedCertificate [0] IMPLICIT ExtendedCertificate  -- Obsolete
+-- FIXME  attrCert [1] IMPLICIT AttributeCertificate  -- See X.509 & X9.57
+} 
+
+CertificateSet ::= SET OF CertificateChoices
+
+IssuerAndSerialNumber ::= SEQUENCE {
+  issuer Name,
+  serialNumber CertificateSerialNumber }
+
+CMSVersion ::= INTEGER  { v0(0), v1(1), v2(2), v3(3), v4(4) }
+
+UserKeyingMaterial ::= OCTET STRING
+
+OtherKeyAttribute ::= SEQUENCE {
+  keyAttrId OBJECT IDENTIFIER,
+  keyAttr ANY DEFINED BY keyAttrId OPTIONAL }
+
+
+-- CMS Attributes
+
+MessageDigest ::= OCTET STRING
+
+SigningTime  ::= Time
+
+Time ::= CHOICE {
+  utcTime UTCTime,
+  generalTime GeneralizedTime }
+
+Countersignature ::= SignerInfo
+
+
+-- Algorithm Identifiers
+
+sha-1 OBJECT IDENTIFIER ::= { iso(1) identified-organization(3)
+    oiw(14) secsig(3) algorithm(2) 26 }
+
+md5 OBJECT IDENTIFIER ::= { iso(1) member-body(2) us(840)
+    rsadsi(113549) digestAlgorithm(2) 5 }
+
+id-dsa-with-sha1 OBJECT IDENTIFIER ::=  { iso(1) member-body(2)
+    us(840) x9-57 (10040) x9cm(4) 3 }
+
+rsaEncryption OBJECT IDENTIFIER ::= { iso(1) member-body(2)
+    us(840) rsadsi(113549) pkcs(1) pkcs-1(1) 1 }
+
+dh-public-number OBJECT IDENTIFIER ::= { iso(1) member-body(2)
+    us(840) ansi-x942(10046) number-type(2) 1 }
+
+id-alg-ESDH OBJECT IDENTIFIER ::= { iso(1) member-body(2) us(840)
+    rsadsi(113549) pkcs(1) pkcs-9(9) smime(16) alg(3) 5 }
+
+id-alg-CMS3DESwrap OBJECT IDENTIFIER ::= { iso(1) member-body(2)
+    us(840) rsadsi(113549) pkcs(1) pkcs-9(9) smime(16) alg(3) 6 }
+
+id-alg-CMSRC2wrap OBJECT IDENTIFIER ::= { iso(1) member-body(2)
+    us(840) rsadsi(113549) pkcs(1) pkcs-9(9) smime(16) alg(3) 7 }
+
+des-ede3-cbc OBJECT IDENTIFIER ::= { iso(1) member-body(2)
+    us(840) rsadsi(113549) encryptionAlgorithm(3) 7 }
+
+rc2-cbc OBJECT IDENTIFIER ::= { iso(1) member-body(2) us(840)
+    rsadsi(113549) encryptionAlgorithm(3) 2 }
+
+hMAC-SHA1 OBJECT IDENTIFIER ::= { iso(1) identified-organization(3)
+    dod(6) internet(1) security(5) mechanisms(5) 8 1 2 }
+
+
+-- Algorithm Parameters
+
+KeyWrapAlgorithm ::= AlgorithmIdentifier
+
+RC2wrapParameter ::= RC2ParameterVersion
+
+RC2ParameterVersion ::= INTEGER
+
+CBCParameter ::= IV
+
+IV ::= OCTET STRING  -- exactly 8 octets
+
+
+RC2CBCParameter ::= SEQUENCE {
+  rc2ParameterVersion INTEGER,
+  iv OCTET STRING  }  -- exactly 8 octets
+
+
+-- Content Type Object Identifiers
+
+id-ct-contentInfo OBJECT IDENTIFIER ::= { iso(1) member-body(2)
+    us(840) rsadsi(113549) pkcs(1) pkcs-9(9) smime(16)
+    ct(1) 6 }
+
+id-data OBJECT IDENTIFIER ::= { iso(1) member-body(2)
+    us(840) rsadsi(113549) pkcs(1) pkcs7(7) 1 }
+
+id-signedData OBJECT IDENTIFIER ::= { iso(1) member-body(2)
+    us(840) rsadsi(113549) pkcs(1) pkcs7(7) 2 }
+
+id-envelopedData OBJECT IDENTIFIER ::= { iso(1) member-body(2)
+    us(840) rsadsi(113549) pkcs(1) pkcs7(7) 3 }
+
+id-digestedData OBJECT IDENTIFIER ::= { iso(1) member-body(2)
+    us(840) rsadsi(113549) pkcs(1) pkcs7(7) 5 }
+
+id-encryptedData OBJECT IDENTIFIER ::= { iso(1) member-body(2)
+    us(840) rsadsi(113549) pkcs(1) pkcs7(7) 6 }
+
+id-ct-authData OBJECT IDENTIFIER ::= { iso(1) member-body(2)
+    us(840) rsadsi(113549) pkcs(1) pkcs-9(9) smime(16)
+    ct(1) 2 }
+
+
+-- Attribute Object Identifiers
+
+id-contentType OBJECT IDENTIFIER ::= { iso(1) member-body(2)
+    us(840) rsadsi(113549) pkcs(1) pkcs9(9) 3 }
+
+id-messageDigest OBJECT IDENTIFIER ::= { iso(1) member-body(2)
+    us(840) rsadsi(113549) pkcs(1) pkcs9(9) 4 }
+
+id-signingTime OBJECT IDENTIFIER ::= { iso(1) member-body(2)
+    us(840) rsadsi(113549) pkcs(1) pkcs9(9) 5 }
+
+id-countersignature OBJECT IDENTIFIER ::= { iso(1) member-body(2)
+    us(840) rsadsi(113549) pkcs(1) pkcs9(9) 6 }
+
+
+-- Obsolete Extended Certificate syntax from PKCS#6
+
+ExtendedCertificate ::= SEQUENCE {
+  extendedCertificateInfo ExtendedCertificateInfo,
+  signatureAlgorithm SignatureAlgorithmIdentifier,
+  signature Signature }
+
+ExtendedCertificateInfo ::= SEQUENCE {
+  version CMSVersion,
+  certificate Certificate,
+  attributes UnauthAttributes }
+
+Signature ::= BIT STRING
+
+--*******************************************
+--***********  Included imports  ************
+--*******************************************
+
+-- Directory Information Framework (X.501)
+--        Name
+--           FROM InformationFramework { joint-iso-itu-t ds(5) modules(1)
+--                informationFramework(1) 3 }
+
+Name ::= CHOICE {
+  rdnSequence RDNSequence
+}
+
+RDNSequence ::= SEQUENCE OF RelativeDistinguishedName
+
+RelativeDistinguishedName ::= SET OF AttributeTypeAndValue
+
+AttributeTypeAndValue ::= SEQUENCE {
+  type    AttributeType,
+  value   AttributeValue
+}
+
+AttributeType ::= OBJECT IDENTIFIER
+
+AttributeValue ::= ANY
+
+
+-- Directory Authentication Framework (X.509)
+--        AlgorithmIdentifier, AttributeCertificate, Certificate,
+--        CertificateList, CertificateSerialNumber
+--           FROM AuthenticationFramework { joint-iso-itu-t ds(5)
+--                module(1) authenticationFramework(7) 3 } ;
+
+AlgorithmIdentifier ::= SEQUENCE {
+  algorithm    OBJECT IDENTIFIER,
+  parameters   ANY DEFINED BY algorithm OPTIONAL
+}
+
+-- Note: AttributeCertificate is not needed
+
+-- We handle a certificate by utilizing our ksba_cert_ functions
+Certificate ::= ANY
+
+-- Likewise
+CertificateList ::= ANY
+
+CertificateSerialNumber ::= INTEGER
+
+
+
+
+END -- of CryptographicMessageSyntax
+
+
+

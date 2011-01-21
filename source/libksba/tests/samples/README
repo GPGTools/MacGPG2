@@ -1,0 +1,53 @@
+
+
+Certificates downloaded from http://www.magmacom.com/~mbartel/iso/\
+certificates/samples/sample_certificates.html on 2003-11-20:
+
+ authority.crt   A root certificate
+ betsy.crt       An "everyday" certificate.
+ bull.crt        Same but includes a BMPString.
+
+   Note, that these certs use MD2.
+
+
+Certificates downloaded from 
+http://www.openvalidation.org/download/downloadrootcertsCA1.htm and
+on 2003-11-20 and prefixed with "ov-":
+
+ ov-root-ca-cert.crt   Root certificate
+ ov-ocsp-server.crt    The certificate of the OCSP responder
+ ov-user.crt           User certificate
+ ov-userrev.crt        A user certificate revoked by OCSP
+ ov-server.crt         A server (SSL) certificate
+ ov-serverrev.crt      A server certificate revoked by OCSP
+
+ ov-user.p12           Private keys for the above certificates,
+ ov-userrev.p12        passphrase is "start".
+ ov-server.p12
+ ov-serverrev.p12
+
+ ov-test-crl.crl      The current CRL
+
+   The responder adress is http://ocsp.openvalidation.org
+
+Certificates downloaded from  http://www.openvalidation.org/en/test/ca2.html
+on 2006-08-30 and prefixed with "ov2-":
+
+ ov2-root-ca-cert.crt   Root certificate
+ ov2-ocsp-server.crt    The certificate of the OCSP responder
+ ov2-user.crt           User certificate
+ ov2-userrev.crt        A user certificate revoked by OCSP
+
+Certificates downloaded on 2007-04-05 from
+http://dev.experimentalstuff.com:8082/CIC_sample-certs_2006-06-22.zip
+and converted to binary format.  These are signed with
+ECDSA-P256-SHA384, ECDSA-P256-SHA512, and ECDSA-P384-SHA512.
+
+ secp256r1-sha384_cert.crt 
+ secp256r1-sha512_cert.crt
+ secp384r1-sha512_cert.crt
+
+From http://dev.experimentalstuff.com:8082/certs/secp256r1ca.cert.pem
+
+ openssl-secp256r1ca.cert.crt
+

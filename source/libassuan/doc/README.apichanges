@@ -1,0 +1,35 @@
+README.apichanges                                          -*- text -*-
+
+API changes between 1.0.5 and 2.0.0:
+====================================
+
+While allowing to build libassuan as a DSO we decided to clean up the
+API.  The changes are straightforward and it should only take a few
+minutes to fix your code.
+
+See the NEWS file for functions that have been renamed or replaced by
+alternatives that are used in the same way (but may have extra
+arguments with suitable default values or similar).  The rest of this
+document lists significant changes only.
+
+There have been many macros provided now for fixed constants, you may
+consider using them (but the old hard-coded values will continue to
+work where applicable).  Particularly noteworthy is ASSUAN_INVALID_PID
+and all flags values.
+
+Use of libgpg-error is mandatory.
+
+assuan_pipe_connect child fds are now of assuan_fd_t type, not of int
+type.  Use assuan_fd_from_posix_fd() for conversion.  If you use
+assuan_pipe_connect with NAME of NULL, you have to provide a non-NULL
+ARGV argument and check that against "server" or "client" to determine
+which end you got after fork().
+
+assuan_init_pipe_server closes the provided fds after terminating the
+connection now.  Use assuan_fdopen to duplicate them first.
+
+If you use the assuan sock interface, you must call assuan_sock_init after
+setting global context defaults.
+
+Pth support has changed.  This now follows the same style as libgcrypt
+by setting system hook callbacks.

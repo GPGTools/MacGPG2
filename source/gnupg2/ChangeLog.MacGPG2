@@ -1,0 +1,10 @@
+MacGPG2 specific patches:
+
+ * Maximum key size increased to 8192 bits; recommended for expert users only.
+
+ * GPGTools gpg-agent cache-id option patch.
+
+ * MacGPG2 branding patch
+
+ * Launchd support
+

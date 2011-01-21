@@ -1,0 +1,58 @@
+#!/bin/sh
+# import-all-certs - GnuPG import test                     -*- sh -*-
+# Copyright (C) 2004, 2008 Free Software Foundation, Inc. 
+#
+# This file is part of GnuPG.
+# 
+# GnuPG is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# GnuPG is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, see <http://www.gnu.org/licenses/>.
+
+. ${srcdir:-.}/common.sh || exit 2
+
+section=6
+description="GnuPG Import"
+info "Running $description tests"
+
+while read flag dummy section name; do 
+    case $flag in \#*) continue ;; esac
+    [ -z "$(echo $flag)" ] && continue;
+
+    description="import $name"
+    if ${GPGSM} -q --import certs/$name ; then
+        if [ "$flag" = 'p' ]; then
+            pass "importing certificate \`$name' succeeded"
+        elif [ "$flag" = 'f' ]; then
+            fail "importing certificate \`$name' succeeded"
+        elif [ "$flag" = '?' ]; then
+            unresolved "importing certificate \`$name' succeeded"
+        elif [ "$flag" = 'u' ]; then
+            skip "importing certificate \`$name' succeeded"
+        else
+            info "importing certificate \`$name' succeeded - (flag=$flag)"
+        fi
+    else
+        if [ "$flag" = 'p' ]; then
+            fail "importing certificate \`$name' failed"
+        elif [ "$flag" = 'f' ]; then
+            pass "importing certificate \`$name' failed"
+        elif [ "$flag" = '?' ]; then
+            unresolved "importing certificate \`$name' failed"
+        elif [ "$flag" = 'u' ]; then
+            skip "importing certificate \`$name' failed"
+        else
+            info "importing certificate \`$name' failed - (flag=$flag)"
+        fi
+    fi
+done < $srcdir/import-all-certs.data
+
+final_result

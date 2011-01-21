@@ -1,0 +1,181 @@
+;; libksba.def - Exported symbols for W32
+;;      Copyright (C) 2007 g10 Code GmbH
+;;
+;; This file is part of KSBA.
+;;
+;; KSBA is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation; either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; KSBA is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program; if not, see <http://www.gnu.org/licenses/>.
+
+
+EXPORTS
+      ksba_check_version  @1
+
+      ksba_set_hash_buffer_function @2
+      ksba_set_malloc_hooks  @3
+      ksba_free  @4
+      ksba_malloc  @5
+      ksba_calloc  @6
+      ksba_realloc @7
+      ksba_strdup  @8
+
+      ksba_asn_create_tree  @9
+      ksba_asn_delete_structure  @10
+      ksba_asn_parse_file  @11
+      ksba_asn_tree_dump  @12
+      ksba_asn_tree_release  @13
+
+      ksba_cert_get_auth_key_id  @14
+      ksba_cert_get_cert_policies  @15
+      ksba_cert_get_crl_dist_point  @16
+      ksba_cert_get_digest_algo  @17
+      ksba_cert_get_ext_key_usages  @18
+      ksba_cert_get_extension  @19
+      ksba_cert_get_image  @20
+      ksba_cert_get_issuer  @21
+      ksba_cert_get_key_usage  @22
+      ksba_cert_get_public_key  @23
+      ksba_cert_get_serial  @24
+      ksba_cert_get_sig_val  @25
+      ksba_cert_get_subject  @26
+      ksba_cert_get_validity  @27
+      ksba_cert_hash  @28
+      ksba_cert_init_from_mem  @29
+      ksba_cert_is_ca  @30
+      ksba_cert_new  @31
+      ksba_cert_read_der  @32
+      ksba_cert_ref  @33
+      ksba_cert_release  @34
+      ksba_cert_get_authority_info_access  @35
+      ksba_cert_get_subject_info_access  @36
+      ksba_cert_get_subj_key_id  @37
+      ksba_cert_set_user_data  @38
+      ksba_cert_get_user_data  @39
+
+      ksba_certreq_add_subject  @40
+      ksba_certreq_build  @41
+      ksba_certreq_new  @42
+      ksba_certreq_release  @43
+      ksba_certreq_set_hash_function  @44
+      ksba_certreq_set_public_key  @45
+      ksba_certreq_set_sig_val  @46
+      ksba_certreq_set_writer  @47
+      ksba_certreq_add_extension  @48
+
+      ksba_cms_add_cert  @49
+      ksba_cms_add_digest_algo  @50
+      ksba_cms_add_recipient  @51
+      ksba_cms_add_signer  @52
+      ksba_cms_build  @53
+      ksba_cms_get_cert  @54
+      ksba_cms_get_content_enc_iv  @55
+      ksba_cms_get_content_oid  @56
+      ksba_cms_get_content_type  @57
+      ksba_cms_get_digest_algo  @58
+      ksba_cms_get_digest_algo_list  @59
+      ksba_cms_get_enc_val  @60
+      ksba_cms_get_issuer_serial  @61
+      ksba_cms_get_message_digest  @62
+      ksba_cms_get_sig_val  @63
+      ksba_cms_get_sigattr_oids  @64
+      ksba_cms_get_signing_time  @65
+      ksba_cms_hash_signed_attrs  @66
+      ksba_cms_identify  @67
+      ksba_cms_new  @68
+      ksba_cms_parse  @69
+      ksba_cms_release  @70
+      ksba_cms_set_content_enc_algo  @71
+      ksba_cms_set_content_type  @72
+      ksba_cms_set_enc_val  @73
+      ksba_cms_set_hash_function  @74
+      ksba_cms_set_message_digest  @75
+      ksba_cms_set_reader_writer  @76
+      ksba_cms_set_sig_val  @77
+      ksba_cms_set_signing_time  @78
+      ksba_cms_add_smime_capability  @79
+
+      ksba_crl_get_digest_algo  @80
+      ksba_crl_get_issuer  @81
+      ksba_crl_get_item  @82
+      ksba_crl_get_sig_val  @83
+      ksba_crl_get_update_times  @84
+      ksba_crl_new  @85
+      ksba_crl_parse  @86
+      ksba_crl_release  @87
+      ksba_crl_set_hash_function  @88
+      ksba_crl_set_reader  @89
+      ksba_crl_get_extension  @90
+      ksba_crl_get_auth_key_id  @91
+      ksba_crl_get_crl_number  @92
+
+      ksba_name_enum  @93
+      ksba_name_get_uri  @94
+      ksba_name_new  @95
+      ksba_name_ref  @96
+      ksba_name_release  @97
+
+      ksba_ocsp_add_cert  @98
+      ksba_ocsp_add_target  @99
+      ksba_ocsp_build_request  @100
+      ksba_ocsp_get_cert  @101
+      ksba_ocsp_get_digest_algo  @102
+      ksba_ocsp_get_responder_id  @103
+      ksba_ocsp_get_sig_val  @104
+      ksba_ocsp_get_status  @105
+      ksba_ocsp_hash_request  @106
+      ksba_ocsp_hash_response  @107
+      ksba_ocsp_new  @108
+      ksba_ocsp_parse_response  @109
+      ksba_ocsp_prepare_request  @110
+      ksba_ocsp_release  @111
+      ksba_ocsp_set_digest_algo  @112
+      ksba_ocsp_set_nonce  @113
+      ksba_ocsp_set_requestor  @114
+      ksba_ocsp_set_sig_val  @115
+      ksba_ocsp_get_extension  @116
+
+      ksba_oid_from_str  @117
+      ksba_oid_to_str  @118
+
+      ksba_dn_der2str  @119
+      ksba_dn_str2der  @120
+      ksba_dn_teststr  @121
+
+      ksba_reader_clear  @122
+      ksba_reader_error  @123
+      ksba_reader_new  @124
+      ksba_reader_read  @125
+      ksba_reader_release  @126
+      ksba_reader_set_cb  @127
+      ksba_reader_set_fd  @128
+      ksba_reader_set_file  @129
+      ksba_reader_set_mem  @130
+      ksba_reader_tell  @131
+      ksba_reader_unread  @132
+
+      ksba_writer_error  @133
+      ksba_writer_get_mem  @134
+      ksba_writer_new  @135
+      ksba_writer_release  @136
+      ksba_writer_set_cb  @137
+      ksba_writer_set_fd  @138
+      ksba_writer_set_file  @139
+      ksba_writer_set_filter  @140
+      ksba_writer_set_mem  @141
+      ksba_writer_snatch_mem  @142
+      ksba_writer_tell  @143
+      ksba_writer_write  @144
+      ksba_writer_write_octet_string  @145
+
+      ksba_reader_set_release_notify  @146
+      ksba_writer_set_release_notify  @147
+

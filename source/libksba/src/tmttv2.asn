@@ -1,0 +1,472 @@
+-- tmttv2.asn - X.509v3 profile for the BSI Sphinx project
+--      Copyright (C) 2001 g10 Code GmbH
+--
+-- This file is part of KSBA.
+--
+-- KSBA is free software; you can redistribute it and/or modify
+-- it under the terms of the GNU General Public License as published by
+-- the Free Software Foundation; either version 3 of the License, or
+-- (at your option) any later version.
+--
+-- KSBA is distributed in the hope that it will be useful,
+-- but WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-- GNU General Public License for more details.
+--
+-- You should have received a copy of the GNU General Public License
+-- along with this program; if not, see <http://www.gnu.org/licenses/>.
+--
+
+
+TMTTv2 {iso(1) identified-organization(3) dod(6) internet(1)
+        security(5) mechanisms(5) teletrust(1) foo(17)}
+
+DEFINITIONS IMPLICIT TAGS ::=
+
+BEGIN
+
+
+-- standard object identifiers
+
+id-ce OBJECT IDENTIFIER  ::=  {joint-iso-ccitt(2) ds(5) 29}
+
+
+
+
+-- (TMTTv2 3.1)
+Certificate ::= SEQUENCE {
+  tbsCertificate       TBSCertificate,
+  signatureAlgorithm   AlgorithmIdentifier,
+  signature            BIT STRING 
+}
+
+AlgorithmIdentifier ::= SEQUENCE {
+  algorithm    OBJECT IDENTIFIER,
+  parameters   ANY DEFINED BY algorithm OPTIONAL
+  -- should be used but set to NULL
+}
+
+TBSCertificate ::= SEQUENCE {
+  version         [0] EXPLICIT Version DEFAULT v1,
+  serialNumber                 CertificateSerialNumber,
+  signature                    AlgorithmIdentifier,
+  issuer                       Name,
+  validity                     Validity,
+  subject                      Name,
+  subjectPublicKeyInfo         SubjectPublicKeyInfo,
+  issuerUniqueID  [1] IMPLICIT UniqueIdentifier OPTIONAL,
+  subjectUniqueID [2] IMPLICIT UniqueIdentifier OPTIONAL,
+  extensions      [3] EXPLICIT Extensions OPTIONAL
+}
+
+-- (TMTTv2 3.1.1)
+Version ::= INTEGER { v1(0), v2(1), v3(2) } 
+-- Ony v3 is used which is the default anyway
+
+-- (TMTTv2 3.1.2)
+CertificateSerialNumber ::= INTEGER
+-- Must support length of up to 15 byte
+
+-- (TMTTv2 3.1.4)
+Name ::= CHOICE {
+  rdnSequence RDNSequence
+}
+
+RDNSequence ::= SEQUENCE OF RelativeDistinguishedName
+
+RelativeDistinguishedName ::= SET OF AttributeTypeAndValue
+-- pkix defines a SIZE (1 .. MAX), we use a maximum of 1 to avoid
+-- problems with some LDAP implementations.
+
+Attribute ::= SEQUENCE {  -- not specified by TMTT
+  type    AttributeType,
+  values  SET OF AttributeValue
+}
+
+Attributes ::= SET OF Attribute
+
+AttributeTypeAndValue ::= SEQUENCE {
+  type    AttributeType,
+  value   AttributeValue
+}
+
+AttributeType ::= OBJECT IDENTIFIER
+
+AttributeValue ::= ANY
+
+DirectoryString ::= CHOICE {
+  printableString   PrintableString (SIZE (1..maxSize)),
+  teletexString     TeletexString (SIZE (1..maxSize)),
+  utf8String        UTF8String (SIZE (1..maxSize)),
+  bmpString         BMPString (SIZE(1..maxSize)),
+  universalString   UniversalString (SIZE (1..maxSize))
+}
+  -- For Sphinx conformity maxSize must be:
+  -- BusinessCategory  128  LocalityName       128  StateOrProvince  128
+  -- CommonName        128  PostalCode          40  SurName           64
+  -- CountryName         2  OrganizationalUnit  64  Title             64
+  -- GivenName          64  OrganizationalName  64
+
+-- (TMTTv2 3.1.5)
+Validity ::= SEQUENCE {
+  notBefore  Time,
+  notAfter   Time 
+}
+
+Time ::= CHOICE {
+  utcTime      UTCTime,
+  generalTime  GeneralizedTime 
+}
+-- fixme: explain constraints
+
+--(TMTTv2 3.1.7)
+SubjectPublicKeyInfo ::= SEQUENCE {
+  algorithm         AlgorithmIdentifier,
+  subjectPublicKey  BIT STRING 
+}
+
+--(TMTTv2 3.1.9)
+Extensions ::= SEQUENCE SIZE (1..MAX) OF Extension
+
+Extension ::= SEQUENCE {
+  extnID     OBJECT IDENTIFIER,
+  critical   BOOLEAN DEFAULT FALSE,
+  extnValue  OCTET STRING  
+}
+
+
+UniqueIdentifier  ::=  BIT STRING
+
+-- (TMTTv2 3.2.1)
+AuthorityKeyIdentifier ::= SEQUENCE {
+  keyIdentifier              [0] KeyIdentifier OPTIONAL,
+  authorityCertIssuer        [1] GeneralNames OPTIONAL,
+  authorityCertSerialNumber  [2] CertificateSerialNumber OPTIONAL 
+}
+-- Fixme: our parser cant handle this:
+--   ( WITH COMPONENTS   { ..., authorityCertIssuer PRESENT,
+--                         authorityCertSerialNumber PRESENT}
+--     | WITH COMPONENTS { ..., authorityCertIssuer ABSENT,
+--                         authorityCertSerialNumber ABSENT }
+--   )
+
+KeyIdentifier ::= OCTET STRING
+
+-- (TMTTv2 3.2.3)
+KeyUsage ::= BIT STRING {
+  digitalSignature (0),
+  nonRepudiation   (1),
+  keyEncipherment  (2),
+  dataEncipherment (3),
+  keyAgreement     (4),
+  keyCertSign      (5),
+  cRLSign          (6),
+  encipherOnly     (7),
+  decipherOnly     (8)
+}
+
+
+-- (TMTTv2 3.2.5)
+CertificatePolicies ::= SEQUENCE SIZE (1..MAX) OF PolicyInformation
+
+PolicyInformation ::= SEQUENCE {
+  policyIdentifier  CertPolicyId,
+  policyQualifiers  SEQUENCE SIZE (1..MAX) OF PolicyQualifierInfo OPTIONAL 
+}
+
+CertPolicyId ::= OBJECT IDENTIFIER
+
+PolicyQualifierInfo ::= SEQUENCE {
+  policyQualifierId  PolicyQualifierId,
+  qualifier          ANY DEFINED BY policyQualifierId 
+}
+
+PolicyQualifierId ::= OBJECT IDENTIFIER  -- missing in TMTTv2 document
+
+-- (TMTTv2 3.2.6)
+PolicyMappingsSyntax ::= SEQUENCE SIZE (1..MAX) OF SEQUENCE {
+  issuerDomainPolicy      CertPolicyId,
+  subjectDomainPolicy     CertPolicyId
+}
+
+
+-- (TMTTv2 3.2.7)
+SubjectAltName ::= GeneralNames
+
+GeneralNames ::= SEQUENCE SIZE (1..MAX) OF GeneralName
+
+GeneralName ::= CHOICE {
+  otherName                  [0] OtherName, -- INSTANCE OF OTHER-NAME
+  rfc822Name                 [1] IA5String,
+  dNSName                    [2] IA5String,
+  x400Address                [3] ORAddress,
+  directoryName              [4] Name,
+  ediPartyName               [5] EDIPartyName,
+  uniformResourceIdentifier  [6] IA5String,
+  iPAddress                  [7] OCTET STRING,
+  registeredID               [8] OBJECT IDENTIFIER 
+}
+
+OtherName ::= SEQUENCE {
+  type-id  OBJECT IDENTIFIER,
+  value    [0] EXPLICIT ANY DEFINED BY type-id
+}
+
+EDIPartyName ::= SEQUENCE {
+  nameAssigner  [0] DirectoryString OPTIONAL,
+  partyName     [1] DirectoryString 
+}
+
+-- (TMTTv2 3.2.9)
+SubjectDirectoryAttributes ::= SEQUENCE SIZE (1..MAX) OF Attribute
+
+-- (TMTTv2 3.2.10)
+-- id-biometricData OBJECT IDENTIFIE ::= { fixme 1 }
+
+BiometricData ::= SET OF SEQUENCE {
+  typeId  OBJECT IDENTIFIER,
+  value   ANY DEFINED BY typeId
+}
+
+
+-- (TMTTv2 3.2.11)
+BasicConstraints ::= SEQUENCE {
+  cA                 BOOLEAN DEFAULT FALSE,
+  pathLenConstraint  INTEGER (0..MAX) OPTIONAL 
+}
+
+-- (TMTTv2 3.2.12)
+NameConstraints ::= SEQUENCE {
+  permittedSubtrees  [0] GeneralSubtrees OPTIONAL,
+  excludedSubtrees   [1] GeneralSubtrees OPTIONAL 
+}
+
+GeneralSubtrees ::= SEQUENCE SIZE (1..MAX) OF GeneralSubtree
+
+GeneralSubtree ::= SEQUENCE {
+  base         GeneralName,
+  minimum  [0] BaseDistance DEFAULT 0,
+  maximum  [1] BaseDistance OPTIONAL 
+}
+
+BaseDistance ::= INTEGER (0..MAX)
+
+-- (TMTTv2 3.2.13)
+PolicyConstraintsSyntax ::= SEQUENCE SIZE (1..MAX) OF SEQUENCE {
+  requireExplicitPolicy  [0] SkipCerts OPTIONAL,
+  inhibitPolicyMapping   [1] SkipCerts OPTIONAL
+}
+
+SkipCerts ::= INTEGER (0..MAX)
+
+
+-- (TMTTv2 3.2.14)
+CRLDistPointsSyntax ::= SEQUENCE SIZE (1..MAX) OF DistributionPoint
+
+DistributionPoint ::= SEQUENCE {
+  distributionPoint  [0] DistributionPointName OPTIONAL,
+  reasons            [1] ReasonFlags OPTIONAL,
+  cRLIssuer          [2] GeneralNames OPTIONAL 
+}
+
+DistributionPointName ::= CHOICE {
+  fullName                 [0] GeneralNames,
+  nameRelativeToCRLIssuer  [1] RelativeDistinguishedName 
+}
+
+ReasonFlags ::= BIT STRING {
+  unused                (0),
+  keyCompromise         (1),
+  cACompromise          (2),
+  affiliationChanged    (3),
+  superseded            (4),
+  cessationOfOperation  (5),
+  certificateHold       (6) 
+}
+
+
+-- (TMTTv2 3.2.15)
+-- id-issuerCertDistributionPoint OBJECT IDENTIFIER ::= { fixme 28 }
+
+IssuerCertDistributionPoint ::= IA5String
+
+
+-- (TMTTv2 3.2.16)
+-- id-subjectCertDistributionPoint OBJECT IDENTIFIER ::= { fixme 3 }
+
+SubjectCertDistributionPoint ::= IA5String
+
+
+-- (TMTTv2 3.2.17)
+-- id-policyDistributionPoint OBJECT IDENTIFIER ::= { fixme 4 }
+
+PolicyDistributionPoint ::= IA5String
+
+
+-- (TMTTv2 3.2.18)
+-- id-testIdentifier OBECJT IDENTIFIER ::= { fixme 5 }
+
+TestIdentifier ::= UTF8String
+
+
+--
+-- (TMTTv2 4.1)
+CertificateList ::= SEQUENCE {
+  tbsCertList         TBSCertList,
+  signatureAlgorithm  AlgorithmIdentifier,
+  signatureValue      BIT STRING 
+}
+
+TBSCertList ::= SEQUENCE {
+  version              Version OPTIONAL,  -- should be v2 if present
+  signature            AlgorithmIdentifier,
+  issuer               Name,
+  thisUpdate           Time,
+  nextUpdate           Time OPTIONAL,  -- must be used in TMTT
+  revokedCertificates  SEQUENCE OF SEQUENCE {
+    userCertificate      CertificateSerialNumber,
+    revocationDate       Time,
+    crlEntryExtensions   Extensions OPTIONAL  -- should be v2 if present
+  } OPTIONAL,
+  crlExtensions        [0] EXPLICIT Extensions OPTIONAL -- v2 is present
+}
+
+
+-- (TMTTv2 4.2.1)
+CRLReason ::= ENUMERATED {
+  unspecified           (0),  -- not allowed in TMTT
+  keyCompromise         (1),
+  cACompromise          (2),
+  affiliationChanged    (3),
+  superseded            (4),
+  cessationOfOperation  (5),
+  certificateHold       (6),
+  removeFromCRL         (8)  -- should not be used because 
+                             -- Delta-CRLs are not supported
+}
+
+-- (TMTTv2 4.2.3)
+InvalidityDate ::= GeneralizedTime
+
+
+-- (TMTTv2 4.2.4)
+CertificateIssuer ::= GeneralNames
+
+-- (TMTTv2 4.3.3)
+cRLNumber ::= INTEGER (1..MAX)
+
+-- (TMTTv2 4.3.4)
+issuingDistributionPoint ::= SEQUENCE {
+  distributionPoint      [0] DistributionPointName OPTIONAL,
+  onlyContainsUserCerts  [1] BOOLEAN DEFAULT FALSE,
+  onlyContainsCACerts    [2] BOOLEAN DEFAULT FALSE,
+  onlySomeReasons        [3] ReasonFlags OPTIONAL,
+  indirectCRL            [4] BOOLEAN DEFAULT FALSE 
+}
+
+
+--
+-- PKCS-10
+-- CertificationRequest ::= SEQUENCE {
+--   certificationRequestInfo  CertificationRequestInfo,
+--   signatureAlgorithm        SignatureAlgorithmIdentifier,
+--   signature                 Signature
+-- }
+
+CertificationRequestInfo ::= SEQUENCE {
+  certificationRequestInfo  Version,
+  subject                   Name,
+  subjectPublicKeyInfo      SubjectPublicKeyInfo,
+  attributes                [0] IMPLICIT Attributes
+}
+  
+
+
+
+--
+-------------------------
+-- x400 address syntax --
+-------------------------
+ORAddress ::= SEQUENCE {
+  built-in-standard-attributes        BuiltInStandardAttributes,
+  built-in-domain-defined-attributes  BuiltInDomainDefinedAttributes OPTIONAL,
+  extension-attributes                ExtensionAttributes OPTIONAL 
+}
+
+BuiltInStandardAttributes ::= SEQUENCE {
+  country-name               CountryName OPTIONAL,
+  administration-domain-name AdministrationDomainName OPTIONAL,
+  network-address            [0] EXPLICIT NetworkAddress OPTIONAL,
+  terminal-identifier        [1] EXPLICIT TerminalIdentifier OPTIONAL,
+  private-domain-name        [2] EXPLICIT PrivateDomainName OPTIONAL,
+  organization-name          [3] EXPLICIT OrganizationName OPTIONAL,
+  numeric-user-identifier    [4] EXPLICIT NumericUserIdentifier OPTIONAL,
+  personal-name              [5] EXPLICIT PersonalName OPTIONAL,
+  organizational-unit-names  [6] EXPLICIT OrganizationalUnitNames OPTIONAL
+}
+
+CountryName ::= [APPLICATION 1] CHOICE {
+  x121-dcc-code         NumericString (SIZE (ub-country-name-numeric-length)),
+  iso-3166-alpha2-code  PrintableString (SIZE (ub-country-name-alpha-length))
+}
+
+AdministrationDomainName ::= [APPLICATION 2] EXPLICIT CHOICE {
+  numeric    NumericString (SIZE (0..ub-domain-name-length)),
+  printable  PrintableString (SIZE (0..ub-domain-name-length))
+}
+
+NetworkAddress ::= X121Address  -- see also extended-network-address
+
+X121Address ::= NumericString (SIZE (1..ub-x121-address-length))
+
+TerminalIdentifier ::= PrintableString (SIZE (1..ub-terminal-id-length))
+
+PrivateDomainName ::= CHOICE {
+  numeric    NumericString (SIZE (1..ub-domain-name-length)),
+  printable  PrintableString (SIZE (1..ub-domain-name-length))
+}
+
+OrganizationName ::= PrintableString (SIZE (1..ub-organization-name-length))
+                     -- see also teletex-organization-name
+
+NumericUserIdentifier ::= NumericString (SIZE (1..ub-numeric-user-id-length))
+
+PersonalName ::= SET { -- see also teletex-personal-name
+  surname     [0] PrintableString (SIZE (1..ub-surname-length)),
+  given-name  [1] PrintableString (SIZE (1..ub-given-name-length)) OPTIONAL,
+  initials    [2] PrintableString (SIZE (1..ub-initials-length)) OPTIONAL,
+  generation-qualifier [3] PrintableString 
+                           (SIZE (1..ub-generation-qualifier-length)) OPTIONAL 
+}
+                        
+
+OrganizationalUnitNames ::= SEQUENCE SIZE (1..ub-organizational-units)
+                                        OF OrganizationalUnitName
+                            -- see also teletex-organizational-unit-names
+
+OrganizationalUnitName ::= PrintableString 
+                           (SIZE (1..ub-organizational-unit-name-length))
+
+
+BuiltInDomainDefinedAttributes ::= 
+                          SEQUENCE SIZE (1..ub-domain-defined-attributes) 
+                                OF BuiltInDomainDefinedAttribute
+
+BuiltInDomainDefinedAttribute ::= SEQUENCE {
+  type PrintableString (SIZE (1..ub-domain-defined-attribute-type-length)),
+  value PrintableString (SIZE (1..ub-domain-defined-attribute-value-length))
+}
+
+
+ExtensionAttributes ::= SET SIZE (1..ub-extension-attributes) 
+                            OF ExtensionAttribute
+
+ExtensionAttribute ::=  SEQUENCE {
+  extension-attribute-type [0] EXPLICIT INTEGER (0..ub-extension-attributes),
+  extension-attribute-value [1] EXPLICIT ANY DEFINED BY
+                                         extension-attribute-type
+}
+
+
+END
+

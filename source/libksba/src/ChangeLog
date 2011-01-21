@@ -1,0 +1,1158 @@
+2010-09-13  Werner Koch  <wk@g10code.com>
+
+	* asn1-gentables.c (DEVNULL_NAME): New.
+	(main): Use it for fopen.  Suggested by Carlo Bramix.
+
+2010-08-19  Werner Koch  <wk@g10code.com>
+
+	* dn.c (append_ucs2_value): Enlarge TMP buffer. Fixes bug#1269.
+
+2010-08-02  Werner Koch  <wk@g10code.com>
+
+	* reader.c (ksba_reader_set_release_notify): New.
+	(ksba_reader_release): Call notify function.
+	* reader.h (struct ksba_reader_s): Add NOTIFY_CB and NOTIFY_CB_VALUE.
+	* writer.c (ksba_writer_set_release_notify): New.
+	(ksba_writer_release): Call notify function.
+	* writer.h (struct ksba_writer_s): Add NOTIFY_CB and NOTIFY_CB_VALUE.
+	* ksba.h, libksba.vers, libksba.def: Add new functions.
+
+2010-07-15  Werner Koch  <wk@g10code.com>
+
+	* cms-parser.c (create_and_run_decoder): Add arg flags.
+	(_ksba_cms_parse_enveloped_data_part_1): Handle NDEF recipientInfo
+	sets.
+
+	* ber-decoder.h (BER_DECODER_FLAG_FAST_STOP): New.
+	* ber-decoder.c (_ksba_ber_decoder_decode): Add arg FLAGS.
+	(decoder_next): Implement fast stop hack.
+
+2010-05-06  Werner Koch  <wk@g10code.com>
+
+	* gen-help.c, gen-help.h: New.
+	* Makefile.am: Build asn1-gentables and ber-dump also when cross
+	compiling.
+	(asn1_gentables_SOURCES, asn1_gentables_LDADD)
+	(asn1_gentables_CFLAGS): Remove.
+	(asn1-gentables): New rule.
+	(asn1-parse.c): Add gen-help.h as dependency.
+	(EXTRA_DIST): Add gen-help.c and gen-help.h.
+	* asn1-parse.y [BUILD_GENTOOLS]: Include gen-help.h instead of
+	util.h and ksba.h.
+	(ksba_asn_parse_file): Use gpg_error_from_syserror.
+	* asn1-func.c [BUILD_GENTOOLS]: Include gen-help.h instead of
+	util.h and ksba.h.
+	(resolve_identifier): Avoid the alloca.
+	* asn1-gentables.c: Include gen-help instead of util.h and ksba.h.
+	(sort_string_table): Remove useless printing of the string table.
+
+2010-01-22  Werner Koch  <wk@g10code.com>
+
+	* util.c (ksba_calloc): Use gpg_er_set_errno.
+
+	* ber-decoder.c (_ksba_ber_decoder_dump)
+	(_ksba_ber_decoder_decode) [!HAVE_GETENV]: Set debug to 0.
+
+2009-12-08  Marcus Brinkmann  <marcus@g10code.de>
+
+	* src/Makefile.am (LTRCCOMPILE): Refactor with ...
+	(RCCOMPILE): ... this new macro.  Add $(libksba_la_CPPFLAGS).
+	(SUFFIXES): Add .lo.
+	(.rc.o): Change to ...
+	(.rc.lo): ... this implicit rule.
+	(ksba_res_ldflag): Removed.
+	(libksba_la_LDFLAGS): Remove ksba_res_ldflag usage.
+	(libksba_la_LIBADD): Add ksba_res.
+
+2009-07-02  Werner Koch  <wk@g10code.com>
+
+	* util.c (_ksba_ascii_memcasecmp, ascii_toupper): New.
+	* dn.c (parse_rdn): Use it
+
+2009-07-01  Werner Koch  <wk@g10code.com>
+
+	* dn.c (oid_name_tbl): Add dotted string representation of OIDs.
+	(append_atv): Try to match BER encoded OIDs.
+
+2009-06-29  Werner Koch  <wk@g10code.com>
+
+	* oid.c (ksba_oid_to_str): Add an overflow check so that we can
+	detect bogus OIDs.
+
+	* asn1-func.c (copy_value): Fix out-of-bounds assignment of a
+	boolean to HELPBUF.  Due to alignment rules this was not
+	exploitable and we did not even used this code path.  Reported by
+	David Binderman.
+
+2009-05-28  Werner Koch  <wk@g10code.com>
+
+	* der-encoder.c (_ksba_der_store_null, sum_up_lengths): Actually
+	write out NULL tags.
+
+2009-03-26  Werner Koch  <wk@g10code.com>
+
+	* cms.h (struct certlist_s): Allow for SHA-512.
+
+2009-01-14  Werner Koch  <wk@g10code.com>
+
+	* ocsp.c (ksba_ocsp_set_requestor, ksba_ocsp_hash_request) 
+	(ksba_ocsp_set_sig_val, ksba_ocsp_add_cert): Mark unused args.
+	* cms-parser.c (_ksba_cms_parse_enveloped_data_part_2): Ditto.
+	* cms.c (ct_parse_data, ct_parse_digested_data) 
+	(ct_parse_encrypted_data, ct_build_data, ct_build_digested_data) 
+	(ct_build_encrypted_data): Ditto.
+
+	* visibility.c (ksba_cms_release, ksba_cms_set_hash_function) 
+	(ksba_crl_release, ksba_crl_set_hash_function, ksba_ocsp_release) 
+	(ksba_certreq_release, ksba_certreq_set_hash_function) 
+	(ksba_reader_release, ksba_writer_release, ksba_asn_tree_release) 
+	(ksba_asn_tree_dump, ksba_name_ref, ksba_name_release): No return
+	vor a void fucntion.  Reported by Nelson H. F. Beebe.
+
+2009-01-08  Werner Koch  <wk@g10code.com>
+
+	* keyinfo.c (get_algorithm): Initialize R_PARM_POS, R_PARM_LEN and
+	R_PARM_TYPE.
+
+2009-01-06  Werner Koch  <wk@g10code.com>
+
+	* keyinfo.c (sig_algo_table): Fix TeleTrust dsaWithRIPEMD160
+	encoding.  Add TeleTrust sigS_ISO9796-2rndWithrsa_ripemd160.
+
+2008-10-30  Werner Koch  <wk@g10code.com>
+
+	* ber-dump.c (one_file): Mark unused arg.
+	* ber-help.c (_ksba_ber_count_tl): Ditto.
+
+2008-10-30  Marcus Brinkmann  <marcus@g10code.de>
+
+	* ocsp.c (parse_context_tag): Don't trash the error value.
+
+2008-09-04  Werner Koch  <wk@g10code.com>
+
+	* asn1-func.h (ksba_asn_create_structure): Remove unused prototype
+	(ksba_asn1_create_tree): Ditto.
+	(ksba_asn_read_value, ksba_asn_write_value): Ditto.
+
+	* asn1-func.c (ksba_asn_delete_structure): Prefix name with underscore.
+	* visibility.h (ksba_asn_delete_structure): Remove macros.
+	(MARK_VISIBLEX): New.
+	(ksba_asn_delete_structure): New.
+
+2008-03-17  Werner Koch  <wk@g10code.com>
+
+	* cert.c (ksba_cert_get_image): Fix size_t/int format mismatch.
+	Reported by Stéphane Corthésy.
+
+2008-02-25  Werner Koch  <wk@g10code.com>
+
+	* visibility.h, visibility.c: New.
+	* util.h: Include visibility.h.
+
+	* keyinfo.c (pk_algo_table, sig_algo_table, enc_algo_table): Make
+	const.
+	(cryptval_to_sexp): Adjust for it.
+	* dn.c (oid_name_tbl): Make const and static.
+	* cms.c: Make oidstr_ const.
+
+	* asn1-gentables.c (create_static_structure): Revamp to use a
+	string table to reduce the relocation table.
+	* asn1-func.h: Replace char* by offsets.
+	* asn1-func2.c (ksba_asn_create_tree): Adjust for that change.
+
+2008-02-22  Werner Koch  <wk@g10code.com>
+
+	* keyinfo.c (pkalgo_t): New.
+	(algo_table_s): Add fields PARMELEM_STRING and
+	PARMCTRL_STRING. Replace IS_ECC by PKALGO. Adjust all tables and
+	users of IS_ECC.  Add DSA parameter description.
+	(TLV_LENGTH): Add PREFIX arg and change all callers.
+	(_ksba_keyinfo_to_sexp): Parse parameters.
+	(oid_from_buffer): Replace R_IS_ECC by R_PKALGO and allow for DSA.
+	(_ksba_keyinfo_from_sexp): Revamp to support DSA.
+	(sig_algo_table): Add dsaWithRIPEMD160, dsaWithSha224 and
+	dsaWithSha256.
+
+2008-02-21  Werner Koch  <wk@g10code.com>
+
+	* der-encoder.c (_ksba_der_write_algorithm_identifier): Add hack
+	to allow not writing the parameter.
+	* cms.c (store_smime_capability_sequence): Use this hack.
+
+2008-02-01  Werner Koch  <wk@g10code.com>
+
+	* cert.c (get_name): Fix for unknown tags.
+
+2008-01-11  Werner Koch  <wk@g10code.com>
+
+	* ber-decoder.c (decoder_next): Initialize NODE.  Fixes bug#582.
+
+2007-12-13  Werner Koch  <wk@g10code.com>
+
+	* keyinfo.c (algo_table_s): Replace the unused DIGEST_ALGO int by
+	a string and changed all tables to use a string representation of
+	the digest algo.
+	(cryptval_to_sexp): Insert the hash algo element into the result. 
+
+2007-11-14  Werner Koch  <wk@g10code.com>
+
+	* ber-decoder.c (_ksba_ber_decoder_dump) 
+	(_ksba_ber_decoder_decode): Change envvar to KSBA_DEBUG_BER_DECODER.
+
+2007-11-07  Werner Koch  <wk@g10code.com>
+
+	* cms.c (build_signed_data_attribute): Reset ATTRIDX for new
+	signers. Use xfree and not free.
+
+2007-11-03  Moritz Schulte  <moritz@g10code.com>
+
+	* ksba.h: Include <stdio.h>, since FILE* is used.
+
+2007-08-08  Werner Koch  <wk@g10code.com>
+
+	* crl.c (ksba_crl_get_update_times): Require only THIS_UPDATE.
+
+2007-07-04  Werner Koch  <wk@g10code.com>
+
+	Changed license to GPLv3.
+
+	* asn1-func.c, asn1-parse.y, CertificateExample.c: Also
+	changed to GPLv3 as they used to be GPLv2+.
+
+2007-06-15  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (AM_CPPFLAGS): Add top_builddir/gl as gnulib may
+	create a header.
+
+2007-05-29  Werner Koch  <wk@g10code.com>
+
+	* versioninfo.rc.in: New.
+	* libksba.def: New.
+	* Makefile.am: Add code to build a W32 DLL.
+	(install-data-local, uninstall-local): New.
+
+2007-05-14  Werner Koch  <wk@g10code.com>
+
+	* sexp-parse.h (smklen): New.
+	* cert.c: Include sexp-parse.h.
+	(get_name): Use smklen to avoid the snprintf.
+
+2007-05-09  Werner Koch  <wk@g10code.com>
+
+	* ksba.m4: Print found version on success.
+
+2007-05-01  Werner Koch  <wk@g10code.com>
+
+	* crl.c (do_hash): Cast BUFFER to char* for arithmetics.
+	* ksba.h (ksba_stop_reason_t): Remove trailing comma.
+	* asn1-parse.y (CONST_IMPLICIT): Ditto.  Reported by Peter
+	O'Gorman.
+
+2007-04-20  Werner Koch  <wk@g10code.com>
+
+	* keyinfo.c: Add OIDs for brainpool curves.
+
+2007-04-19  Werner Koch  <wk@g10code.com>
+
+	* keyinfo.c (pk_algo_table): Removed the ecdsa entry.
+	(sig_algo_table): Add X9.62 ecc signature algorithm entries.
+	(_ksba_parse_algorithm_identifier): Replace by a call to
+	_ksba_parse_algorithm_identifier2.
+	(_ksba_parse_algorithm_identifier2): Add hack to cope with
+	ecdsaWithSpecified.
+	* cert.c (ksba_cert_get_digest_algo): Use of
+	_ksba_parse_algorithm_identifier to parse the OID.
+
+2007-04-06  Werner Koch  <wk@g10code.com>
+
+	* keyinfo.c (curve_names): New.
+	(get_ecc_curve_oid): New.
+	(_ksba_keyinfo_from_sexp): Support ECC.
+	(oid_from_buffer): Ditto.
+	(_ksba_keyinfo_to_sexp): Ditto.
+
+	* oid.c (_ksba_oid_from_buf): New.
+
+2007-01-30  Werner Koch  <wk@g10code.com>
+
+	* shared.h: Add constants for SHA-2.
+	* keyinfo.c (sig_algo_table): Add SHA-256, SHA384 and SHA-512 from
+	pkcs#1.
+
+2006-12-21  Marcus Brinkmann  <marcus@g10code.de>
+
+	* cms.c (build_enveloped_data_header): Initialize CMS_TREE.
+	Release CMS_TREE, and also TMPWRT always, just as IMAGE and ROOT.
+	(build_signed_data_attributes): Release all this stuff that's not
+	released.
+	(build_signed_data_rest): Likewise.
+	(ksba_cms_set_sig_val): Release SV and SV->algo on error.
+	(ksba_cms_release): Free CMS->sig_val.
+
+	* cert.c (ksba_cert_release): Release CERT->image.
+	* ber-decoder.c (release_decoder_state): Release D->image.buf on
+	error.
+
+2006-12-20  Marcus Brinkmann  <marcus@g10code.de>
+
+	* reader.c (ksba_reader_release): Release R->u.mem.buffer if type
+	is READER_TYPE_MEM.
+
+	* cms.c (ksba_cms_release): Release CMS->signer_info.
+	* cms-parser.c (_ksba_cms_parse_signed_data_part_2): On failure,
+	release SI.
+
+2006-12-18  Marcus Brinkmann  <marcus@g10code.de>
+
+	* cert.c (ksba_cert_release): Release cert->root and
+	cert->asn_tree.
+	(ksba_cert_read_der): Release cert->root and cert->asn_tree.
+	* ber-decoder.c (_ksba_ber_decoder_decode): Release d->root.
+	* asn1-func.c (do_expand_tree): Keep track of created nodes.
+	(copy_tree): Likewise.
+	(_ksba_asn_insert_copy): Likewise.
+	(ksba_asn_tree_dump): Release tree if expanded.
+	* asn1-func2.c (ksba_asn_create_tree): Keep track of created
+	nodes.
+	* asn1-parse.y (new_node): Fix assignment.
+
+2006-11-29  Werner Koch  <wk@g10code.com>
+
+	* ocsp.c (parse_single_response): Fixed skipping of the NULL.
+
+	* cert.c (ksba_cert_get_image): Cast an arg for printf.
+
+2006-10-18  Werner Koch  <wk@g10code.com>
+
+	* cert.c (ksba_cert_get_key_usage): Map GPG_ERR_NO_VALUE to
+	GPG_ERR_NO_DATA.  This is required in case no extensions at all
+	are available.
+	(ksba_cert_get_cert_policies, ksba_cert_get_ext_key_usages) 
+	(ksba_cert_get_auth_key_id, get_simple_octet_string_ext): Ditto.
+
+2006-08-31  Werner Koch  <wk@g10code.com>
+
+	* ocsp.h (struct ocsp_extension_s): New.
+	* ocsp.c (extract_nonce): Renamed to ..
+	(parse_response_extensions): .. this. Extended to save all
+	extensions.
+	(release_ocsp_extensions): New.
+	(ksba_ocsp_release): Release new extension data.
+	(ksba_ocsp_parse_response): Reset extesnion data.
+	(parse_optional_boolean): New.
+	(parse_single_extensions): New.
+
+	* ksba.m4: Implement --api-version check.
+	* ksba-config.in (echo_api_version): New option --api-version.
+
+	* crl.c (GPG_ERR_UNKNOWN_CRIT_EXTN): Removed definition as we now
+	require a decent libgpg-error.
+
+	* ocsp.c (ksba_ocsp_get_responder_id): Implemented.  Changed NAME
+	from ksba_name_t* to char** and SHA1KEYHASH from unsigned char* to
+	ksba_sexp_t*.  Given that the function has always returned an
+	not_implemented error code and thus was not useful at all, we
+	don't consider this as an ABI change (still pointers) and the API
+	change is not real as this function was never useful.
+
+2006-08-30  Werner Koch  <wk@g10code.com>
+
+	* ocsp.c (extract_nonce): New.
+	(ksba_ocsp_parse_response): Set status to replay on bad nonce.
+	(ksba_ocsp_get_extension): New.
+	(parse_response): Fixed storing of received_certs.
+
+	* util.c (ksba_calloc): Protect against integer overflow.
+
+2006-08-01  Werner Koch  <wk@g10code.com>
+
+	* dn.c (ksba_dn_teststr): Bump nparts to actually allow returning
+	without an error.  Hmmm, why did did t-dnparser didn't caught this
+	problem?
+
+2006-07-19  Werner Koch  <wk@g10code.com>
+
+	* dn.c (put_stringbuf_mem_skip): New.
+	(append_quoted): New arg SKIP.  Changed all callers.
+	(append_ucs4_value, append_ucs2_value): Tell append_quoted to skip
+	the zero bytes we detected.
+
+2006-07-18  Werner Koch  <wk@g10code.com>
+
+	* dn.c (append_ucs2_value): Fixed second blank detection case.
+
+2006-07-03  Werner Koch  <wk@g10code.com>
+
+	* ksba.h, ksba.c (ksba_dn_teststr): New.
+	* dn.c (parse_rdn): New optionsl args ROFF and RLEN.  Changed
+	callers.
+	(ksba_dn_der2str, ksba_dn_str2der): New.
+	* libksba.vers: Added new functions.
+
+2006-06-19  Werner Koch  <wk@g10code.com>
+
+	* ber-decoder.c (_ksba_ber_decoder_decode): always store value
+	even if NODE is NULL.  It used to work only because NODE used to
+	be unitialized and thus most of the time yielded true.  The
+	2006-05-03 fix unveiled the actual problem.
+
+2006-06-08  Marcus Brinkmann  <marcus@g10code.de>
+
+	* cert.c (ksba_cert_get_crl_dist_point): Fix type of R_REASON.
+	(parse_distribution_point): Fix type of REASON.
+
+2006-05-11  Werner Koch  <wk@g10code.com>
+
+	* ber-decoder.c (decoder_next): Print error description returned
+	from BER reader in debug mode.
+	(struct ber_decoder_s): New fields OUTER_SEQUENCE_LENGTH,
+	IGNORE_GARBAGE and FIRST_TAG_SEEN.
+	(decoder_next): Implement hack for the Siemens CA to ignore a
+	trailing byte.
+
+2006-05-03  Werner Koch  <wk@g10code.com>
+
+	* ber-decoder.c (decoder_next): Zero out NODE.
+
+	* ocsp.c (ksba_ocsp_prepare_request): Move requestExtensions into
+	the TBSRequest.  Reported by Daiko Ueno.
+
+2006-04-23  Brad Hards <bradh@frogmouth.net>  (mb)
+
+	* ksba.h (ksba_crl_get_update_times): Rename parameter to avoid
+	collision with C++ keywords.
+
+	* ksba.h: Fix typos.
+
+2006-03-20  Werner Koch  <wk@g10code.com>
+
+	* ber-decoder.c: Dump debug info always to stderr and not to stdout.
+	(decoder_next): Take zero length SETs into account.
+
+2005-11-13  Werner Koch  <wk@g10code.com>
+
+	* cert.c (ksba_cert_set_user_data): Fixed.
+	* ksba.h (ksba_cert_set_user_data, ksba_cert_get_user_data): Add
+	prototypes.
+
+2005-11-11  Werner Koch  <wk@g10code.com>
+
+	* cert.h (struct cert_user_data): New.
+	(struct ksba_cert_s): New field UDATA.
+	* cert.c (ksba_cert_release): Release the UDATA list.
+	(ksba_cert_set_user_data, ksba_cert_get_user_data): New.
+	* libksba.vers:  Add the new functions.
+
+2005-09-28  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (AM_CCPFLAGS): Renamed to AM_CPPFLAGS.
+
+2005-07-21  Werner Koch  <wk@g10code.com>
+
+	* certreq.h (struct general_names_s): New.
+	(struct ksba_certreq_s): New member SUBJECT_ALT_NAMES.
+	* certreq.c (ksba_certreq_release): Free it.
+	(add_general_names_to_extn): New.
+	(build_cri): And build them here.
+
+	* cert.c (get_name): Support dNSName and uRI.
+	* certreq.c (ksba_certreq_add_subject): Ditto.
+
+2005-06-15  Werner Koch  <wk@g10code.com>
+
+	* ksba.h, certreq.c (ksba_certreq_add_extension): Changed arg DER from
+	unsigned char* to void*.
+	* ksba.h, cms.c (ksba_cms_set_content_enc_algo): Changed arg IV
+	from unsigned char* to void*.
+	* ksba.h, cms.c (ksba_cms_get_content_enc_iv): Ditto.
+	* ksba.h, cms.c (ksba_cms_set_message_digest): Changed arg DIGEST
+	from char* to unsigned char*.
+
+2005-06-02  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am: Add flags for gnulib.
+	* asn1-func.c: Include alloca.h.
+
+2005-04-20  Werner Koch  <wk@g10code.com>
+
+	* time.c (_ksba_asntime_to_iso): Add arg IS_UTCTIME to allow for
+	UTCTimes w/o seconds.
+	* ocsp.c (parse_asntime_into_isotime): Set this arg.
+	* crl.c (parse_to_next_update, parse_crl_entry): Ditto.
+	* cert.c (ksba_cert_get_validity): Ditto.
+
+2005-04-19  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am: Don't have asn1-tables depend on built tools.
+
+	* ocsp.c (ksba_ocsp_set_nonce): Set the length of the nonce.
+	(write_request_extensions): New.
+	(ksba_ocsp_prepare_request): Call new function.
+
+2005-04-18  Werner Koch  <wk@g10code.com>
+
+	* crl.c (parse_crl_entry): Handle entry extensions.
+	(store_one_entry_extension): New.
+	(parse_enumerated): New.
+
+2005-04-15  Werner Koch  <wk@g10code.com>
+
+	* cert.c (get_info_access): Fixed case of more than one
+	AccessDescription.
+
+	* ksba.h (ksba_cert_get_subj_key_id): New.
+	* cert.c (get_simple_octet_string_ext): New.
+	(ksba_cert_get_subj_key_id): New.
+	* libksba.vers: Added ksba_cert_get_subj_key_id. 
+
+	* cert.c (ksba_cert_get_auth_key_id): Add support for
+	keyIdentifier.
+	* crl.c (ksba_crl_get_auth_key_id): Ditto.
+	
+2005-01-31  Werner Koch  <wk@g10code.com>
+
+	* cms-parser.c (_ksba_cms_parse_signed_data_part_2): Allow NDEF
+	encoding for the set of certificates.
+
+2005-01-21  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (ber_dump_SOURCES): Use per target flags to force
+	object renaming.
+
+2004-12-18  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (noinst_PROGRAMS): Don't generate them when cross
+	compiling.
+	(EXTRA_DIST): Include asn1-parse.c asn1-tables.c.
+	(DISTCLEAN): Removed.
+
+2004-12-15  Werner Koch  <wk@g10code.com>
+
+	* ksba.m4: Use proper quoting for use with automake 1.9.
+
+2004-11-29  Werner Koch  <wk@g10code.com>
+
+	* cms.c (read_and_hash_cont): Added more code for the unusual
+	non-NDEF things and factored common code out to ..
+	(read_hash_block): .. new function.
+
+2004-11-26  Werner Koch  <wk@g10code.com>
+
+	* util.c (_ksba_stpcpy): Renamed from stpcpy to avoid duble
+	defines sympols in case libska gets statically linked.
+	* util.h (stpcpy): Redefine it.
+
+2004-08-17  Werner Koch  <wk@g10code.de>
+
+	* cert.c (ksba_cert_get_image): Replaced assert by proper error
+	message.
+
+	* ber-decoder.c (match_der): Fix for primitive implicit context
+	tags.  Argh, this whole decoder mess needs a full rewrite.
+	
+2004-08-16  Werner Koch  <wk@g10code.de>
+
+	* keyinfo.c: Fixed second DSA entry; a comma was missing.
+
+2004-07-20  Werner Koch  <wk@gnupg.org>
+
+	* cert.c (_ksba_cert_get_issuer_dn_ptr): Renamed to ..
+	(_ksba_cert_get_subject_dn_ptr): .. this.  And return the
+	subject's DN.
+	* ocsp.c (issuer_name_hash): Use it here.  Thanks to Bernhard
+	Herzog for pointing this out.  It revealed itself only in a
+	multi-level certificate chain.
+
+2004-06-08  Werner Koch  <wk@gnupg.org>
+
+	* certreq.c (ksba_certreq_add_extension): Removed unused variable.
+
+2004-06-06  Werner Koch  <wk@gnupg.org>
+
+	* ksba.h: Comment cleanups.
+
+	* certreq.c (ksba_certreq_add_extension): New.
+
+2004-04-28  Werner Koch  <wk@gnupg.org>
+
+	* libksba.vers: Add new functions.
+
+	* crl.h (crl_extn_s, crl_extn_t): New.
+	(ksba_crl_s): Add member EXTENSION_LIST;
+	* crl.c (ksba_crl_release): Free an extension list.
+	(parse_one_extension, store_one_extension): New.
+	(parse_crl_extensions): Store extensions.
+	(ksba_crl_get_extension, ksba_crl_get_auth_key_id)
+	(ksba_crl_get_crl_number): New.
+
+2004-04-06  Werner Koch  <wk@gnupg.org>
+
+	* cms.c (ksba_cms_add_smime_capability): Oops, we forgot to store
+	the parameters.
+	* writer.c (do_writer_write): Fixed memory allocation and added an
+	extra check.
+
+2004-03-24  Werner Koch  <wk@gnupg.org>
+
+	* cms.c (ksba_cms_add_smime_capability): New.
+	(ksba_cms_release): Free the capability list.
+	(store_smime_capability_sequence): New.
+	(build_signed_data_attributes): Include the smime capabilities.
+	* cms.h (oidparmlist_s): New.
+	(ksba_cms_s): Add element CAPABILITY_LIST.
+	* der-encoder.c (_ksba_der_store_sequence): New.
+	* asn1-func.c (_ksba_asn_is_primitive): New dummy type PRE_SEQUENCE.
+	* der-encoder.c (set_nhdr_and_len, copy_nhdr_and_len): Support it.
+
+2004-03-17  Werner Koch  <wk@gnupg.org>
+
+	* ber-help.c (_ksba_ber_parse_tl): Check for length overflow.
+	(_ksba_ber_read_tl): Ditto.
+
+2004-03-16  Werner Koch  <wk@gnupg.org>
+
+	* ocsp.c (ksba_ocsp_get_responder_id, ksba_ocsp_get_cert): New.
+
+2004-03-15  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am: Support for version scripts.
+	* libksba.vers: New.
+
+	* ocsp.c (parse_response): Fixed parsing of optional certificates.
+
+2004-03-09  Werner Koch  <wk@gnupg.org>
+
+	* ksba.h (ksba_set_hash_buffer_function): Add missing prototype.
+
+2004-02-20  Werner Koch  <wk@gnupg.org>
+
+	* cert.c (ksba_cert_get_ext_key_usages): New.
+	(ksba_cert_get_auth_key_id): Fix for the case that there is only
+	the KeyIdentifier.
+
+2004-02-13  Werner Koch  <wk@gnupg.org>
+
+	* reader.c, ksba.h (ksba_reader_clear): New.
+
+2004-02-12  Werner Koch  <wk@gnupg.org>
+
+	* cms.c (ksba_cms_identify): Detect pkcs#12.
+	* ksba.h: Add KSBA_CT_PCKS12. 
+
+2004-01-29  Werner Koch  <wk@gnupg.org>
+
+	* cms.c (build_signed_data_attributes): Arggg; noticed that severe
+	bug shortly after the last release.  Fixed wrong array size passed
+	to qsort.
+
+2004-01-28  Werner Koch  <wk@gnupg.org>
+
+	* dn.c: Updated the table and changed a few names only used for
+	String->DER.  Added a source specifier as a replacement for the
+	allowed_by_rfc2253 field.
+
+2004-01-19  Werner Koch  <wk@gnupg.org>
+
+	* cms.c (build_signed_data_attributes): Argh. We need to sort the
+	attributes.
+	(compare_attrarray): New.
+
+2003-12-19  Werner Koch  <wk@gnupg.org>
+
+	* cms.c (build_signed_data_header): Fixed silly ==/= bug.
+
+2003-12-09  Werner Koch  <wk@gnupg.org>
+
+	* cms.c (ksba_cms_set_sig_val): Fixed a code cleanup I did on Nov
+	25 and led to bad signature creation.  Unfortunatley gpgsm has
+	currently no real regression tests.  BTW, why the hell didn't I
+	wrote an entry for that cleanup.
+
+2003-11-28  Werner Koch  <wk@gnupg.org>
+
+	* ocsp.h, ocsp.c: New.
+	* ksba.h (ksba_status_t, ksba_ocsp_response_status_t): New.
+	(ksba_ocsp_t): New.
+
+2003-11-25  Werner Koch  <wk@gnupg.org>
+
+	* ksba.h: Added a few more CRL reason codes.
+
+2003-11-21  Werner Koch  <wk@gnupg.org>
+
+	* oid.c (ksba_oid_from_str): Changed RBUF to unsigned char* and
+	changed all callers to avoid incompatible pointer warnings.
+
+2003-11-20  Werner Koch  <wk@gnupg.org>
+
+	* cert.c (_ksba_cert_get_issuer_dn_ptr): New.
+	(_ksba_cert_get_public_key_ptr): New.
+	(_ksba_cert_get_serial_ptr): New.
+
+	* util.c (_ksba_hash_buffer): New.
+	(ksba_set_hash_buffer_function): New.
+
+	* cms.c: Include sexp-parse.h.
+	(ksba_cms_set_sig_val): Use snext and smatch instead of open
+	coding it.
+
+	* sexp-parse.h: New. Taken from GnuPG 1.9.
+
+2003-11-18  Werner Koch  <wk@gnupg.org>
+
+	* reader.c (ksba_reader_read): Return GPG_ERR_EOF and not -1.
+
+2003-11-17  Werner Koch  <wk@gnupg.org>
+
+	* cert.c (get_name, ksba_cert_get_extension): Return GPG_ERR_EOF
+	and not just -1.
+	* ber-decoder.c (_ksba_ber_decoder_decode): Ditto.
+
+2003-11-14  Werner Koch  <wk@gnupg.org>
+
+	* cms.c (write_encrypted_cont): Fixed test on EOF.
+	* cert.c (ksba_cert_is_ca, ksba_cert_get_cert_policies) 
+	(ksba_cert_get_auth_key_id): Ditto.
+	* ber-decoder.c (_ksba_ber_decoder_dump) 
+	(_ksba_ber_decoder_decode): Ditto.
+
+2003-11-13  Werner Koch  <wk@gnupg.org>
+
+	* ber-decoder.c (eof_or_error): Replaced READ_ERROR with a system
+	provided error.
+	* crl.c (parse_to_next_update): Ditto.
+	* cms-parser.c (parse_cms_version): Ditto.
+	(_ksba_cms_parse_signed_data_part_1): 
+	* ber-help.c (eof_or_error): Ditto.
+	* reader.c (ksba_reader_error): Changed to return gpg_error_t.
+	* writer.c (ksba_writer_error): Ditto.
+
+2003-11-12  Werner Koch  <wk@gnupg.org>
+
+	* writer.c (do_writer_write): Replaced WRITE_ERROR by one
+	generated from errno.
+
+	* asn1-parse.y (ksba_asn_parse_file): Replaced FILE_ERROR by one
+	generated from errno.
+
+	* cms.c (ksba_cms_new): Changed Interface to return an error code.
+	* name.c (ksba_name_new): Ditto.
+	* writer.c (ksba_writer_new): Ditto.
+	* reader.c (ksba_reader_new): Ditto.
+	* certreq.c (ksba_certreq_new): Ditto.
+	* crl.c (ksba_crl_new): Ditto.
+
+	* ksba.h: Removed all KSBA_ error codes and replaced them all over
+	the package by the gpg-error.h codes. Include gpg-error.h
+	* mkerrors: Removed.
+	* Makefile.am: Removed generation of errors.c
+	* asn1-gentables.c (one_file): Simplified error printing
+	* ksba-config.in (libs,cflags): Add values for gpg-error.  Remove
+	duplicates.
+
+2003-11-11  Werner Koch  <wk@gnupg.org>
+
+	* cert.c (ksba_cert_new): Changed interface.
+
+2003-10-31  Werner Koch  <wk@gnupg.org>
+
+	Changed the representation of time.
+	
+	* ksba.h (ksba_isotime_t): New.
+	* convert.h, cms.h, crl.h: Changed all data structure to use that
+	new time object.
+	* time.c (_ksba_asntime_to_epoch): Renamed to ..
+	(_ksba_asntime_to_iso): .. this and rewrote for the new time format.
+	(_ksba_asntime_from_epoch): Removed.  Was never used.
+	(_ksba_assert_time_format, _ksba_copy_time, _ksba_cmp_time)
+	(_ksab_current_time): New.
+	* cert.c (ksba_cert_get_validity): Changed for new time data type.
+	* der-encoder.c (_ksba_der_store_time): Ditto.
+	* crl.c (ksba_crl_get_update_times, ksba_crl_get_item) 
+	(parse_to_next_update, parse_crl_entry): Ditto.
+	* cms.c (ksba_cms_get_signing_time, ksba_cms_set_signing_time):
+	Ditto.
+
+2003-10-21  Werner Koch  <wk@gnupg.org>
+
+	* dn.c (oid_name_tbl): Changed OIDLEN to size_t.
+	(parse_rdn): Ditto.
+	* ber-decoder.c (dump_tlv): Fixed format specifier for NHDR.
+	Reported by Stephane Corthesy.
+
+2003-08-20  Marcus Brinkmann  <marcus@g10code.de>
+ 
+	* ber-decoder.c (new_decoder_state): Initialize DS->cur.in_any.
+
+2003-03-17  Werner Koch  <wk@gnupg.org>
+
+	* dn.c (count_quoted_string): Fixed detection of nonprintable
+	chars for hex pairs. Use IA5STRING instead of UTF8 if the only
+	reason is an at-sign.
+	(parse_rdn): Fixed parsing of hash prefixed hex pairs.  Use
+	IA5STRING instead of UTF8 if the only reason is an at-sign.
+
+2002-12-12  Werner Koch  <wk@gnupg.org>
+
+	* keyinfo.c (sig_algo_table): Added sha-1WithRSAEncryption. 
+
+2002-12-03  Werner Koch  <wk@gnupg.org>
+
+	* ber-decoder.c (cmp_tag): Handle ANY tag even when the classes
+	don't match.  Test case arecertificates with a id-aa-encrypKeyPref.
+
+2002-11-25  Werner Koch  <wk@gnupg.org>
+
+	* cms.c (ksba_cms_get_sigattr_oids): New.
+	(build_signed_data_attributes): Store the content-type.
+	* der-encoder.c (_ksba_der_store_oid): Handle TYPE_ANY.
+
+2002-10-22  Werner Koch  <wk@gnupg.org>
+
+	* asn1-parse.y (yyparse): Prefix with _ksba_asn1_.
+
+	* asn1-func.c (_asn1_find_left): Made static.
+
+	* dn.c (parse_rdn): Add a parse-only mode to determine the end os
+	a part.
+	(_ksba_dn_from_str): Parse the string in reversed order as
+	specified by rfc2253.
+
+2002-08-23  Werner Koch  <wk@gnupg.org>
+
+	* ksba.m4: Removed unnecessary libs
+	* ksba-config.in: Made --prefix work for --libs.
+	* Makefile.am (EXTRA_DIST): Add ksba.m4
+
+2002-08-21  Werner Koch  <wk@gnupg.org>
+
+	* der-encoder.c (_ksba_der_copy_tree)
+	* crl.c (ksba_crl_get_issuer)
+	* cms.c (ksba_cms_get_issuer_serial)
+	(ksba_cms_get_sig_val)
+	(ksba_cms_get_enc_val) 
+	* cert.c (ksba_cert_get_image)
+	(ksba_cert_hash)
+	(ksba_cert_get_serial)
+	(ksba_cert_get_sig_val): Removed all debugging output for encoding
+	errors.
+
+2002-08-13  Werner Koch  <wk@gnupg.org>
+
+	* ksba.m4: New.
+
+2002-08-06  Werner Koch  <wk@gnupg.org>
+
+	* cms.h (signer_info_s, sig_val_s): New.  Actually moved out of
+	ksba_cms_s and made it pointers there.
+	* cms.c (ksba_cms_release): Changed for new types of signer_info
+	and sig_val.
+	(ksba_cms_get_issuer_serial): Implemented index for signer_info.
+	(ksba_cms_get_digest_algo): Ditto.
+	(ksba_cms_get_message_digest): Ditto.
+	(ksba_cms_get_sig_val): Ditto.
+	(ksba_cms_hash_signed_attrs): Ditto.
+	(build_signed_data_attributes): Build the list of signer_infos.
+	(build_signed_data_rest): And process the list.
+	(ksba_cms_set_sig_val): Append values.
+	(build_signed_data_rest): Use the sig_val list.
+	(ct_build_signed_data): Changed check for set sig_val.
+	(build_signed_data_header): Fixed writing of more than one algo.
+	* cms-parser.c (_ksba_cms_parse_signed_data_part_2): Create a list
+	of signer_infos and not just one.
+
+2002-08-05  Werner Koch  <wk@gnupg.org>
+
+	* cms.c (ksba_cms_add_cert): Don't add duplicates.
+	* cert.c (_ksba_cert_cmp): New.
+
+2002-07-04  Werner Koch  <wk@gnupg.org>
+
+	* cms.c (ksba_cms_identify): Make sure to read the full first 20
+	bytes.
+
+2002-07-02  Werner Koch  <wk@gnupg.org>
+
+	* certreq.c (ksba_certreq_set_sig_val): Don't store a leanding zero.
+
+2002-06-27  Werner Koch  <wk@gnupg.org>
+
+	* cert.c (ksba_cert_get_auth_key_id): Skip keyIdentifier tag.
+
+2002-06-17  Werner Koch  <wk@gnupg.org>
+
+	* cms.c (write_encrypted_cont): Don't use write_octet_stream here
+	because this is used with an implicit tag and the outer context
+	already provides the constructed containter.
+
+2002-06-13  Werner Koch  <wk@gnupg.org>
+
+	* writer.c (ksba_writer_write_octet_string): Correctly write
+	undefined length octet strings.
+	* cms.c (ct_build_signed_data): Write an end tag for non-detached
+	sigs.
+	(build_enveloped_data_header): Fix doc; it is an explicit octect
+	string.
+	(read_encrypted_cont): Read constructed octet strings.
+
+2002-06-12  Werner Koch  <wk@gnupg.org>
+
+	* writer.c (ksba_writer_write_octet_string): New.
+	* cms.c (write_encrypted_cont): Use it here.
+
+2002-05-17  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am: Tweaked to avoid double compilations.
+
+	* cms.c (ksba_cms_identify): New.
+
+2002-05-16  Werner Koch  <wk@gnupg.org>
+
+	* cms-parser.c (_ksba_cms_parse_signed_data_part_1): Never
+	allocate 0 bytes - this is not defined.
+
+2002-05-04  Werner Koch  <wk@gnupg.org>
+
+	* dn.c (parse_rdn): Better detection of empty elements.
+
+2002-04-27  Werner Koch  <wk@gnupg.org>
+
+	* cms.c (read_and_hash_cont): Handle constructed octet strings.
+	* cms-parser.c (_ksba_cms_parse_signed_data_part_2): Eat one
+	pending end tag.
+
+2002-04-15  Werner Koch  <wk@gnupg.org>
+
+	* version.c: New.
+
+	* dn.c (append_ucs4_value,append_ucs2_value): Implemented.
+
+	* cert.c (ksba_cert_get_auth_key_id): New.
+	* name.c (_ksba_name_new_from_der): Add support for "Name" type.
+	* dn.c (_ksba_derdn_to_str): New.
+
+2002-03-22  Werner Koch  <wk@gnupg.org>
+
+	* cert.c (get_name): Fixed enumerating of alternate names.
+
+	* name.c: New.
+	* ksba.h (KsbaName): New.  Added defintions for the name functions.
+	(KsbaCRLReason): Changed values to allow use as bit flags.
+	* cert.c (parse_distribution_point): New. 
+	(ksba_cert_get_crl_dist_point): New.
+
+2002-03-15  Werner Koch  <wk@gnupg.org>
+
+	* asn1-func.c (_ksba_asn_check_identifier): Better check against
+	overflow, also the data used is static.
+
+2002-03-13  Werner Koch  <wk@gnupg.org>
+
+	* cms.h (value_tree_s): New and use it for recp_info.
+	(enc_val_s): New, use it in certlist and remove it from the
+	ksba_cms_s and change all users.
+	* cms.c (ksba_cms_set_enc_val): Allow multiple recipients.
+	(ksba_cms_add_signer): Keep ordering of signers so that they can
+	be implictly counted by an index.
+	(build_enveloped_data_header): Fixed the creation of the RID.
+
+	* cms.c (release_value_tree): New.
+	(ksba_cms_release): And use it here.
+	(ksba_cms_get_issuer_serial): Use the new recp_list structure and
+	take the IDX into account.
+	(ksba_cms_get_enc_val): Ditto.
+	(ksba_cms_set_sig_val,ksba_cms_set_enc_val): Don't store a leading
+	zero.
+
+	* cms-parser.c (_ksba_cms_parse_enveloped_data_part_1): Handle
+	multiple recipients.
+
+	* cms.c (build_signed_data_rest): Write 3 end tags.
+	(ct_build_enveloped_data): Write 4 end tags.
+
+2002-03-12  Werner Koch  <wk@gnupg.org>
+
+	* cms-parser.c (_ksba_cms_parse_signed_data_part_2): Allow an
+	empty set of signer infos.
+
+2002-03-11  Werner Koch  <wk@gnupg.org>
+
+	* keyinfo.c: Fixed last change; forgot to set the length.
+
+2002-03-09  Werner Koch  <wk@gnupg.org>
+
+	* keyinfo.c: Add algo for Telesec NetKey cards.
+
+2002-02-19  Werner Koch  <wk@gnupg.org>
+
+	* cert.c (ksba_cert_get_cert_policies): New.
+
+2002-02-07  Werner Koch  <wk@gnupg.org>
+
+	* cert.c (ksba_cert_release): Release the nodes.
+
+2002-02-01  Marcus Brinkmann  <marcus@g10code.de>
+
+	* asn1-parse.y: Add missing colon at end of block.
+
+2002-02-01  Werner Koch  <wk@gnupg.org>
+
+	* cms.c (ksba_cms_set_sig_val): Add kludge to allow "rsa" instead
+	of an OID.
+
+2002-01-28  Werner Koch  <wk@gnupg.org>
+
+	* oid.c (ksba_oid_from_str): Fixed docs and return type.
+
+	* certreq.c (ksba_certreq_set_subject): Renamed to..
+	(ksba_certreq_add_subject): this and added logic to store
+	subjectAltNames.
+	(build_extensions): New.
+	(build_cri): Write the extensions.
+
+	* ber-help.c (_ksba_ber_encode_tl): New.
+
+2002-01-25  Werner Koch  <wk@gnupg.org>
+
+	* cms.c (build_signed_data_attributes): Write the optional certs.
+	* cert.c (ksba_cert_get_image): Don't return the image length but
+	the parsed length.
+
+2002-01-24  Werner Koch  <wk@gnupg.org>
+
+	* cms.h: Add new member cert_info_list. 
+	* cms.c (ksba_cms_add_cert): New.
+	(ksba_cms_release): Release the cert info list.
+
+2002-01-23  Werner Koch  <wk@gnupg.org>
+
+	* crl.c (parse_to_next_update): Use measured length to fixup the
+	tbs_len after reading the name.  Check tbs_len before checking 
+	for the entry list.
+
+	* ksba.h (KsbaKeyUsage): New.
+	* cert.c (ksba_cert_get_key_usage): New.
+
+	* cert.c (get_name): New, implemented rfc822 AltNames.
+	(ksba_cert_get_issuer,ksba_cert_get_subject): Use it.
+
+2002-01-22  Werner Koch  <wk@gnupg.org>
+
+	* cert.c (ksba_cert_is_ca): New.
+
+	* ber-help.c (premature_eof): New.
+	(eof_or_error): Use it here.
+	(_ksba_ber_parse_tl): New.
+
+2002-01-21  Werner Koch  <wk@gnupg.org>
+
+	* cert.c (ksba_cert_get_extension): New.
+	(read_extensions): New.
+	(ksba_cert_release): Release the cached extension info.
+
+2002-01-14  Werner Koch  <wk@gnupg.org>
+
+	* dn.c: Fixed oid table according to rfc2253.
+	(append_atv): Do only use the allowed names.
+
+2002-01-11  Werner Koch  <wk@gnupg.org>
+
+	* dn.c (append_atv): Don't write a trailing hash sign.
+
+	* time.c (_ksba_asntime_to_epoch): Kludge to cope with the Y2038
+	problem.
+
+	* crl.c (do_hash): New.  Apply the hashing where needed.
+
+2002-01-10  Werner Koch  <wk@gnupg.org>
+
+	* certreq.c, certreq.h: New.
+	* keyinfo.c (_ksba_keyinfo_from_sexp): New.
+
+	* der-encoder.c: Removed commented code.
+
+2002-01-09  Werner Koch  <wk@gnupg.org>
+
+	* dn.c (count_quoted_string, parse_rdn, write_escaped): New.
+	(_ksba_dn_from_str): Implemented.
+
+	* ber-help.c (_ksba_ber_count_tl): New.
+
+	* util.h (spacep): New.
+	(hexdigitp): Now takes a pointer as arg.
+	
+	* writer.c (do_writer_write): Set the error flag when we are out
+	of core.
+	(ksba_writer_snatch_mem): New.
+
+2002-01-08  Werner Koch  <wk@gnupg.org>
+
+	* writer.c (ksba_writer_set_mem): New.
+	(do_writer_write): Implemented it here.
+	(ksba_writer_get_mem): New.
+
+	* tmttv2.asn (CertificationRequestInfo): Added.
+
+2002-01-07  Werner Koch  <wk@gnupg.org>
+
+	* ksba.h (KsbaCRLReason): New.
+	* crl.c: Basically works.
+
+2002-01-05  Werner Koch  <wk@gnupg.org>
+
+	* asn1-func.c (_ksba_asn_find_node): Moved code to ..
+	(find_node): new function which allows resolving of identifiers.
+	(_ksba_asn_expand_tree): Use the resolving find_node here.
+
+	* keyinfo.c (_ksba_parse_algorithm_identifier2): Reset len2 so
+	that a given r_parm returns correct values.
+
+	* ksba.h (KsbaCRL): New typedef and prototypes for the CRL functions.
+	* crl.c, crl.h: New but not yet complete.
+
+2001-12-20  Werner Koch  <wk@gnupg.org>
+
+	* cms.c (read_and_hash_cont): New.
+	(ct_parse_signed_data): Use it here for non-detached signatures.
+	* cms-parser.c (_ksba_cms_parse_signed_data_part_1): Store the
+	inner content length.
+	(_ksba_cms_parse_signed_data_part_2): Add dummy read code for CRLs.
+
+	* cert.c (ksba_cert_set_serial): Changed to return an entire S-Exp
+	and not just an octet string.
+	* cms.c (ksba_cms_get_issuer_serial): Ditto.
+
+2001-12-18  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am (DISTCLEANFILES): Add asn1-tables.c
+
+2001-12-17  Werner Koch  <wk@gnupg.org>
+
+	* cert.c (ksba_cert_get_serial): Does now return a S-expression.
+	* cms.c (ksba_cms_get_issuer_serial): Ditto.
+
+	* keyinfo.c: Changed all functions to return canonical encoded S-Exp.
+
+	* Makefile.am (asn1-tables.c): Fixed rule to work with VPATH builds.
+
+2001-12-14  Werner Koch  <wk@gnupg.org>
+
+	* oid.c, time.c, cms.c : Moved atoi macros and digitp macro to ..
+	* util.h: .. here.  Fixed digitp macro.  Added hexdigitp.
+
+2001-12-13  Werner Koch  <wk@gnupg.org>
+
+	* cert.c (ksba_cert_get_issuer): Added an idx argument so that the
+	function can be used to enumerate alternate names. 
+	(ksba_cert_get_subject): Ditto.
+	
+
+ Copyright 2001, 2002, 2003, 2004, 2005, 2008, 2009 g10 Code GmbH
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.

@@ -1,0 +1,118 @@
+                                                              -*- outline -*-
+
+* src/base64                                                  
+** Make parsing more robust
+   Currently we don't cope with overlong lines in the best way.
+** Check that we really release the ksba reader/writer objects.
+
+* sm/call-agent.c
+** Some code should go into import.c
+** When we allow concurrent service request in gpgsm, we
+   might want to have an agent context for each service request
+   (i.e. Assuan context).
+
+* sm/certchain.c
+** Try to keep certificate references somewhere
+  This will help with some of our caching code.  We also need to test
+  that caching; in particular "regtp_ca_chainlen".
+
+* sm/decrypt.c
+** replace leading zero in integer hack by a cleaner solution
+
+* sm/gpgsm.c
+** Implement --default-key
+** support the anyPolicy semantic
+** Should we prefer nonRepudiation certs over plain signing certs?
+   Also: Do we need a way to allow the selection of a qualSig cert
+   over a plain one?  The background is that the Telesec cards have 3
+   certs capable of signing all with the same subject name.
+
+* sm/keydb.c
+** Check file permissions
+** Check that all error code mapping is done.
+** Remove the inter-module dependencies between gpgsm and keybox
+** Add an source_of_key field
+
+* agent/
+** If we detect that a private key has been deleted
+   Bump the key event counter.
+
+* agent/command.c
+** Make sure that secure memory is used where appropriate
+
+* agent/pkdecrypt.c, agent/pksign.c
+** Support DSA
+
+* Move pkcs-1 encoding into libgcrypt.
+
+* Use a MAC to protect sensitive files.
+  The problem here is that we need yet another key and it is unlikely
+  that users are willing to remember that key too.  It is possible to
+  do this with a smartcard, though.
+
+* sm/export.c
+** Return an error code or a status info per user ID.
+
+* common/tlv.c
+  The parse_sexp function should not go into this file.  Check whether
+  we can change all S-expression handling code to make use of this
+  function.
+
+* scd
+** Application context vs. reader slot
+  We have 2 concurrent method of tracking whether a reader is in use:
+  Using the session_list in command.c and the lock_table in app.c.  It
+  would be better to do this just at one place. First we need to see
+  how we can support cards with multiple applications.
+** Resolve fixme in do_sign of app-dinsig.
+** Disconnect 
+  Card timeout is currently used as a boolean.  
+  Add disconnect support for the ccid driver.
+
+* Regression tests
+** Add a regression test to check the extkeyusage.
+
+* Windows port (W32)
+** Regex support is disabled
+  We need to adjust the test to find the regex we have anyway in 
+  gpg4win.  Is that regex compatible to the OpenPGP requirement?
+
+
+* sm/
+** check that we issue NO_SECKEY xxx if a -u key was not found
+   We don't. The messages returned are also wrong (recipient vs. signer).
+
+* g10/
+** issue a NO_SECKEY xxxx if a -u key was not found.
+
+* Extend selinux support to other modules
+  See also http://etbe.coker.com.au/2008/06/06/se-linux-support-gpg/
+
+* UTF-8 specific TODOs
+  None.
+
+* Manual
+** Document all gpgsm options.
+   
+
+* Pinpad Reader
+  We do not yet support P15 applications.  The trivial thing using
+  ASCII characters will be easy to implement but the other cases need
+  some more work.
+
+* Bugs
+
+
+* Howtos
+** Migrate OpenPGP keys to another system
+
+* Gpg-Agent Locale
+  Although we pass LC_MESSAGE from gpgsm et al. to Pinentry, this has
+  only an effect on the stock GTK strings (e.g. "OK") and not on any
+  strings gpg-agent generates and passes to Pinentry.  This defeats
+  our design goal to allow changing the locale without changing
+  gpg-agent's default locale (e.g. by the command updatestartuptty).
+
+* RFC 4387: Operational Protocols: Certificate Store Access via HTTP
+  Do we support this?
+

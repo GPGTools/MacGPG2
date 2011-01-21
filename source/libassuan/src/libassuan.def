@@ -1,0 +1,106 @@
+; assuan.def - List of symbols to export.
+; Copyright (C) 2005, 2009 g10 Code GmbH
+;
+; This file is part of ASSUAN.
+;
+; ASSUAN is free software; you can redistribute it and/or modify
+; it under the terms of the GNU Lesser general Public License as
+; published by the Free Software Foundation; either version 2.1 of
+; the License, or (at your option) any later version.
+;
+; ASSUAN is distributed in the hope that it will be useful,
+; but WITHOUT ANY WARRANTY; without even the implied warranty of
+; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+; GNU Lesser General Public License for more details.
+;
+; You should have received a copy of the GNU Lesser General Public
+; License along with this program; if not, write to the Free Software
+; Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+
+
+EXPORTS
+    assuan_accept			@1
+    assuan_begin_confidential		@2
+    assuan_close_input_fd		@3
+    assuan_close_output_fd		@4
+    assuan_command_parse_fd		@5
+    assuan_ctx_set_system_hooks		@6
+    assuan_end_confidential		@7
+    assuan_get_active_fds		@8
+    assuan_get_assuan_log_prefix	@9
+    assuan_get_command_name             @10
+    assuan_get_data_fp			@11
+    assuan_get_flag			@12  
+    assuan_get_gpg_err_source           @13
+    assuan_get_input_fd			@14  
+    assuan_get_log_cb                   @15
+    assuan_get_malloc_hooks             @16
+    assuan_get_output_fd		@17  
+    assuan_get_peercred			@18
+    assuan_get_pid			@19
+    assuan_get_pointer			@20
+    assuan_init_pipe_server		@21
+    assuan_init_socket_server		@22  
+    assuan_inquire			@23
+    assuan_inquire_ext			@24
+    assuan_new                          @25
+    assuan_new_ext                      @26
+    assuan_pending_line			@27
+    assuan_pipe_connect			@28
+    assuan_process			@29
+    assuan_process_done			@30
+    assuan_process_next			@31
+    assuan_read_line			@32
+    assuan_receivefd			@33
+    assuan_register_bye_notify		@34
+    assuan_register_cancel_notify	@35
+    assuan_register_command		@36
+    assuan_register_input_notify	@37
+    assuan_register_option_handler	@38
+    assuan_register_output_notify	@39
+    assuan_register_post_cmd_notify	@40
+    assuan_register_reset_notify	@41
+    assuan_release                      @42
+    assuan_send_data			@43
+    assuan_sendfd			@44
+    assuan_set_assuan_log_prefix	@45
+    assuan_set_assuan_log_stream	@46
+    assuan_set_error			@47
+    assuan_set_flag			@48
+    assuan_set_gpg_err_source           @49
+    assuan_set_hello_line		@50
+    assuan_set_io_monitor		@51
+    assuan_set_log_cb                   @52
+    assuan_set_log_stream		@53
+    assuan_set_malloc_hooks		@54
+    assuan_set_okay_line		@55
+    assuan_set_pointer			@56
+    assuan_set_system_hooks		@57
+    assuan_sock_bind			@58
+    assuan_sock_check_nonce		@59
+    assuan_sock_close			@60
+    assuan_sock_connect			@61
+    assuan_sock_deinit			@62
+    assuan_sock_get_nonce		@63
+    assuan_sock_init			@64
+    assuan_sock_new			@65
+    assuan_socket_connect		@66
+    assuan_transact			@67
+    assuan_write_line			@68
+    assuan_write_status			@69
+    __assuan_close			@70
+    __assuan_pipe			@71
+    __assuan_socketpair			@72
+    __assuan_spawn			@73
+    __assuan_usleep			@74
+    assuan_fdopen			@75
+    assuan_client_read_response		@76
+    assuan_client_parse_response	@77
+    assuan_set_sock_nonce               @78
+    _assuan_w32ce_create_pipe           @79
+    assuan_free                         @80
+    _assuan_w32ce_prepare_pipe          @81
+    _assuan_w32ce_finish_pipe           @82
+
+; END
+

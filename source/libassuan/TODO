@@ -1,0 +1,16 @@
+                                                           -*- outline -*-
+* More tests.
+* Check that we have Pth-ed all blocking fucntions.
+* Introduce a spawn wrapper program as gpgme has to not leak fds under W32.
+* assuan_transact returns immediately on an error in the callback
+  function.  It might be better to return the error to the caller. As
+  an example see dirmngr-client, where we need to send empty responses
+  for unknown inquiries, albeit dirmngr itself would handle the
+  returns for assuan_inquire gracefully.  We need to check all
+  applications whether it is safe to change this.
+* XOPEN_SOURCE and snprintf
+  See Peter O'Gorman's mail.
+
+* W32
+** Check what kind of fd we use with inbound.fd etc.
+

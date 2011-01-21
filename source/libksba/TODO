@@ -1,0 +1,63 @@
+                                                              -*- outline -*-
+
+* src/dn.c:
+
+** Check that error handling of bad utf-8 encoding is correct
+** There is an ambiguity in rfc2253.
+This is related to the handling of spaces around delimiters.  At one
+place it talks about whitespace and few lines later it talks about
+just the space characters which must be ignored.  How should that be
+solved?  This is only related to spaces at the beginning or end of a
+name part when old style quoting is not used.
+
+* src/der-decoder.c:  
+
+** should work on a stripped down parse tree
+
+** Allow to specify the desired top element.
+   Or a list so that it can detect the needed tree itself
+
+* src/der-encoder.c
+** Setting default values is missing
+** Tags > 31 are not supported.
+
+* src/asn1-*
+** Cleanup the used data structures and remove unneeded functions.
+** Think about a public API to the Asn functions.
+
+* src/cms*
+** split some stuff from cms.c into a new cms-build.c
+** can't handle CRL infos in certificates
+   This is not a problem within the Aegypten project as CRL aren't be
+   retrieved by online means.
+** cant't handle unprotected attributes
+   e.g. for counter signatures.  Not needed in Aegypten.
+
+
+* src/keyinfo.c
+** Do we need to support BER encoded stuff?
+
+* src/time.c
+** Allow for other timezones
+
+* src/reader.c
+** ksba_reader_unread limited to 100 bytes
+  Actually the reader is limited to 100 bytes over the first unread
+  size.  Easy to fix.
+
+* General
+** The ASN.1 parse tree is not released in all places
+** Some memory is not released in case of errors.
+
+* src/crl.c
+** certificateIssuer not supported
+  To support this we need to have an extended ksba_crl_get_item
+  function to either return the issuer or at least set a flag to
+  indicate that such an extension is available. If this new API is
+  used we will move detection of the critical certificateIssuer
+  extension into the old ksba_crl_get_item and bail out only there.
+  If the new version of that function is used there won't be a need to
+  bail out.  Example of a CRL using this extension:
+     http://pks.telesec.de/telesec/servlet/download_cr (2006-09-04).
+
+** Allow fetching of all entry extensions.

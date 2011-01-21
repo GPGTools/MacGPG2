@@ -1,0 +1,1290 @@
+@c Copyright (C) 2002 Free Software Foundation, Inc.
+@c This is part of the GnuPG manual.
+@c For copying conditions, see the file gnupg.texi.
+
+@c Note that we use this texinfo file for all versions of GnuPG: 
+@c 2.0 and 2.1.  The macro "gpgtwoone" controls parts which are only
+@c valid for GnuPG 2.1 and later.
+
+
+@node Invoking GPG-AGENT
+@chapter Invoking GPG-AGENT
+@cindex GPG-AGENT command options
+@cindex command options
+@cindex options, GPG-AGENT command
+
+@manpage gpg-agent.1
+@ifset manverb
+.B gpg-agent
+\- Secret key management for GnuPG
+@end ifset
+
+@mansect synopsis
+@ifset manverb
+.B  gpg-agent
+.RB [ \-\-homedir
+.IR dir ]
+.RB [ \-\-options
+.IR file ]
+.RI [ options ]  
+.br
+.B  gpg-agent
+.RB [ \-\-homedir
+.IR dir ]
+.RB [ \-\-options
+.IR file ]
+.RI [ options ]  
+.B  \-\-server 
+.br
+.B  gpg-agent
+.RB [ \-\-homedir
+.IR dir ]
+.RB [ \-\-options
+.IR file ]
+.RI [ options ]  
+.B  \-\-daemon 
+.RI [ command_line ]
+@end ifset
+
+@mansect description
+@command{gpg-agent} is a daemon to manage secret (private) keys
+independently from any protocol.  It is used as a backend for
+@command{gpg} and @command{gpgsm} as well as for a couple of other
+utilities.
+
+@ifset gpgtwoone
+The agent is usualy started on demand by @command{gpg}, @command{gpgsm},
+@command{gpgconf} or @command{gpg-connect-agent}.  Thus there is no
+reason to start it manually.  In case you want to use the included
+Secure Shell Agent you may start the agent using:
+
+@example
+gpg-connect-agent /bye
+@end example
+@end ifset
+
+@ifclear gpgtwoone
+@noindent
+The usual way to run the agent is from the @code{~/.xsession} file:
+
+@example
+eval $(gpg-agent --daemon)
+@end example
+@noindent
+If you don't use an X server, you can also put this into your regular
+startup file @code{~/.profile} or @code{.bash_profile}.  It is best not
+to run multiple instance of the @command{gpg-agent}, so you should make
+sure that only one is running: @command{gpg-agent} uses an environment
+variable to inform clients about the communication parameters. You can
+write the content of this environment variable to a file so that you can
+test for a running agent.  Here is an example using Bourne shell syntax:
+
+@smallexample
+gpg-agent --daemon --enable-ssh-support \
+          --write-env-file "$@{HOME@}/.gpg-agent-info"
+@end smallexample
+
+This code should only be run once per user session to initially fire up
+the agent.  In the example the optional support for the included Secure
+Shell agent is enabled and the information about the agent is written to
+a file in the HOME directory.  Note that by running gpg-agent without
+arguments you may test whether an agent is already running; however such
+a test may lead to a race condition, thus it is not suggested.
+
+@noindent
+The second script needs to be run for each interactive session:
+
+@smallexample
+if [ -f "$@{HOME@}/.gpg-agent-info" ]; then
+  . "$@{HOME@}/.gpg-agent-info"
+  export GPG_AGENT_INFO
+  export SSH_AUTH_SOCK
+fi
+@end smallexample
+
+@noindent
+It reads the data out of the file and exports the variables.  If you
+don't use Secure Shell, you don't need the last two export statements.
+@end ifclear
+ 
+@noindent
+You should always add the following lines to your @code{.bashrc} or
+whatever initialization file is used for all shell invocations:
+
+@smallexample
+GPG_TTY=$(tty)
+export GPG_TTY
+@end smallexample
+
+@noindent
+It is important that this environment variable always reflects the
+output of the @code{tty} command.  For W32 systems this option is not
+required.
+
+Please make sure that a proper pinentry program has been installed
+under the default filename (which is system dependant) or use the
+option @option{pinentry-program} to specify the full name of that program.
+It is often useful to install a symbolic link from the actual used
+pinentry (e.g. @file{/usr/bin/pinentry-gtk}) to the expected
+one (e.g. @file{/usr/bin/pinentry}).
+
+@manpause
+@noindent
+@xref{Option Index},for an index to @command{GPG-AGENT}'s commands and options.
+@mancont
+
+@menu
+* Agent Commands::      List of all commands.
+* Agent Options::       List of all options.
+* Agent Configuration:: Configuration files.
+* Agent Signals::       Use of some signals.
+* Agent Examples::      Some usage examples.
+* Agent Protocol::      The protocol the agent uses.
+@end menu
+
+@mansect commands
+@node Agent Commands
+@section Commands
+
+Commands are not distinguished from options except for the fact that
+only one command is allowed.
+
+@table @gnupgtabopt
+@item --version
+@opindex version
+Print the program version and licensing information.  Note that you cannot
+abbreviate this command.
+
+@item --help
+@itemx -h
+@opindex help
+Print a usage message summarizing the most useful command-line options.
+Note that you cannot abbreviate this command.
+
+@item --dump-options
+@opindex dump-options
+Print a list of all available options and commands.  Note that you cannot
+abbreviate this command.
+
+@item --server
+@opindex server
+Run in server mode and wait for commands on the @code{stdin}.  The
+default mode is to create a socket and listen for commands there.
+
+@item --daemon [@var{command line}]
+@opindex daemon
+Start the gpg-agent as a daemon; that is, detach it from the console
+and run it in the background.  Because @command{gpg-agent} prints out
+important information required for further use, a common way of
+invoking gpg-agent is: @code{eval $(gpg-agent --daemon)} to setup the
+environment variables.  The option @option{--write-env-file} is
+another way commonly used to do this.  Yet another way is creating
+a new process as a child of gpg-agent: @code{gpg-agent --daemon
+/bin/sh}.  This way you get a new shell with the environment setup
+properly; if you exit from this shell, gpg-agent terminates as well.
+@end table
+
+@mansect options
+@node Agent Options
+@section Option Summary
+
+@table @gnupgtabopt
+
+@anchor{option --options}
+@item --options @var{file}
+@opindex options
+Reads configuration from @var{file} instead of from the default
+per-user configuration file.  The default configuration file is named
+@file{gpg-agent.conf} and expected in the @file{.gnupg} directory directly
+below the home directory of the user.
+
+@anchor{option --homedir}
+@include opt-homedir.texi
+
+
+@item -v
+@item --verbose
+@opindex v
+@opindex verbose
+Outputs additional information while running.
+You can increase the verbosity by giving several
+verbose commands to @command{gpgsm}, such as @samp{-vv}.
+
+@item -q
+@item --quiet
+@opindex q
+@opindex quiet
+Try to be as quiet as possible.
+
+@item --batch
+@opindex batch
+Don't invoke a pinentry or do any other thing requiring human interaction.
+
+@item --faked-system-time @var{epoch}
+@opindex faked-system-time
+This option is only useful for testing; it sets the system time back or
+forth to @var{epoch} which is the number of seconds elapsed since the year
+1970.
+
+@item --debug-level @var{level}
+@opindex debug-level
+Select the debug level for investigating problems. @var{level} may be
+a numeric value or a keyword:
+
+@table @code
+@item none
+No debugging at all.  A value of less than 1 may be used instead of
+the keyword.
+@item basic  
+Some basic debug messages.  A value between 1 and 2 may be used
+instead of the keyword.
+@item advanced
+More verbose debug messages.  A value between 3 and 5 may be used
+instead of the keyword.
+@item expert
+Even more detailed messages.  A value between 6 and 8 may be used
+instead of the keyword.
+@item guru
+All of the debug messages you can get. A value greater than 8 may be
+used instead of the keyword.  The creation of hash tracing files is
+only enabled if the keyword is used.
+@end table
+
+How these messages are mapped to the actual debugging flags is not
+specified and may change with newer releases of this program. They are
+however carefully selected to best aid in debugging.
+
+@item --debug @var{flags}
+@opindex debug
+This option is only useful for debugging and the behaviour may change at
+any time without notice.  FLAGS are bit encoded and may be given in
+usual C-Syntax. The currently defined bits are:
+
+@table @code
+@item 0  (1)
+X.509 or OpenPGP protocol related data
+@item 1  (2)  
+values of big number integers 
+@item 2  (4)
+low level crypto operations
+@item 5  (32)
+memory allocation
+@item 6  (64)
+caching
+@item 7  (128)
+show memory statistics.
+@item 9  (512)
+write hashed data to files named @code{dbgmd-000*}
+@item 10 (1024)
+trace Assuan protocol
+@item 12 (4096)
+bypass all certificate validation
+@end table
+
+@item --debug-all
+@opindex debug-all
+Same as @code{--debug=0xffffffff}
+
+@item --debug-wait @var{n}
+@opindex debug-wait
+When running in server mode, wait @var{n} seconds before entering the
+actual processing loop and print the pid.  This gives time to attach a
+debugger.
+
+@item --no-detach
+@opindex no-detach
+Don't detach the process from the console.  This is mainly useful for
+debugging.
+
+@item -s
+@itemx --sh
+@itemx -c
+@itemx --csh
+@opindex s
+@opindex sh
+@opindex c
+@opindex csh
+Format the info output in daemon mode for use with the standard Bourne
+shell or the C-shell respectively.  The default is to guess it based on
+the environment variable @code{SHELL} which is correct in almost all
+cases.
+
+@item --write-env-file @var{file}
+@opindex write-env-file
+Often it is required to connect to the agent from a process not being an
+inferior of @command{gpg-agent} and thus the environment variable with
+the socket name is not available.  To help setting up those variables in
+other sessions, this option may be used to write the information into
+@var{file}.  If @var{file} is not specified the default name
+@file{$@{HOME@}/.gpg-agent-info} will be used.  The format is suitable
+to be evaluated by a Bourne shell like in this simple example:
+
+@example
+eval $(cat @var{file})
+eval $(cut -d= -f 1 < @var{file} | xargs echo export)
+@end example
+
+
+
+@item --no-grab
+@opindex no-grab
+Tell the pinentry not to grab the keyboard and mouse.  This option
+should in general not be used to avoid X-sniffing attacks.
+
+@anchor{option --log-file}
+@item --log-file @var{file}
+@opindex log-file
+Append all logging output to @var{file}.  This is very helpful in seeing
+what the agent actually does.  If neither a log file nor a log file
+descriptor has been set on a Windows platform, the Registry entry
+@code{HKCU\Software\GNU\GnuPG:DefaultLogFile}, if set, is used to specify
+the logging output.
+
+
+@anchor{option --allow-mark-trusted}
+@item --allow-mark-trusted
+@opindex allow-mark-trusted
+Allow clients to mark keys as trusted, i.e. put them into the
+@file{trustlist.txt} file.  This is by default not allowed to make it
+harder for users to inadvertently accept Root-CA keys.
+
+@item --ignore-cache-for-signing
+@opindex ignore-cache-for-signing
+This option will let @command{gpg-agent} bypass the passphrase cache for all
+signing operation.  Note that there is also a per-session option to
+control this behaviour but this command line option takes precedence.
+
+@item --default-cache-ttl @var{n}
+@opindex default-cache-ttl
+Set the time a cache entry is valid to @var{n} seconds.  The default is
+600 seconds.
+
+@item --default-cache-ttl-ssh @var{n}
+@opindex default-cache-ttl
+Set the time a cache entry used for SSH keys is valid to @var{n}
+seconds.  The default is 1800 seconds.
+
+@item --max-cache-ttl @var{n}
+@opindex max-cache-ttl
+Set the maximum time a cache entry is valid to @var{n} seconds.  After
+this time a cache entry will be expired even if it has been accessed
+recently.  The default is 2 hours (7200 seconds).
+
+@item --max-cache-ttl-ssh @var{n}
+@opindex max-cache-ttl-ssh
+Set the maximum time a cache entry used for SSH keys is valid to @var{n}
+seconds.  After this time a cache entry will be expired even if it has
+been accessed recently.  The default is 2 hours (7200 seconds).
+
+@item --enforce-passphrase-constraints
+@opindex enforce-passphrase-constraints
+Enforce the passphrase constraints by not allowing the user to bypass
+them using the ``Take it anyway'' button.
+
+@item --min-passphrase-len @var{n}
+@opindex min-passphrase-len
+Set the minimal length of a passphrase.  When entering a new passphrase
+shorter than this value a warning will be displayed.  Defaults to 8.
+
+@item --min-passphrase-nonalpha @var{n}
+@opindex min-passphrase-nonalpha
+Set the minimal number of digits or special characters required in a
+passphrase.  When entering a new passphrase with less than this number
+of digits or special characters a warning will be displayed.  Defaults
+to 1.
+
+@item --check-passphrase-pattern @var{file}
+@opindex check-passphrase-pattern
+Check the passphrase against the pattern given in @var{file}.  When
+entering a new passphrase matching one of these pattern a warning will
+be displayed. @var{file} should be an absolute filename.  The default is
+not to use any pattern file. 
+
+Security note: It is known that checking a passphrase against a list of
+pattern or even against a complete dictionary is not very effective to
+enforce good passphrases.  Users will soon figure up ways to bypass such
+a policy.  A better policy is to educate users on good security
+behavior and optionally to run a passphrase cracker regularly on all
+users passphrases to catch the very simple ones.
+
+@item --max-passphrase-days @var{n}
+@opindex max-passphrase-days 
+Ask the user to change the passphrase if @var{n} days have passed since
+the last change.  With @option{--enforce-passphrase-constraints} set the
+user may not bypass this check.
+
+@item --enable-passphrase-history
+@opindex enable-passphrase-history
+This option does nothing yet.
+
+@item --pinentry-program @var{filename}
+@opindex pinentry-program
+Use program @var{filename} as the PIN entry.  The default is installation
+dependent.
+
+@item --pinentry-touch-file @var{filename}
+@opindex pinentry-touch-file
+By default the filename of the socket gpg-agent is listening for
+requests is passed to Pinentry, so that it can touch that file before
+exiting (it does this only in curses mode).  This option changes the
+file passed to Pinentry to @var{filename}.  The special name
+@code{/dev/null} may be used to completely disable this feature.  Note
+that Pinentry will not create that file, it will only change the
+modification and access time.
+
+
+@item --scdaemon-program @var{filename}
+@opindex scdaemon-program
+Use program @var{filename} as the Smartcard daemon.  The default is
+installation dependent and can be shown with the @command{gpgconf}
+command.
+
+@item --disable-scdaemon
+@opindex disable-scdaemon
+Do not make use of the scdaemon tool.  This option has the effect of
+disabling the ability to do smartcard operations.  Note, that enabling
+this option at runtime does not kill an already forked scdaemon.
+
+@item --use-standard-socket
+@itemx --no-use-standard-socket
+@opindex use-standard-socket
+@opindex no-use-standard-socket
+By enabling this option @command{gpg-agent} will listen on the socket
+named @file{S.gpg-agent}, located in the home directory, and not create
+a random socket below a temporary directory.  Tools connecting to
+@command{gpg-agent} should first try to connect to the socket given in
+environment variable @var{GPG_AGENT_INFO} and then fall back to this
+socket.  This option may not be used if the home directory is mounted on
+a remote file system which does not support special files like fifos or
+sockets.
+@ifset gpgtwoone
+Note, that @option{--use-standard-socket} is the default on all
+systems since GnuPG 2.1.
+@end ifset
+@ifclear gpgtwoone
+Note, that @option{--use-standard-socket} is the default on
+Windows systems.
+@end ifclear
+The default may be changed at build time.  It is
+possible to test at runtime whether the agent has been configured for
+use with the standard socket by issuing the command @command{gpg-agent
+--use-standard-socket-p} which returns success if the standard socket
+option has been enabled.
+
+@item --display @var{string}
+@itemx --ttyname @var{string}
+@itemx --ttytype @var{string}
+@itemx --lc-ctype @var{string}
+@itemx --lc-messages @var{string}
+@itemx --xauthority @var{string}
+@opindex display 
+@opindex ttyname 
+@opindex ttytype 
+@opindex lc-ctype 
+@opindex lc-messages
+@opindex xauthority
+These options are used with the server mode to pass localization
+information.
+
+@item --keep-tty
+@itemx --keep-display
+@opindex keep-tty
+@opindex keep-display
+Ignore requests to change the current @code{tty} or X window system's
+@code{DISPLAY} variable respectively.  This is useful to lock the
+pinentry to pop up at the @code{tty} or display you started the agent.
+
+@anchor{option --enable-ssh-support}
+@item --enable-ssh-support
+@opindex enable-ssh-support
+
+Enable the OpenSSH Agent protocol.
+
+In this mode of operation, the agent does not only implement the
+gpg-agent protocol, but also the agent protocol used by OpenSSH
+(through a separate socket).  Consequently, it should be possible to use
+the gpg-agent as a drop-in replacement for the well known ssh-agent.
+
+SSH Keys, which are to be used through the agent, need to be added to
+the gpg-agent initially through the ssh-add utility.  When a key is
+added, ssh-add will ask for the password of the provided key file and
+send the unprotected key material to the agent; this causes the
+gpg-agent to ask for a passphrase, which is to be used for encrypting
+the newly received key and storing it in a gpg-agent specific
+directory.
+
+Once a key has been added to the gpg-agent this way, the gpg-agent
+will be ready to use the key.
+
+Note: in case the gpg-agent receives a signature request, the user might
+need to be prompted for a passphrase, which is necessary for decrypting
+the stored key.  Since the ssh-agent protocol does not contain a
+mechanism for telling the agent on which display/terminal it is running,
+gpg-agent's ssh-support will use the TTY or X display where gpg-agent
+has been started.  To switch this display to the current one, the
+following command may be used:
+
+@smallexample
+gpg-connect-agent updatestartuptty /bye
+@end smallexample
+
+Although all GnuPG components try to start the gpg-agent as needed, this
+is not possible for the ssh support because ssh does not know about it.
+Thus if no GnuPG tool which accesses the agent has been run, there is no
+guarantee that ssh is abale to use gpg-agent for authentication.  To fix
+this you may start gpg-agent if needed using this simple command:
+
+@smallexample
+gpg-connect-agent /bye
+@end smallexample
+
+Adding the @option{--verbose} shows the progress of starting the agent.
+
+@end table
+
+All the long options may also be given in the configuration file after
+stripping off the two leading dashes.
+
+
+@mansect files
+@node Agent Configuration
+@section Configuration
+
+There are a few configuration files needed for the operation of the
+agent. By default they may all be found in the current home directory
+(@pxref{option --homedir}).
+
+@table @file
+
+@item gpg-agent.conf
+@cindex gpg-agent.conf
+  This is the standard configuration file read by @command{gpg-agent} on
+  startup.  It may contain any valid long option; the leading
+  two dashes may not be entered and the option may not be abbreviated.
+  This file is also read after a @code{SIGHUP} however only a few
+  options will actually have an effect.  This default name may be
+  changed on the command line (@pxref{option --options}).  
+  You should backup this file.
+
+@item trustlist.txt
+  This is the list of trusted keys.  You should backup this file.
+
+  Comment lines, indicated by a leading hash mark, as well as empty
+  lines are ignored.  To mark a key as trusted you need to enter its
+  fingerprint followed by a space and a capital letter @code{S}.  Colons
+  may optionally be used to separate the bytes of a fingerprint; this
+  allows to cut and paste the fingerprint from a key listing output.  If
+  the line is prefixed with a @code{!} the key is explicitly marked as
+  not trusted.
+  
+  Here is an example where two keys are marked as ultimately trusted
+  and one as not trusted:
+  
+  @example
+  # CN=Wurzel ZS 3,O=Intevation GmbH,C=DE
+  A6935DD34EF3087973C706FC311AA2CCF733765B S
+  
+  # CN=PCA-1-Verwaltung-02/O=PKI-1-Verwaltung/C=DE
+  DC:BD:69:25:48:BD:BB:7E:31:6E:BB:80:D3:00:80:35:D4:F8:A6:CD S 
+
+  # CN=Root-CA/O=Schlapphuete/L=Pullach/C=DE
+  !14:56:98:D3:FE:9C:CA:5A:31:6E:BC:81:D3:11:4E:00:90:A3:44:C2 S
+  @end example
+  
+Before entering a key into this file, you need to ensure its
+authenticity.  How to do this depends on your organisation; your
+administrator might have already entered those keys which are deemed
+trustworthy enough into this file.  Places where to look for the
+fingerprint of a root certificate are letters received from the CA or
+the website of the CA (after making 100% sure that this is indeed the
+website of that CA).  You may want to consider allowing interactive
+updates of this file by using the @xref{option --allow-mark-trusted}.
+This is however not as secure as maintaining this file manually.  It is
+even advisable to change the permissions to read-only so that this file
+can't be changed inadvertently.
+
+As a special feature a line @code{include-default} will include a global
+list of trusted certificates (e.g. @file{/etc/gnupg/trustlist.txt}).
+This global list is also used if the local list is not available.
+
+It is possible to add further flags after the @code{S} for use by the
+caller:
+
+@table @code
+
+@item relax
+@cindex relax
+Relax checking of some root certificate requirements.  As of now this
+flag allows the use of root certificates with a missing basicConstraints
+attribute (despite that it is a MUST for CA certificates) and disables
+CRL checking for the root certificate.
+
+@item cm
+If validation of a certificate finally issued by a CA with this flag set
+fails, try again using the chain validation model.
+
+@end table
+
+  
+@item sshcontrol
+@cindex sshcontrol
+This file is used when support for the secure shell agent protocol has
+been enabled (@pxref{option --enable-ssh-support}). Only keys present in
+this file are used in the SSH protocol.  You should backup this file.
+
+The @command{ssh-add} tool may be used to add new entries to this file;
+you may also add them manually.  Comment lines, indicated by a leading
+hash mark, as well as empty lines are ignored.  An entry starts with
+optional whitespace, followed by the keygrip of the key given as 40 hex
+digits, optionally followed by the caching TTL in seconds and another
+optional field for arbitrary flags.  A non-zero TTL overrides the global
+default as set by @option{--default-cache-ttl-ssh}.
+
+The keygrip may be prefixed with a @code{!} to disable an entry entry.
+    
+The following example lists exactly one key.  Note that keys available
+through a OpenPGP smartcard in the active smartcard reader are
+implicitly added to this list; i.e. there is no need to list them.
+  
+  @example
+  # Key added on 2005-02-25 15:08:29
+  5A6592BF45DC73BD876874A28FD4639282E29B52 0
+  @end example
+
+@item private-keys-v1.d/
+
+  This is the directory where gpg-agent stores the private keys.  Each
+  key is stored in a file with the name made up of the keygrip and the
+  suffix @file{key}.  You should backup all files in this directory
+  and take great care to keep this backup closed away.
+
+
+@end table
+
+Note that on larger installations, it is useful to put predefined
+files into the directory @file{/etc/skel/.gnupg/} so that newly created
+users start up with a working configuration.  For existing users the
+a small helper script is provided to create these files (@pxref{addgnupghome}).
+
+
+
+@c
+@c Agent Signals
+@c
+@mansect signals
+@node Agent Signals
+@section Use of some signals.
+A running @command{gpg-agent} may be controlled by signals, i.e. using
+the @command{kill} command to send a signal to the process. 
+
+Here is a list of supported signals:
+
+@table @gnupgtabopt
+
+@item SIGHUP
+@cpindex SIGHUP
+This signal flushes all cached passphrases and if the program has been
+started with a configuration file, the configuration file is read again.
+Only certain options are honored: @code{quiet}, @code{verbose},
+@code{debug}, @code{debug-all}, @code{debug-level}, @code{no-grab},
+@code{pinentry-program}, @code{default-cache-ttl}, @code{max-cache-ttl},
+@code{ignore-cache-for-signing}, @code{allow-mark-trusted} and
+@code{disable-scdaemon}.  @code{scdaemon-program} is also supported but
+due to the current implementation, which calls the scdaemon only once,
+it is not of much use unless you manually kill the scdaemon.
+
+
+@item SIGTERM
+@cpindex SIGTERM
+Shuts down the process but waits until all current requests are
+fulfilled.  If the process has received 3 of these signals and requests
+are still pending, a shutdown is forced.
+
+@item SIGINT
+@cpindex SIGINT
+Shuts down the process immediately.
+
+@item SIGUSR1
+@cpindex SIGUSR1
+Dump internal information to the log file.
+
+@item SIGUSR2
+@cpindex SIGUSR2
+This signal is used for internal purposes.
+
+@end table
+
+@c 
+@c  Examples
+@c
+@mansect examples
+@node Agent Examples
+@section Examples
+
+The usual way to invoke @command{gpg-agent} is
+
+@example
+$ eval $(gpg-agent --daemon)
+@end example
+
+An alternative way is by replacing @command{ssh-agent} with
+@command{gpg-agent}.  If for example @command{ssh-agent} is started as
+part of the Xsession initialization, you may simply replace
+@command{ssh-agent} by a script like:
+
+@cartouche
+@example
+#!/bin/sh
+
+exec /usr/local/bin/gpg-agent --enable-ssh-support --daemon \
+      --write-env-file $@{HOME@}/.gpg-agent-info "$@@"
+@end example
+@end cartouche
+
+@noindent
+and add something like (for Bourne shells)
+
+@cartouche
+@example
+  if [ -f "$@{HOME@}/.gpg-agent-info" ]; then
+    . "$@{HOME@}/.gpg-agent-info"
+    export GPG_AGENT_INFO
+    export SSH_AUTH_SOCK
+  fi
+@end example
+@end cartouche
+
+@noindent
+to your shell initialization file (e.g. @file{~/.bashrc}).
+
+@c 
+@c  Assuan Protocol
+@c
+@manpause
+@node Agent Protocol
+@section Agent's Assuan Protocol
+
+Note: this section does only document the protocol, which is used by
+GnuPG components; it does not deal with the ssh-agent protocol.
+
+The @command{gpg-agent} should be started by the login shell and set an
+environment variable to tell clients about the socket to be used.
+Clients should deny to access an agent with a socket name which does
+not match its own configuration.  An application may choose to start
+an instance of the gpgagent if it does not figure that any has been
+started; it should not do this if a gpgagent is running but not
+usable.  Because @command{gpg-agent} can only be used in background mode, no
+special command line option is required to activate the use of the
+protocol.
+
+To identify a key we use a thing called keygrip which is the SHA-1 hash
+of an canonical encoded S-Expression of the public key as used in
+Libgcrypt.  For the purpose of this interface the keygrip is given as a
+hex string.  The advantage of using this and not the hash of a
+certificate is that it will be possible to use the same keypair for
+different protocols, thereby saving space on the token used to keep the
+secret keys.
+
+@menu
+* Agent PKDECRYPT::       Decrypting a session key
+* Agent PKSIGN::          Signing a Hash
+* Agent GENKEY::          Generating a Key
+* Agent IMPORT::          Importing a Secret Key
+* Agent EXPORT::          Exporting a Secret Key
+* Agent ISTRUSTED::       Importing a Root Certificate
+* Agent GET_PASSPHRASE::  Ask for a passphrase
+* Agent GET_CONFIRMATION:: Ask for confirmation
+* Agent HAVEKEY::         Check whether a key is available
+* Agent LEARN::           Register a smartcard
+* Agent PASSWD::          Change a Passphrase
+* Agent UPDATESTARTUPTTY:: Change the Standard Display
+* Agent GETEVENTCOUNTER:: Get the Event Counters
+* Agent GETINFO::         Return information about the process
+@end menu
+
+@node Agent PKDECRYPT
+@subsection Decrypting a session key
+
+The client asks the server to decrypt a session key.  The encrypted
+session key should have all information needed to select the
+appropriate secret key or to delegate it to a smartcard.
+
+@example
+  SETKEY <keyGrip>
+@end example
+
+Tell the server about the key to be used for decryption.  If this is
+not used, @command{gpg-agent} may try to figure out the key by trying to
+decrypt the message with each key available.
+
+@example
+  PKDECRYPT
+@end example
+
+The agent checks whether this command is allowed and then does an
+INQUIRY to get the ciphertext the client should then send the cipher
+text.
+
+@example
+    S: INQUIRE CIPHERTEXT
+    C: D (xxxxxx
+    C: D xxxx)
+    C: END
+@end example
+    
+Please note that the server may send status info lines while reading the
+data lines from the client.  The data send is a SPKI like S-Exp with
+this structure:
+
+@example
+     (enc-val   
+       (<algo>
+         (<param_name1> <mpi>)
+ 	   ...
+         (<param_namen> <mpi>)))
+@end example
+
+Where algo is a string with the name of the algorithm; see the libgcrypt
+documentation for a list of valid algorithms.  The number and names of
+the parameters depend on the algorithm.  The agent does return an error
+if there is an inconsistency.
+
+If the decryption was successful the decrypted data is returned by
+means of "D" lines. 
+
+Here is an example session:
+
+@example
+   C: PKDECRYPT
+   S: INQUIRE CIPHERTEXT
+   C: D (enc-val elg (a 349324324) 
+   C: D    (b 3F444677CA)))
+   C: END
+   S: # session key follows
+   S: D (value 1234567890ABCDEF0)
+   S: OK descryption successful
+@end example         
+
+
+@node Agent PKSIGN
+@subsection Signing a Hash
+
+The client ask the agent to sign a given hash value.  A default key
+will be chosen if no key has been set.  To set a key a client first
+uses:
+
+@example
+   SIGKEY <keyGrip>
+@end example
+
+This can be used multiple times to create multiple signature, the list
+of keys is reset with the next PKSIGN command or a RESET.  The server
+test whether the key is a valid key to sign something and responds with
+okay.
+
+@example
+   SETHASH --hash=<name>|<algo> <hexstring>
+@end example
+
+The client can use this command to tell the server about the data <hexstring>
+(which usually is a hash) to be signed. <algo> is the decimal encoded hash
+algorithm number as used by Libgcrypt.  Either <algo> or --hash=<name>
+must be given.  Valid names for <name> are:
+
+@table @code
+@item sha1
+@item sha256
+@item rmd160
+@item md5
+@item tls-md5sha1
+@end table
+
+@noindent
+The actual signing is done using
+
+@example
+   PKSIGN <options>
+@end example
+
+Options are not yet defined, but my later be used to choose among
+different algorithms.  The agent does then some checks, asks for the
+passphrase and as a result the server returns the signature as an SPKI
+like S-expression in "D" lines:
+
+@example  
+     (sig-val   
+       (<algo>
+         (<param_name1> <mpi>)
+ 	   ...
+         (<param_namen> <mpi>)))
+@end example
+
+
+The operation is affected by the option
+
+@example
+   OPTION use-cache-for-signing=0|1
+@end example
+
+The default of @code{1} uses the cache.  Setting this option to @code{0}
+will lead @command{gpg-agent} to ignore the passphrase cache.  Note, that there is
+also a global command line option for @command{gpg-agent} to globally disable the
+caching.
+
+
+Here is an example session:
+
+@example
+   C: SIGKEY <keyGrip>
+   S: OK key available
+   C: SIGKEY <keyGrip>
+   S: OK key available
+   C: PKSIGN
+   S: # I did ask the user whether he really wants to sign
+   S: # I did ask the user for the passphrase
+   S: INQUIRE HASHVAL
+   C: D ABCDEF012345678901234
+   C: END
+   S: # signature follows
+   S: D (sig-val rsa (s 45435453654612121212))
+   S: OK
+@end example
+
+
+@node Agent GENKEY
+@subsection Generating a Key
+
+This is used to create a new keypair and store the secret key inside the
+active PSE --- which is in most cases a Soft-PSE.  An not yet defined
+option allows to choose the storage location.  To get the secret key out
+of the PSE, a special export tool has to be used.
+
+@example
+   GENKEY 
+@end example
+
+Invokes the key generation process and the server will then inquire
+on the generation parameters, like:
+
+@example
+   S: INQUIRE KEYPARM
+   C: D (genkey (rsa (nbits  1024)))
+   C: END
+@end example
+
+The format of the key parameters which depends on the algorithm is of
+the form:
+
+@example
+    (genkey
+      (algo
+        (parameter_name_1 ....)
+          ....
+        (parameter_name_n ....)))
+@end example
+
+If everything succeeds, the server returns the *public key* in a SPKI
+like S-Expression like this:
+
+@example
+     (public-key
+       (rsa
+ 	 (n <mpi>)
+ 	 (e <mpi>)))
+@end example
+
+Here is an example session:
+
+@example
+   C: GENKEY
+   S: INQUIRE KEYPARM
+   C: D (genkey (rsa (nbits  1024)))
+   C: END
+   S: D (public-key
+   S: D   (rsa (n 326487324683264) (e 10001)))
+   S  OK key created
+@end example
+
+@node Agent IMPORT
+@subsection Importing a Secret Key
+
+This operation is not yet supported by GpgAgent.  Specialized tools
+are to be used for this.
+
+There is no actual need because we can expect that secret keys
+created by a 3rd party are stored on a smartcard.  If we have
+generated the key ourself, we do not need to import it.
+
+@node Agent EXPORT
+@subsection Export a Secret Key
+
+Not implemented.
+
+Should be done by an extra tool.
+
+@node Agent ISTRUSTED
+@subsection Importing a Root Certificate
+
+Actually we do not import a Root Cert but provide a way to validate
+any piece of data by storing its Hash along with a description and
+an identifier in the PSE.  Here is the interface description:
+
+@example
+    ISTRUSTED <fingerprint>
+@end example
+
+Check whether the OpenPGP primary key or the X.509 certificate with the
+given fingerprint is an ultimately trusted key or a trusted Root CA
+certificate.  The fingerprint should be given as a hexstring (without
+any blanks or colons or whatever in between) and may be left padded with
+00 in case of an MD5 fingerprint.  GPGAgent will answer with:
+
+@example
+    OK
+@end example
+
+The key is in the table of trusted keys.
+
+@example
+    ERR 304 (Not Trusted)
+@end example
+
+The key is not in this table.
+
+Gpg needs the entire list of trusted keys to maintain the web of
+trust; the following command is therefore quite helpful:
+
+@example
+    LISTTRUSTED
+@end example
+
+GpgAgent returns a list of trusted keys line by line:
+
+@example
+    S: D 000000001234454556565656677878AF2F1ECCFF P
+    S: D 340387563485634856435645634856438576457A P
+    S: D FEDC6532453745367FD83474357495743757435D S
+    S: OK
+@end example
+
+The first item on a line is the hexified fingerprint where MD5
+fingerprints are @code{00} padded to the left and the second item is a
+flag to indicate the type of key (so that gpg is able to only take care
+of PGP keys).  P = OpenPGP, S = S/MIME.  A client should ignore the rest
+of the line, so that we can extend the format in the future.
+
+Finally a client should be able to mark a key as trusted:
+
+@example
+   MARKTRUSTED @var{fingerprint} "P"|"S"
+@end example
+
+The server will then pop up a window to ask the user whether she
+really trusts this key. For this it will probably ask for a text to
+be displayed like this:
+
+@example
+   S: INQUIRE TRUSTDESC
+   C: D Do you trust the key with the fingerprint @@FPR@@
+   C: D bla fasel blurb.
+   C: END
+   S: OK
+@end example
+
+Known sequences with the pattern @@foo@@ are replaced according to this
+table:
+
+@table @code
+@item @@FPR16@@ 
+Format the fingerprint according to gpg rules for a v3 keys.
+@item @@FPR20@@ 
+Format the fingerprint according to gpg rules for a v4 keys.
+@item @@FPR@@
+Choose an appropriate format to format the fingerprint.
+@item @@@@ 
+Replaced by a single @code{@@}
+@end table
+
+@node Agent GET_PASSPHRASE
+@subsection Ask for a passphrase
+
+This function is usually used to ask for a passphrase to be used for
+conventional encryption, but may also be used by programs which need
+special handling of passphrases.  This command uses a syntax which helps
+clients to use the agent with minimum effort.
+
+@example
+  GET_PASSPHRASE [--data] [--check] [--no-ask] [--repeat[=N]] [--qualitybar] @var{cache_id} [@var{error_message} @var{prompt} @var{description}]
+@end example
+
+@var{cache_id} is expected to be a string used to identify a cached
+passphrase.  Use a @code{X} to bypass the cache.  With no other
+arguments the agent returns a cached passphrase or an error.  By
+convention either the hexified fingerprint of the key shall be used for
+@var{cache_id} or an arbitrary string prefixed with the name of the
+calling application and a colon: Like @code{gpg:somestring}.
+  
+@var{error_message} is either a single @code{X} for no error message or
+a string to be shown as an error message like (e.g. "invalid
+passphrase").  Blanks must be percent escaped or replaced by @code{+}'.
+
+@var{prompt} is either a single @code{X} for a default prompt or the
+text to be shown as the prompt.  Blanks must be percent escaped or
+replaced by @code{+}.
+
+@var{description} is a text shown above the entry field.  Blanks must be
+percent escaped or replaced by @code{+}.
+
+The agent either returns with an error or with a OK followed by the hex
+encoded passphrase.  Note that the length of the strings is implicitly
+limited by the maximum length of a command.  If the option
+@option{--data} is used, the passphrase is not returned on the OK line
+but by regular data lines; this is the preferred method.
+
+If the option @option{--check} is used, the standard passphrase
+constraints checks are applied.  A check is not done if the passphrase
+has been found in the cache.
+
+If the option @option{--no-ask} is used and the passphrase is not in the
+cache the user will not be asked to enter a passphrase but the error
+code @code{GPG_ERR_NO_DATA} is returned.  
+
+If the option @option{--qualitybar} is used and a minimum passphrase
+length has been configured, a visual indication of the entered
+passphrase quality is shown.
+
+@example
+  CLEAR_PASSPHRASE @var{cache_id}
+@end example
+
+may be used to invalidate the cache entry for a passphrase.  The
+function returns with OK even when there is no cached passphrase.
+
+
+@node Agent GET_CONFIRMATION
+@subsection Ask for confirmation
+
+This command may be used to ask for a simple confirmation by
+presenting a text and 2 buttons: Okay and Cancel.
+
+@example
+  GET_CONFIRMATION @var{description}
+@end example
+
+@var{description}is displayed along with a Okay and Cancel
+button. Blanks must be percent escaped or replaced by @code{+}.  A
+@code{X} may be used to display confirmation dialog with a default
+text.
+
+The agent either returns with an error or with a OK.  Note, that the
+length of @var{description} is implicitly limited by the maximum
+length of a command.
+
+
+
+@node Agent HAVEKEY
+@subsection Check whether a key is available
+
+This can be used to see whether a secret key is available.  It does
+not return any information on whether the key is somehow protected.
+
+@example
+  HAVEKEY @var{keygrips}
+@end example
+
+The agent answers either with OK or @code{No_Secret_Key} (208).  The
+caller may want to check for other error codes as well.  More than one
+keygrip may be given.  In this case the command returns success if at
+least one of the keygrips corresponds to an available secret key.
+
+
+@node Agent LEARN
+@subsection Register a smartcard
+
+@example
+  LEARN [--send]
+@end example
+
+This command is used to register a smartcard.  With the --send
+option given the certificates are send back.
+
+
+@node Agent PASSWD
+@subsection Change a Passphrase
+
+@example
+  PASSWD @var{keygrip}
+@end example
+
+This command is used to interactively change the passphrase of the key
+identified by the hex string @var{keygrip}.
+
+
+@node Agent UPDATESTARTUPTTY
+@subsection Change the standard display
+
+@example
+  UPDATESTARTUPTTY
+@end example
+
+Set the startup TTY and X-DISPLAY variables to the values of this
+session.  This command is useful to direct future pinentry invocations
+to another screen.  It is only required because there is no way in the
+ssh-agent protocol to convey this information.
+
+
+@node Agent GETEVENTCOUNTER
+@subsection Get the Event Counters
+
+@example
+  GETEVENTCOUNTER
+@end example
+
+This function return one status line with the current values of the
+event counters.  The event counters are useful to avoid polling by
+delaying a poll until something has changed.  The values are decimal
+numbers in the range @code{0} to @code{UINT_MAX} and wrapping around to
+0.  The actual values should not be relied upon; they shall only be used
+to detect a change.
+
+The currently defined counters are are:
+@table @code
+@item ANY
+Incremented with any change of any of the other counters.
+@item KEY
+Incremented for added or removed private keys.
+@item CARD
+Incremented for changes of the card readers stati.
+@end table
+
+@node Agent GETINFO
+@subsection  Return information about the process
+
+This is a multipurpose function to return a variety of information.
+
+@example
+GETINFO @var{what}
+@end example
+
+The value of @var{what} specifies the kind of information returned:
+@table @code
+@item version
+Return the version of the program.
+@item pid
+Return the process id of the process.
+@item socket_name
+Return the name of the socket used to connect the agent.
+@item ssh_socket_name
+Return the name of the socket used for SSH connections.  If SSH support
+has not been enabled the error @code{GPG_ERR_NO_DATA} will be returned.
+@end table
+
+
+@mansect see also
+@ifset isman
+@command{gpg2}(1), 
+@command{gpgsm}(1), 
+@command{gpg-connect-agent}(1),
+@command{scdaemon}(1)
+@end ifset
+@include see-also-note.texi

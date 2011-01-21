@@ -1,0 +1,1183 @@
+\input texinfo
+@setfilename ksba.info
+@settitle The KSBA Reference Manual
+
+@dircategory GNU libraries
+@direntry
+* libksba: (ksba).              An X.509 Library.
+@end direntry
+
+@include version.texi
+
+@c Unify some of the indices.
+@syncodeindex tp fn
+@syncodeindex pg fn
+
+@macro mycopyrightnotice
+Copyright @copyright{} 2002, 2003, 2004 g10 Code GmbH
+@end macro
+@macro mypermissionnotice
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 3 of the License, or (at your
+option) any later version. The text of the license can be found in the
+section entitled ``Copying''.
+@end macro
+
+
+
+@ifinfo
+This file documents the @acronym{KSBA} library to access X.509 and CMS data
+structures.
+
+This is edition @value{EDITION}, last updated @value{UPDATED}, of
+@cite{The KSBA Reference Manual}, for Version @value{VERSION}.
+@sp 1
+@mycopyrightnotice{}
+@sp 1
+@mypermissionnotice{}
+@end ifinfo
+
+
+@iftex
+@shorttitlepage The `KSBA' Reference Manual
+@titlepage
+@center @titlefont{The `KSBA'}
+@sp 1
+@center @titlefont{Reference Manual}
+@sp 6
+@center Edition @value{EDITION}
+@sp 1
+@center last updated @value{UPDATED}
+@sp 1
+@center for version @value{VERSION}
+@sp 1
+@author by Werner Koch, g10 Code GmbH
+@email{wk@@gnupg.org}
+@page
+@vskip 0pt plus 1filll
+@mycopyrightnotice{}
+@sp 1
+@mypermissionnotice{}
+@end titlepage
+@summarycontents
+@contents
+@page
+@end iftex
+
+
+@ifnottex
+@node Top
+@top Main Menu
+This is edition @value{EDITION}, last updated @value{UPDATED}, of
+@cite{The KSBA Reference Manual}, for Version
+@value{VERSION} of the @acronym{KSBA} library.
+@sp 1
+@mycopyrightnotice{}
+@sp 1
+@mypermissionnotice{}
+@sp 1
+@end ifnottex
+
+@menu
+* Introduction::                How to use this manual.
+* Preparation::                 What you should do before using the library.
+* Certificate Handling::        How to work with X.509 certificates.
+* CMS::                         How to work with CMS (PKCS#7) messages.
+* CRLs::                        How to work with Certificate Revocation Lists.
+* PKCS10::                      How to request certificates.
+* Utilities::                   Various utility functions.
+* Error Handling::              Error numbers and their meanings.
+
+Appendices
+
+* Component Labels::            Labels used in string representations.
+* Copying::                     The GNU General Public License says how you
+                                can copy and share this manual.
+
+Indices
+
+* Concept Index::               Index of concepts and programs.
+* Function and Data Index::     Index of functions, variables and data types.
+
+@detailmenu
+ --- The Detailed Node Listing ---
+
+Introduction
+
+* Getting Started::             
+* Features::                    
+* Overview::                    
+
+Preparation
+
+* Header::                      
+* Building the source::         
+
+Certificate Handling
+
+* Creating certificates::       How to create a certificate object.
+* Retrieving attributes::       How to get the attributes of a certificate.
+* Setting attributes::          How to set certificates attributes.
+* User data::                   How to associate other data with a certificate.
+
+Mastering the Cryptographic Message Syntax
+
+* CMS Basics::                  
+* CMS Parser::                  
+
+@end detailmenu
+@end menu
+
+@node Introduction
+@chapter Introduction
+@acronym{KSBA} is a library to make the task of working with X.509
+certificates, CMS data and related data more easy.
+
+@menu
+* Getting Started::             
+* Features::                    
+* Overview::                    
+@end menu
+
+@node Getting Started
+@section Getting Started
+
+This manual documents the `KSBA' library programming interface.  All
+functions and data types provided by the library are explained.
+
+The reader is assumed to possess basic knowledge about the implemented
+protocols.
+
+This manual can be used in several ways.  If read from the beginning
+to the end, it gives a good introduction into the library and how it
+can be used in an application.  Forward references are included where
+necessary.  Later on, the manual can be used as a reference manual to
+get just the information needed about any particular interface of the
+library.  Experienced programmers might want to start looking at the
+examples at the end of the manual, and then only read up those parts
+of the interface which are unclear.
+
+
+@node Features
+@section Features
+
+`KSBA' has a couple of advantages over other libraries doing a similar job,
+and over open coding the protocols in your application directly.
+
+@table @asis
+@item It's Free Software
+Anybody can use, modify, and redistribute it under the terms of the GNU
+General Public License (@pxref{Copying}).
+
+@item It hides the low level stuff
+`KSBA' a high level interface to the implemented protocols and presents
+the data in a consistent way.  There is no more need to worry about all
+the nasty details of the protocols.  The API gives the C programmer a
+more usual way of interacting with the data.
+
+@item It copes with the version details
+X.509 protocols tend to have many different versions and dialects.
+Applications must usually cope with all of this and it has to be coded
+over and over again.  `KSBA' hides this by providing just one API which
+does the Right Thing.  Support for new versions and features of the
+protocols will be added over time.
+@end table
+
+
+@node Overview
+@section Overview
+
+@c [Needs more stuff]
+
+The `KSBA' library is thread-safe as long as objects described by one
+context are only used by one thread at a time.  No initialization is
+required.
+
+
+@node Preparation
+@chapter Preparation
+
+To use `KSBA', you have to perform some changes to your sources and the
+build system.  The necessary changes are small and explained in the
+following sections.  At the end of this chapter, it is described how the
+library is initialized, and how the requirements of the library are
+verified.
+
+@menu
+* Header::                      
+* Version Check::
+* Building the source::         
+@end menu
+
+
+@node Header
+@section Header
+
+All interfaces (data types and functions) of the library are defined in
+the header file @file{ksba.h}.  You must include this in all programs
+using the library, either directly or through some other header file,
+like this:
+
+@smallexample
+#include <ksba.h>
+@end smallexample
+
+The name space of `KSBA' is @code{ksba_*} for function names,
+@code{ksba*} for data types and @code{KSBA_*} for other symbols.  In
+addition the same name prefixes with one prepended underscore are
+reserved for internal use and should never be used by an application.
+
+@node Version Check
+@section Version Check
+
+It is often desirable to check that the version of `KSBA' used is indeed
+one which fits all requirements.  Even with binary compatibility, new
+features may have been introduced but through peculiarities of the
+runtime linker an old version gets actually used.  So you better check
+that the version is as expected right after program startup.
+
+@deftypefun {const char *} ksba_check_version (@w{const char *@var{req_version}})
+
+Check that the the version of the library is at minimum the one given as
+a string in @var{req_version} and return the actual version string of
+the library; return @code{NULL} if the condition is not met.  If
+@code{NULL} is passed to this function, no check is done and only the
+version string is returned.  It is a pretty good idea to run this
+function as soon as possible, because it may also initializes some
+subsystems.  In a multi-threaded environment if should be called before
+any more threads are created.
+@end deftypefun
+
+@node Building the source
+@section Building the source
+
+If you want to compile a source file including the @file{ksba.h} header
+file, you must make sure that the compiler can find it in the directory
+hierarchy.  This is accomplished by adding the path to the directory in
+which the header file is located to the compiler's include file search
+path (via the @option{-I} option).
+
+However, the path to the include file is determined at the time the
+source is configured.  To solve this problem, `KSBA' ships with a small
+helper program @command{ksba-config} that knows about the path to the
+include file and other configuration options.  The options that need to
+be added to the compiler invocation at compile time are output by the
+@option{--cflags} option of @command{ksba-config}.  The following
+example shows how it can be used at the command line:
+
+@example
+gcc -c foo.c `ksba-config --cflags`
+@end example
+
+Adding the output of @samp{ksba-config --cflags} to the compiler's
+command line will ensure that the compiler can find the @file{ksba.h}
+header file.
+
+A similar problem occurs when linking the program with the library.
+Again, the compiler has to find the library files.  For this to work,
+the path to the library files has to be added to the library search path
+(via the @option{-L} option).  For this, the option @option{--libs} of
+@command{ksba-config} can be used.  For convenience, this option also
+outputs all other options that are required to link the program with the
+`KSBA' libraries (in particular, the @samp{-lksba} option).  The
+example shows how to link @file{foo.o} with the `KSBA' libraries to a
+program @command{foo}.
+
+@example
+gcc -o foo foo.o `ksba-config --libs`
+@end example
+
+Of course you can also combine both examples to a single command by
+specifying both options to @command{ksba-config}:
+
+@example
+gcc -o foo foo.c `ksba-config --cflags --libs`
+@end example
+
+
+@node Certificate Handling
+@chapter How to work with X.509 certificates.
+
+One of the most complex data formats are the X.509 certificates.
+@acronym{KSBA} provides an easy to use interface to handle them.
+
+@deftp {Data type} ksba_cert_t
+The @code{ksba_cert_t} type is a handle for an X.509 certificate.
+@end deftp
+
+@deftp {Data type} ksba_sexp_t
+The @code{ksba_sexp_t} type describes a canonically encoded S-expression
+stored in a memory buffer.  It is alias for @code{unsigned char *}.
+Note that a length argument is not required because the length of such
+an S-expression is intrinsically available. 
+@end deftp
+
+@menu
+* Creating certificates::       How to create a certificate object.
+* Retrieving attributes::       How to get the attributes of a certificate.
+* Setting attributes::          How to set certificates attributes.
+* User data::                   How to associate other data with a certificate.
+@end menu
+
+
+@node Creating certificates
+@section How to create a certificate object
+
+This section explains how to create a certificate object, initialize it,
+copy it and eventually destroy it. 
+
+@deftypefun ksba_cert_t ksba_cert_new (void)
+The function @code{ksba_cert_new} creates a new certificate object and
+returns a handle for it.  The certificate object has initially one
+reference.
+
+The only reason why this function may fail is an out-of-memory condition in
+which case @code{NULL} is returned.  You might then get the actual error
+code using @samp{gpg_error_from_errno (errno)}.
+@end deftypefun
+
+@deftypefun void ksba_cert_ref (@w{ksba_cert_t @var{cert}})
+The function @code{ksba_cert_ref} bumps the reference counter of the
+certificate object up by one.  Thus an extra @code{ksba_cert_release} is
+required to actually release the memory used for the object.
+@end deftypefun
+
+@deftypefun void ksba_cert_release (@w{ksba_cert_t @var{cert}})
+The function @code{ksba_cert_release} reduces the number of references
+to the certificate object with the handle @var{cert}.  If this was the
+last reference, it will also destroy the object and releases all
+associated resources.  It is okay to pass @code{NULL} to the function
+in which case nothing happens.
+@end deftypefun
+
+@deftypefun gpg_error_t ksba_cert_read_der (@w{ksba_cert_t @var{cert}}, @w{ksba_reader_t @var{reader}})
+
+Read the next certificate from the @var{reader} object and store it in
+the certificate object @var{cert} for future access.  The certificate is
+parsed and rejected if it has any syntactical or semantical error
+(i.e. does not match the @acronym{ASN.1} description).
+
+The function returns @code{0} if the operation was successfully
+performed.  An error code is returned on failure.
+@end deftypefun
+
+@deftypefun gpg_error_t ksba_cert_init_from_mem (@w{ksba_cert_t @var{cert}}, @w{const void *@var{buffer}}, @w{size_t @var{length}})
+
+Parse the @var{buffer} which should contain a @acronym{DER} encoded
+certificate of @var{length} and initialize the certificate object
+@var{cert} with it.  This function is intended as a convenience
+function to be used when a certificate is already available in a
+internal memory buffer.  This avoids the extra code needed to setup the
+reader object.  Note that @var{cert} must be a valid certificate object.
+
+The function returns @code{0} if the operation was successfully performed.
+An error code is returned on failure.
+@end deftypefun
+
+@node Retrieving attributes
+@section How to get the attributes of a certificate
+
+The functions in this section allow accessing the attributes of a
+certificate in a well defined manner.  An error will be returned if the
+certificate object has not yet been initialized by means of
+@code{ksba_cert_read_der} or @code{ksba_cert_init_from_mem}.
+
+@deftypefun {const unsigned char *} ksba_cert_get_image (@w{ksba_cert_t @var{cert}}, @w{size_t *@var{r_length}}) 
+
+This function returns a pointer to the @acronym{DER} encoded buffer with
+the raw certificate.  The length of that buffer gets stored at
+@var{r_length}.  This function is useful to export or store the raw
+certificate.
+
+The function returns @code{NULL} on error or a pointer to a buffer with
+the raw certificate data.  That pointer is only valid as long as the
+certificate object @var{cert} is valid and has not been reinitialized.
+@end deftypefun
+
+@deftypefun gpg_error_t ksba_cert_hash (@w{ksba_cert_t @var{cert}}, @w{int @var{what}}, @w{void (*@var{hasher})(void *, const void *, size_t length)}, @w{void *@var{hasher_arg}})
+
+This function feeds the data which is expected to be hashed into the
+supplied function @var{hasher}, where the first argument passed is
+@var{hasher_arg}, the second the pointer to the data to be hashed and
+the third the length of this data.
+
+The function returns @code{0} on success or an error code when something
+goes wrong.  The @var{hasher} function is not expected to return an
+error; instead the caller should setup that function in a way to convey
+encountered errors by means of the @var{hasher_arg}.  Note that a hash
+function is in general not expected to yield errors anyway.
+@end deftypefun
+
+
+@deftypefun {const char *} ksba_cert_get_digest_algo (@w{ksba_cert_t @var{cert}})
+
+Figure out the the digest algorithm used for the signature and return
+its @acronym{OID} in dotted decimal format.  This function is most
+likely used to setup the hash context before calling
+@code{ksba_cert_hash}.
+
+The function returns @code{NULL} for an error; on success a constant
+string with the @acronym{OID} is returned.  This string is valid as long
+the certificate object is valid.
+@end deftypefun
+
+@deftypefun ksba_sexp_t ksba_cert_get_serial (@w{ksba_cert_t @var{cert}})
+
+The function returns the serial number of the certificate @var{cert}.
+The serial number is an integer returned as an canonical encoded
+S-expression with just one element.  The caller must free the returned
+value.  The value @code{NULL} is returned in case of error. 
+@end deftypefun
+
+@deftypefun {char *} ksba_cert_get_issuer (@w{ksba_cert_t @var{cert}, int @var{idx}})
+
+With @var{idx} given as @code{0}, this function returns the
+Distinguished Name (@acronym{DN}) of the certificate issuer; this
+usually is the name of a certification authority (@acronym{CA}).  The
+format of the returned string is in accordance with RFC-2253.
+@code{NULL} is returned if the @acronym{DN} is not available; This is a
+severe error and actually should have been caught by the certificate
+reading function.
+ 
+With @var{idx} greater than zero, the function may be used to enumerate
+alternate issuer names.  The function returns @code{NULL} when there are
+no more alternate names. Only alternate names recognized by
+@code{libksba} are returned, others are simply skipped.  The format of
+the returned name is either a RFC-2253 formated string which can be
+detected by checking whether the first character is a letter or digit.
+RFC-822 conformant email addresses are returned enclosed in angle
+brackets; the opening angle bracket should be used to detect this.
+Other formats are returned as an S-Expression in canonical format, so a
+opening parenthesis should be used to detect this encoding. The name may
+include binary null characters, thus strlen may return a length shorter
+than actually used.  The real length is implicitly given by the structure
+of the S-expression, an extra null is appended for safety reasons.
+ 
+The caller must free the returned string using @code{ksba_free} or
+whatever function has been registered as a replacement.
+@end deftypefun
+
+@deftypefun {char *} ksba_cert_get_subject (@w{ksba_cert_t @var{cert}, int @var{idx}})
+
+With @var{idx} given as @code{0}, this function returns the
+Distinguished Name (@acronym{DN}) of the certificate's subject.  The
+format of the returned string is in accordance with RFC-2253.
+@code{NULL} is returned if the @acronym{DN} is not available.
+
+With @var{idx} greater than zero, the function may be used to enumerate
+alternate subject names.  The function returns @code{NULL} when there
+are no more alternate names. Only alternate names recognized by
+@code{libksba} are returned, others are simply skipped.  The format of
+the returned name is either a RFC-2253 formated string which can be
+detected by checking whether the first character is a letter or digit.
+RFC-2822 conform email addresses are returned enclosed in angle
+brackets; the opening angle bracket should be used to detect this.
+Other formats are returned as an S-Expression in canonical format, so a
+opening parenthesis should be used to detect this encoding, the name may
+include binary null characters, thus strlen may return a length shorter
+than actually used.  The real length is implicitly given by the structure
+of the S-expression, an extra null is appended for safety reasons.
+ 
+The caller must free the returned string using @code{ksba_free} or
+whatever function has been registered as a replacement.
+@end deftypefun
+
+
+@deftp {Data type} ksba_isotime_t
+Due to problems with the C data type @code{time_t}, which will overflow
+on most 32 bit machines in the year 2038, it was not advisable to use
+this type for referencing times stored in certificates.  Instead, you
+should use the @code{ksba_isotime_t} type, which can represent any time
+since the year 0.
+
+It is implemented as a buffer of 16 bytes and may be handled like a
+standard string.  It should be initialized to zero (i.e. the first
+byte needs to be 0x00) if it does not hold a valid date.  Date values
+themselves are stored in ISO format and assumed to be referenced from
+UTC.  The string with the date value is always guaranteed to be of
+length 15 and having a format like: @samp{"19610711T172059"}.  Note
+that the `T' is required by ISO rules.
+
+A simple assignment of these data types is not a good idea.  You may
+use @code{strcpy} or better a specialized function like:
+
+@example
+void
+copy_time (ksba_isotime_t d, const ksba_isotime_t s)
+@{
+  if (!*s)
+    memset (d, 0, 16);
+  else  
+    strcpy (d, s);
+@}
+@end example
+
+For reasons of documentation a special function should also be used to
+compare such times:
+
+@example
+int 
+cmp_time (const ksba_isotime_t a, const ksba_isotime_t b) 
+@{
+  return strcmp (a, b);
+@}
+@end example
+@end deftp
+
+@deftypefun gpg_error_t ksba_cert_get_validity (@w{ksba_cert_t @var{cert}, int @var{what}, ksba_isotime_t @var{timebuf}})
+
+Return the validity dates from the certificate.  If no value is
+available an empty date object (i.e. a @code{strlen} will be
+stored at @var{timebuf}, otherwise it will receive the date. On failure
+an error code is returned.
+
+To return the `notBefore' date, the value @code{0} must be supplied for
+@var{what}; @code{1} yields the `notAfter' value.
+@end deftypefun
+
+@deftypefun ksba_sexp_t ksba_cert_get_public_key (@w{ksba_cert_t @var{cert}})
+
+@c  {{{{ CONTINUE HERE }}}}}}
+
+@c !FIXME!
+[This needs to get written - for now please see libksba/src/cert.c]
+
+@end deftypefun
+
+@deftypefun ksba_sexp_t ksba_cert_get_sig_val (ksba_cert_t @var{cert})
+
+@c !FIXME!
+[This needs to get written - for now please see libksba/src/cert.c]
+@end deftypefun
+
+@deftypefun gpg_error_t ksba_cert_get_extension (@w{ksba_cert_t @var{cert}, int @var{idx}, char const **@var{r_oid}, int *@var{r_crit}, size_t *@var{r_deroff}, size_t *@var{r_derlen}})
+
+@c !FIXME!
+[This needs to get written - for now please see libksba/src/cert.c]
+@end deftypefun
+
+@deftypefun gpg_error_t ksba_cert_is_ca (@w{ksba_cert_t @var{cert}, int *@var{r_ca}, int *@var{r_pathlen}})
+
+Return information on the basicConstraint (2.5.19.19) of CERT.  R_CA
+receives true if this is a CA and only in that case R_PATHLEN is set to
+the maximum certification path length or -1 if there is no such
+limitation
+
+@end deftypefun
+
+@deftypefun gpg_error_t ksba_cert_get_key_usage (@w{ksba_cert_t @var{cert}, unsigned int *@var{r_flags}})
+
+Get the key usage flags. The function returns @code{GPG_ERR_NO_DATA} if no
+key usage is specified. The usage flags are as shown in RFC3280, section
+4.2.1.3. The key usage flags are represented by a bitmask, and you can
+test each bit using symbolic constants, which tells you if that usage
+is set on the certificate. The constants are
+
+@table @code
+@item KSBA_KEYUSAGE_DIGITAL_SIGNATURE 
+Usable for digitalSignature.
+@item KSBA_KEYUSAGE_NON_REPUDIATION
+Usable for nonRepudiation.
+@item KSBA_KEYUSAGE_KEY_ENCIPHERMENT
+Usable for keyEncipherment.
+@item KSBA_KEYUSAGE_DATA_ENCIPHERMENT
+Usable for dataEncipherment.
+@item KSBA_KEYUSAGE_KEY_AGREEMENT
+Usable for for keyAgreement.
+@item KSBA_KEYUSAGE_KEY_CERT_SIGN
+Usable for keyCertSign.
+@item KSBA_KEYUSAGE_CRL_SIGN
+Usable for cRLSign.
+@item KSBA_KEYUSAGE_ENCIPHER_ONLY
+Usable for encipherOnly.
+@item KSBA_KEYUSAGE_DECIPHER_ONLY
+Usable for decipherOnly.
+@end table
+
+These are the basic constraints on usage of a certificate. If you need
+to get additional constraints, see @code{ksba_cert_get_ext_key_usages}.
+@end deftypefun
+ 
+@deftypefun gpg_error_t ksba_cert_get_ext_key_usages (@w{ksba_cert_t @var{cert}, char **@var{result}})
+ 
+Return a string containing the extended usages for the certificate,
+delimited by linefeeds.
+@end deftypefun
+
+
+@deftypefun gpg_error_t ksba_cert_get_cert_policies (@w{ksba_cert_t @var{cert}, char **@var{r_policies}})
+
+Return a string with the certificatePolicies delimited by linefeeds.
+The return values may be extended to carry more information per line, so
+the caller should only use the first white-space delimited token per
+line.  The function returns @code{GPG_ERR_NO_DATA} when this extension
+is not used.  Caller must free the returned value.
+
+@end deftypefun
+
+
+@deftypefun gpg_error_t ksba_cert_get_crl_dist_point (@w{ksba_cert_t @var{cert}, int @var{idx}, ksba_name_t *@var{r_distpoint}, ksba_name_t *@var{r_issuer}, unsigned int *@var{r_reason}})
+
+Return the CRLDistPoints given in the certificate extension of
+certificate @var{cert}.  @var{idx} should be iterated starting from 0
+until the function returns @code{GPG_ERR_EOF}.  @var{r_distpoint} returns a
+ksba_name_t object with the distribution point name(s); the return value
+may be @code{NULL} to indicate that this name is not available.
+@var{r_issuer} returns the CRL issuer; if the returned value is
+@code{NULL} the caller should assume that the CRL issuer is the same as
+the certificate issuer.  @var{r_reason} returns the reason for the CRL.
+This is a bit encoded value with no bit set if no reason has been
+specified in the certificate.
+
+The caller may pass @code{NULL} to any of the pointer arguments if he is
+not interested in this value.  The return values for @var{r_distpoint}
+and @var{r_issuer} must be released by the caller using
+@code{ksba_name_release}.
+@end deftypefun
+
+
+@deftypefun gpg_error_t ksba_cert_get_subj_key_id (@w{ksba_cert_t @var{cert}, int *@var{r_crit}, ksba_sexp_t *@var{r_keyid}})
+
+Return the subjectKeyIdentifier extension as a simple allocated
+S-expression at the address of @var{r_keyid}. 0 is returned on success,
+@code{GPG_ERR_NO_DATA} if no such extension is available or any other
+error code.  If @var{r_crit} is not passed as @code{NULL}, the critical flag of
+this is extension is stored at this address.
+@end deftypefun
+
+
+@deftypefun gpg_error_t ksba_cert_get_auth_key_id (@w{ksba_cert_t @var{cert}, ksba_sexp_t *@var{r_keyid}, ksba_name_t *@var{r_name}, ksba_sexp_t *@var{r_serial}})
+
+Return the authorityKeyIdentifier in @var{r_name} and @var{r_serial} or
+in @var{r_keyid}.  @code{GPG_ERR_NO_DATA} is returned if no
+authorityKeyIdentifier has been found.  This error code is also returned
+if @var{r_keyid} has been given as NULL and only an
+authorityKeyIdentifier with the keyIdentifier method is available.
+@end deftypefun
+
+
+@deftypefun gpg_error_t ksba_cert_get_authority_info_access (@w{ksba_cert_t @var{cert}, int @var{idx}, char **@var{r_method}, ksba_name_t *@var{r_location}})
+
+Return the authorityInfoAccess attributes. @var{idx} should be
+iterated starting from 0 until this function returns
+@code{GPG_ERR_EOF}.  @var{r_method} returns an allocated string with
+the OID of one item and @var{r_location} returns the GeneralName for
+that OID.  The returned values for @var{r_method} and @var{r_location}
+must be released by the caller unless the function returned an error;
+the function will however make sure that @var{r_method} and
+@var{r_location} will point to @code{NULL} if the function returns an
+error. 
+
+See RFC-2459, section 4.2.2.1 for the definition of this attribute.
+@end deftypefun
+
+@deftypefun gpg_error_t ksba_cert_get_subject_info_access (@w{ksba_cert_t @var{cert}, int @var{idx}, char **@var{r_method}, ksba_name_t *@var{r_location}})
+
+Return the subjectInfoAccess attributes. @var{idx} should be
+iterated starting from 0 until this function returns
+@code{GPG_ERR_EOF}.  @var{r_method} returns an allocated string with
+the OID of one item and @var{r_location} returns the GeneralName for
+that OID.  The returned values for @var{r_method} and @var{r_location}
+must be released by the caller unless the function returned an error;
+the function will however make sure that @var{r_method} and
+@var{r_location} will point to @code{NULL} if the function returns an
+error. 
+
+See RFC-2459, section 4.2.2.2 for the definition of this attribute.
+@end deftypefun
+
+
+@node Setting attributes
+@section How to set certificate attributes
+
+[This needs to be written.  For example code see newpg/sm/sign.c]
+
+@node User data
+@section How to associate other data with a certificate.
+
+Certificate objects play a central role in many applications and often
+it is desirable to associate other data with the certificate to avoid
+wrapping the certificate object into an own object.  `KSBA' provides a
+mechanism for this by means of two functions:
+
+@deftypefun gpg_error_t ksba_cert_set_user_data (@w{ksba_cert_t @var{cert}, const char *@var{key}, const void *@var{data}, size_t @var{datalen}})
+
+
+Stores arbitrary data along with a certificate.  The data is expected in
+the buffer @var{data} of length @var{datalen}. It will be stored under
+the string @var{key}.  If data is already stored under this key it will
+be replaced by the new data. Using @code{NULL} for @var{data} will
+effectively delete the data.
+
+On error (i.e. out of memory) an already existing data object
+stored under @var{key} may get deleted.
+
+@strong{Caution:} This function is definitely not thread safe because we
+don't employ any locking mechanisms.
+@end deftypefun
+
+
+@deftypefun gpg_error_t ksba_cert_get_user_data (@w{ksba_cert_t @var{cert},} @w{const char *@var{key},} @w{void *@var{buffer},} @w{size_t @var{bufferlen},} @w{size_t *@var{datalen}})
+
+Return user data for certificate @var{cert} stored under the string
+@var{key}. The caller needs to provide a suitable large @var{buffer} and
+the usable length of this buffer in @var{bufferlen}.  If @var{datalen}
+is not @code{NULL}, the length of the data stored in @var{buffer} will
+be stored there.
+
+If @var{buffer} is given as @code{NULL}, @var{bufferlen} will be ignored
+and the required length of the buffer will be returned at @var{datalen}.
+
+On success 0 is returned.  If no data is stored under the given key,
+@code{GPG_ERR_NOT_FOUND} is returned.  If the provided buffer is too
+short and @var{buffer} is not @code{NULL},
+@code{GPG_ERR_BUFFER_TOO_SHORT} will be returned.
+@end deftypefun
+
+
+
+@node CMS
+@chapter Mastering the Cryptographic Message Syntax
+The @acronym{CMS} is also known under the name PKCS#7.  Is is
+a cryptographic framework for securing data transactions and storage, much
+like OpenPGP.  It is heavily based on X.509 semantics and for example
+used with the email encryption protocol S/MIME.
+
+@menu
+* CMS Basics::                  
+* CMS Parser::                  
+@end menu
+
+@node CMS Basics
+@section CMS Basics
+All operations with the CMS framework require the use of a so called CMS
+object which is internally used to keep track of the current state and to
+store some meta information.
+
+@deftp {Data type} ksba_cms_t
+The @code{ksba_cms_t} type is used for this CMS object.
+@end deftp
+@deftp {Data type} ksba_stop_reason_t
+The @code{ksba_stop_reason_t} type is an enumeration used for communication
+between the phases of a parsing or building process.
+@end deftp
+
+
+@deftypefun ksba_cms_t ksba_cms_new (void)
+
+This function creates a new CMS object.  The only reason the function
+may fail is an out-of-memory condition in which case @code{NULL} is
+returned.  It is safe for the caller to translate this to the standard
+error code @code{GPG_ERR_ENOMEM}.  Any object created
+with this function should be released after use by using
+@code{ksba_cms_release}.  
+@end deftypefun
+
+@deftypefun void ksba_cms_release (@w{ksba_cms_t @var{cms}})
+
+Release all resources associated with the @var{CMS} object.  It is
+perfectly okay to pass @code{NULL} to this function in which case
+nothing happens.
+@end deftypefun
+
+@deftypefun gpg_error_t ksba_cms_set_reader_writer (@w{ksba_cms_t @var{cms}, ksba_reader_t @var{r}, ksba_writer_t @var{w}})
+
+About all usages of the CMS framework require some input and output data
+(great surprise!).  To accomplish this in the most abstract way, no
+direct output functions are used - instead special reader and writer
+objects are used instead.  Depending on the desired operations either a
+reader, a writer or both must be given.  Associate a reader object with
+@var{cms} by passing it as @var{r} and a writer object by passing it as
+@var{w}.  Note that no reference counting is done,so make sure that
+those objects have a lifetime at least as long as @var{CMS}.
+
+If you forget to set these objects, you will get an appropriate error
+later when data is actually to be read or written.  The function returns
+zero on success or an error code when invalid objects are passed.
+@end deftypefun
+
+
+@node CMS Parser
+@section CMS Parser
+@acronym{KSBA} includes a versatile CMS parser for encryption (enveloped
+data) and digital signing.  The parser is capable of handling arbitrary
+amounts of data without requiring much memory.  Well, certain objects
+are build in memory because it can be assumed that those objects are
+limited in size; e.g. it does not make sense to use a video clip as the
+@acronym{DN} despite the fact that the standard does not forbid it.
+
+
+@deftypefun gpg_error_t ksba_cms_parse (@w{ksba_cms_t @var{cms}, ksba_stop_reason_t *@var{r_stopreason}})
+
+This is the core function of the parser and commonly used in a loop.
+The parsing process is divided into several phases to allow the user
+to get information at the right time and prepare for further
+processing.  The caller has to act on certain stop reasons which are
+returned by @var{r_stopreason} and set up things accordingly;
+@acronym{KSBA} may introduce new stop reasons to let the caller know
+other details; there is no need for the caller to act on every stop
+reason; it should only do so for reasons that the caller understands
+and which are mandatory.  The function will return with an error if
+the caller did not setup things correctly for certain stop reasons.
+@end deftypefun
+
+The use of this function is best explained by an example, leaving out all
+error checking.
+@example
+  do 
+    @{
+      ksba_cms_parse (cms, &stopreason);
+      if (stopreason == KSBA_SR_BEGIN_DATA)
+        @{
+          get_recipients ();
+          decrypt_session_key ();
+          setup_bulk_decryption ();
+        @}
+      else if (stopreason == KSBA_SR_END_DATA)
+        @{
+          remove_padding ();
+        @}
+    @}
+  while (stopreason != KSBA_SR_READY);   
+@end example
+This function assumes that the parsed data is so called `enveloped data'.
+ 
+@c FIXME: Reference to a list of stop reasons used here.
+
+As @acronym{CMS} provides a common framework for a variety of data
+formats, it is probably very useful to check the type of that data very
+early.  This can be accomplished by hooking into the stop reason
+@code{KSBA_SR_GOT_CONTENT} and retrieving the content using the following 
+function.
+
+
+@deftypefun ksba_content_t ksba_cms_get_content_type (@w{ksba_cms_t @var{cms}, int @var{what}})
+
+By using a value of @code{0} for @var{what} this function returns the
+content type of the outer container; using @code{1} does return the
+content type of the enclosed object.
+
+@deftp {Data type} ksba_content_t
+The @code{ksba_content_t} type is an enumeration used to describe the
+content of a CMS message.  Here is a list of possible values:
+
+@table @code
+@item KSBA_CT_NONE 
+No content type known (value @code{0})
+
+@item KSBA_CT_DATA
+The content is plain data, not further interpreted.
+
+@item KSBA_CT_SIGNED_DATA
+The content is an signed CMS object.  This also includes the case of a
+detached signature where no actual data is included in the message.
+
+@item  KSBA_CT_ENVELOPED_DATA
+The content is encrypted using a session key.
+
+@item KSBA_CT_DIGESTED_DATA
+Not yet supported
+
+@item KSBA_CT_ENCRYPTED_DATA
+Not yet supported
+
+@item KSBA_CT_AUTH_DATA
+Not yet supported
+@end table
+@end deftp
+@end deftypefun
+
+
+@deftypefun {const char *} ksba_cms_get_content_oid (@w{ksba_cms_t @var{cms}, int @var{what}})
+
+Return the object ID of @var{cms}.  This is a constant string valid as
+long as the context is valid and no new parse is started.  This function
+is similar to @code{ksba_cms_get_content_type} but returns the
+@acronym{OID} actually used in the data.  Depending on the value of
+@var{what} different values are returned: Using a value of @code{0}
+yields the OID of the outer container, a value of @code{1} yields the
+OID of the inner container if available and the value @code{2} returns
+the OID of the algorithm used to encrypt the inner container.
+@end deftypefun
+
+@node CRLs
+@chapter Certification Revocation Lists
+KSBA also comes with an API to process certification revocation lists.
+The API is similar to the @acronym{CMS} one but returns the contents
+entry by entry.
+
+
+@node PKCS10
+@chapter Certification Requests
+When using decentral generated keys, it is necessary to send out special
+formated messages so that a CA can generate the certificate.
+
+
+
+
+@node Utilities
+@chapter Utilities
+
+A few utility function and objects are available.  Some of them must be used
+to support some of the main functions.
+
+@menu
+* Names::                      General Names object
+* OIDs::                       Object Identifier helpers
+* DNs::                        Distinguished Name helpers
+@end menu
+
+@node Names
+@section General Names object
+
+This is an object to handle some of the names used in X.509.  We need
+this object approach because those names may come as a set and there is
+no other clean way to access them.
+
+@deftp {Data type} ksba_name_t
+The @code{ksba_name_t} type is an object to represent names sets.
+@end deftp
+
+
+@deftypefun void ksba_name_release (@w{ksba_name_t @var{name}})
+
+This function releases the object @var{name}.  Passing @code{NULL} is
+allowed.
+@end deftypefun
+
+@deftypefun {const char *} ksba_name_enum (@w{ksba_name_t @var{name}, int @var{idx}})
+
+By iterating @var{idx} up starting with 0, this function returns all
+General Names stored in @var{name}.  The format of the returned name is either
+a RFC-2253 formated one which can be detected by checking whether the
+first character is letter or a digit.  RFC 2822 conformant email addresses
+are returned enclosed in angle brackets, the opening angle bracket
+should be used to detect this.  Other formats are returned as an
+S-Expression in canonical format, so an opening parenthesis may be used
+to detect this encoding, in this case the name may include binary null
+characters, so strlen might return a length shorter than actually used,
+the real length is implicitly given by the structure of the S-Exp, an
+extra null is appended for safety reasons.  One common format return is
+a Universal Resource Identifier which has the S-expression:
+@samp{(uri <urivalue>)}.
+
+The returned string has the same lifetime as @var{name}. 
+@end deftypefun
+
+@deftypefun {char *} ksba_name_get_uri (@w{ksba_name_t @var{name}, int @var{idx}})
+
+Convenience function to return names representing an URI.  Caller
+must free the returned value.  Note that this function should not be
+used to enumerate the names.
+
+Here is an example on how you can use this function to enumerate all
+@acronym{URI}s:
+
+@example
+void
+print_names (ksba_name_t name)
+@{
+  int idx;
+  const char *s;
+
+  for (idx=0; (s = ksba_name_enum (name, idx)); idx++)
+    @{
+      char *p = ksba_name_get_uri (name, idx);
+      if (p)
+        @{
+           puts (p);
+           ksba_free (p);
+        @}
+    @}
+@}
+@end example
+@end deftypefun
+
+
+@node OIDs
+@section Object Identifier helpers
+
+@c !FIXME!
+[This needs to get written - for now please see libksba/src/oids.c]
+
+
+@node DNs
+@section Distinguished Name helpers
+
+These are helper functions for the so called distinguished names.  They
+are used for example as the issuer and subject name.
+
+@deftypefun gpg_error_t ksba_dn_teststr (@w{const char *@var{string}}, @w{int @var{seq}}, @w{size_t *@var{rerroff}}, @w{size_t *@var{rerrlen}})
+
+Assuming that @var{string} contains an RFC-2253 encoded string, test
+whether this string may be passed as a valid DN to libksba.  On success
+the functions returns @code{0}.  On error the function returns an error
+code and stores the offset of the erroneous part at
+@var{rerroff}. @var{rerrlen} will then receive the length of the
+erroneous part.
+
+This function is mostly useful to test whether a certain component label
+is supported. @var{seq} should be passed as @code{0} for now.  Any of
+@var{rerroff} and @var{rerrlen} may be passed as @var{NULL} if the
+caller is not interested at this value.
+
+@end deftypefun
+
+
+gpg_error_t
+ksba_dn_str2der (const char *string, void **rder, size_t *rderlen);
+
+gpg_error_t
+ksba_dn_der2str (const void *der, size_t derlen, char **r_string);
+
+
+
+
+@node Error Handling
+@chapter Error Handling
+
+Most functions in `KSBA' will return an error if they fail.
+For this reason, the application should always catch the error
+condition and take appropriate measures, for example by releasing the
+resources and passing the error up to the caller, or by displaying a
+descriptive message to the user and canceling the operation.
+
+Some error values do not indicate a system error or an error in the
+operation, but the reasonable result of an operation.  For example, if
+you try to access optional attributes of a certificate that are not
+present, you get an appropriate error message.  Some error values have
+specific meanings if returned by a specific function.  Such cases are
+described in the documentation of those functions.
+
+All error codes are defined by the library @code{libgpg-error}.  See
+there for ways to check the error values and print descriptive
+strings.  Please be aware that you can't check directly against an
+error code but have to do it like this:
+
+@example
+  err = ksba_foo ();
+  if (gpg_err_code (err) == GPG_ERR_EOF)
+    okay = 1;
+@end example
+
+The only exception is that success (i.e. no error) is defined to be
+@code{0}; thus you may directly test for success like:
+
+@example
+  if (!ksba_foo ())
+    okay = 1;
+@end example
+
+
+@c The following table lists the error codes as used by this library.
+@c 
+@c @table @code
+@c
+@c @end table
+@c
+
+@node Component Labels
+@appendix Component Labels
+
+RFC-2253 defines the following table with string representations of name
+components:
+
+@multitable {SERIALNUMBER} {organizationalUnit}  {xxx}
+@item Label   @tab  Component           @tab OID
+@item 
+@item C       @tab  countryName         @tab 2.5.4.6 
+@item CN      @tab  commonName          @tab 2.5.4.3 
+@item DC      @tab  domainComponent     @tab 0.9.2342.19200300.100.1.25 
+@item L       @tab  localityName        @tab 2.5.4.7 
+@item O       @tab  organizationName    @tab 2.5.4.10
+@item OU      @tab  organizationalUnit  @tab 2.5.4.11
+@item ST      @tab  stateOrProvince     @tab 2.5.4.8 
+@item STREET  @tab  streetAddress       @tab 2.5.4.9                   
+@item UID     @tab  userid              @tab 0.9.2342.19200300.100.1.1
+
+@end multitable
+
+They are used internally for converting a DN into its string
+representation; components not listed in this table will be
+represented by their OID.
+
+For the other direction, i.e. creating a DN from the string
+representation, KSBA recognizes the following extra labels:
+
+@multitable {SERIALNUMBER} {organizationalUnit}  {xxx}
+@item Label        @tab  Component        @tab OID
+@item 
+@item ADDR         @tab  postalAddress    @tab 2.5.4.16
+@item BC           @tab  businessCategory @tab 2.5.4.15
+@item D            @tab  description      @tab 2.5.4.13
+@item EMAIL        @tab  emailAddress     @tab 1.2.840.113549.1.9.1           
+@item GN           @tab  givenName        @tab 2.5.4.42
+@item POSTALCODE   @tab  postalCode       @tab 2.5.4.17
+@item PSEUDO       @tab  pseudonym        @tab 2.5.4.65
+@item SERIALNUMBER @tab  serialNumber     @tab 2.5.4.5 
+@item SN           @tab  surname          @tab 2.5.4.4 
+@item T            @tab  title            @tab 2.5.4.12
+
+@end multitable
+
+
+@include gpl.texi
+
+@node Concept Index
+@unnumbered Concept Index
+@printindex cp
+@node Function and Data Index
+@unnumbered Function and Data Index
+@printindex fn
+@bye
+
+
+
+         Old Information which might not be correct anymore:
+         ---------------------------------------------------
+
+KSBA  provides these subsystems:
+
+
+* ASN.1 Parser  (ksba_asn_*)
+
+  KSBA provides a simple ASN.1 parser which can be used to read
+  definitions directly from an ASN.1 module without the need of
+  generating extra tables.  For ease of maintenance it also comes with
+  a tool to create static data structures to avoid that overhead and
+  the need to include ASN.1 modules.
+
+  The primary goal of this parser is to provide the ASN.1 syntax tree
+  to be used by other library modules.
+
+* BER Decoder (ksba_ber_decoder_*)
+
+  This is a decoder for the ASN.1 Basic Encoding Rules with a facility
+  to detect valid DER encoding (DER is a subset of BER).  By using
+  thresholds and pre-registered callout function it is possible to
+  work on indefinite length data stream and limiting the memory usage
+  to a fixed upper bound.
+
+* BER Encoder (ksba_ber_encoder_*)
+
+  This is the counterpart to the DER Decoder with the ability to
+  restrict the encoding to DER.
+
+* Certificate Handling (ksba_cert_*)
+
+  The main bulk of the provided functions are used to give a clean
+  interface to X.509 certificates by translating X.509 data types to
+  more standard data types.
+
+* CMS Handling (ksba_cms_*)
+
+  The Cryptographic Message Syntax is the core data type for S/MIME
+  and therefore KSBA provides an interface to parse and create these
+  objects without the need to cope with ASN.1.
+
+* Reader and Writer (ksba_reader_*, ksba_writer_*)
+
+  Abstraction objects to access memory areas, files or file
+  descriptor.
+

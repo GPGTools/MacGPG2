@@ -1,0 +1,143 @@
+2009-09-03  Werner Koch  <wk@g10code.com>
+
+	* estream.m4: Update for libestream.
+
+2008-04-23  Werner Koch  <wk@g10code.com>
+
+	* socklen.m4, sys_socket_h.m4: New.  Taken from libassuan.
+	* Makefile.am (EXTRA_DIST): Add them.
+
+2008-02-15  gettextize  <bug-gnu-gettext@gnu.org>
+
+	* gettext.m4: Upgrade to gettext-0.17.
+	* iconv.m4: Upgrade to gettext-0.17.
+	* lib-link.m4: Upgrade to gettext-0.17.
+	* po.m4: Upgrade to gettext-0.17.
+
+2007-12-17  Werner Koch  <wk@g10code.com>
+
+	* ldap.m4: Test for ldap_start_tls_sA.
+
+2007-06-15  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (EXTRA_DIST): Remove inttypes-h.m4, longlong.m4 and
+	ulonglong.m4.
+
+2007-05-30  Werner Koch  <wk@g10code.com>
+
+	* gnupg-pth.m4: Remove W32 kludge.
+
+2007-05-29  Werner Koch  <wk@g10code.com>
+
+	* longlong.m4, ulonglong.m4: Remove.  We now require autoconf
+	2.61.
+
+2007-05-15  Werner Koch  <wk@g10code.com>
+
+	* estream.m4: New.
+
+2007-05-09  Werner Koch  <wk@g10code.com>
+
+	* gpg-error.m4, ksba.m4, libassuan.m4, libgcrypt.m4: Updated.
+
+2007-05-07  gettextize  <bug-gnu-gettext@gnu.org>
+
+	* gettext.m4: Upgrade to gettext-0.16.1.
+	* lib-link.m4: Upgrade to gettext-0.16.1.
+	* codeset.m4: Upgrade to gettext-0.16.1.
+	* intl.m4: New file, from gettext-0.16.1.
+	* intldir.m4: New file, from gettext-0.16.1.
+	* intmax.m4: Upgrade to gettext-0.16.1.
+	* inttypes_h.m4: Upgrade to gettext-0.16.1.
+	* inttypes-pri.m4: Upgrade to gettext-0.16.1.
+	* lock.m4: Upgrade to gettext-0.16.1.
+	* longlong.m4: Upgrade to gettext-0.16.1.
+	* size_max.m4: Upgrade to gettext-0.16.1.
+	* stdint_h.m4: Upgrade to gettext-0.16.1.
+	* ulonglong.m4: Upgrade to gettext-0.16.1.
+	* Makefile.am (EXTRA_DIST): Add the new files.
+
+2006-11-21  Werner Koch  <wk@g10code.com>
+
+	* gnupg-pth.m4 (GNUPG_PTH_VERSION_CHECK): Use --all with
+	pth-config.
+
+2006-11-17  Werner Koch  <wk@g10code.com>
+
+	* gnupg-pth.m4: Make sure that have_w32_system is set to no by
+	default.
+
+2006-11-14  Werner Koch  <wk@g10code.com>
+
+	* libassuan.m4: Updated from libassuan SVN.
+
+2006-10-09  Werner Koch  <wk@g10code.com>
+
+	* gnupg-pth.m4: New.  Taken from ../acinclude.m4.
+	(GNUPG_PATH_PTH): New.
+
+2006-10-06  Werner Koch  <wk@g10code.com>
+
+	* libassuan.m4: Updated.
+
+2006-07-27  Werner Koch  <wk@g10code.com>
+
+	* autobuild.m4: New. 
+
+2006-06-30  Werner Koch  <wk@g10code.com>
+
+	* ldap.m4: New.  Taken from gnupg 1.4.4
+	* Makefile.am (EXTRA_DIST): Add ldap.me
+
+2004-09-30  Werner Koch  <wk@g10code.com>
+
+	* gpg-error.m4, libassuan.m4, libgcrypt.m4: Updated.
+
+2004-09-30  gettextize  <bug-gnu-gettext@gnu.org>
+
+	* gettext.m4: Upgrade to gettext-0.14.1.
+	* intmax.m4: New file, from gettext-0.14.1.
+	* lib-ld.m4: Upgrade to gettext-0.14.1.
+	* lib-prefix.m4: Upgrade to gettext-0.14.1.
+	* longdouble.m4: New file, from gettext-0.14.1.
+	* longlong.m4: New file, from gettext-0.14.1.
+	* po.m4: Upgrade to gettext-0.14.1.
+	* printf-posix.m4: New file, from gettext-0.14.1.
+	* signed.m4: New file, from gettext-0.14.1.
+	* size_max.m4: New file, from gettext-0.14.1.
+	* ulonglong.m4: Upgrade to gettext-0.14.1.
+	* wchar_t.m4: New file, from gettext-0.14.1.
+	* wint_t.m4: New file, from gettext-0.14.1.
+	* xsize.m4: New file, from gettext-0.14.1.
+	* Makefile.am (EXTRA_DIST): Add the new files.
+
+2004-03-06  Werner Koch  <wk@gnupg.org>
+
+	* libgcrypt.m4: Updated.
+
+2004-02-18  Werner Koch  <wk@gnupg.org>
+
+	* gpg-error.m4, libgcrypt.m4, libassuan.m4, ksba.m4: New.
+	* Makefile.am: Distribute them
+
+2003-04-29  gettextize  <bug-gnu-gettext@gnu.org>
+
+	* codeset.m4: New file, from gettext-0.11.5.
+	* gettext.m4: New file, from gettext-0.11.5.
+	* glibc21.m4: New file, from gettext-0.11.5.
+	* iconv.m4: New file, from gettext-0.11.5.
+	* intdiv0.m4: New file, from gettext-0.11.5.
+	* inttypes.m4: New file, from gettext-0.11.5.
+	* inttypes_h.m4: New file, from gettext-0.11.5.
+	* inttypes-pri.m4: New file, from gettext-0.11.5.
+	* isc-posix.m4: New file, from gettext-0.11.5.
+	* lcmessage.m4: New file, from gettext-0.11.5.
+	* lib-ld.m4: New file, from gettext-0.11.5.
+	* lib-link.m4: New file, from gettext-0.11.5.
+	* lib-prefix.m4: New file, from gettext-0.11.5.
+	* progtest.m4: New file, from gettext-0.11.5.
+	* stdint_h.m4: New file, from gettext-0.11.5.
+	* uintmax_t.m4: New file, from gettext-0.11.5.
+	* ulonglong.m4: New file, from gettext-0.11.5.
+	* Makefile.am: New file.
+

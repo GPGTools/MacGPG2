@@ -1,0 +1,71 @@
+2008-11-12  Marcus Brinkmann  <marcus@g10code.com>
+
+	* ksba.texi: Clear up wording on reference counting.
+
+2007-07-04  Werner Koch  <wk@g10code.com>
+
+	Changed license to GPLv3.
+
+	* gpl.texi: Changed text to GPLv3.
+
+2006-11-03  Werner Koch  <wk@g10code.com>
+
+	* ksba.texi (ksba_cert_get_key_usage): Add list of attributes.
+	Provided by Brad Hards.
+	(ksba_cert_get_key_ext_usage): New.
+	
+2006-07-03  Werner Koch  <wk@g10code.com>
+
+	* ksba.texi (DNs): New section
+
+2006-03-30  Brad Hards <bradh@frogmouth.net>  (wk)
+
+	* ksba.texi: Fixed typos and other errors.
+
+2005-04-15  Werner Koch  <wk@g10code.com>
+
+	* ksba.texi: Added a new function.  Markup improvements.
+
+2005-02-08  Werner Koch  <wk@g10code.com>
+
+	* ksba.texi: Fixed direntry.
+
+2004-03-23  Werner Koch  <wk@gnupg.org>
+
+	* ksba.texi: Added 2 more functions. Minor other updates.
+
+2004-01-28  Werner Koch  <wk@gnupg.org>
+
+	* ksba.info (components): Add a table of used labels.
+
+2003-12-08  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am (ksba_TEXINFOS): Removed fdl.texi.
+
+2003-12-01  Werner Koch  <wk@gnupg.org>
+
+	* ksba.texi: Changed license to GPL.
+	* fdl.texi: Removed
+
+2002-11-13  Werner Koch  <wk@gnupg.org>
+
+	* ksba.texi: Sanitized the wording of fixmes and added pointers to
+	example code.
+
+2002-06-19  Werner Koch  <wk@gnupg.org>
+
+	* ksba.texi: Fixed the direntry.  Noted by Thomas Koester.
+
+2002-04-15  Werner Koch  <wk@gnupg.org>
+
+	* ksba.texi: Add new functions.
+
+ Copyright 2002, 2003, 2004, 2005 g10 Code GmbH
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.

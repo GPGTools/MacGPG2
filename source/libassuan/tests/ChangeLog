@@ -1,0 +1,67 @@
+2010-03-17  Werner Koch  <wk@g10code.com>
+
+	* pipeconnect.c: New.  Based on fdpassing.c
+
+2010-02-24  Werner Koch  <wk@g10code.com>
+
+	* ce-server.c: New.
+
+	* ce-createpipe.c [W32CE]: New.
+
+2010-01-27  Werner Koch  <wk@g10code.com>
+
+	* common.h (SOCKET2HANDLE, HANDLE2SOCKET): New.
+
+2009-11-05  Marcus Brinkmann  <marcus@g10code.de>
+
+	* fdpassing.c (main): Call assuan_pipe_connect instead
+	of assuan_pipe_connect_ext.
+
+2009-11-04  Werner Koch  <wk@g10code.com>
+
+	* fdpassing.c (register_commands): Add NULL arg to
+	assuan_register_command.
+
+2009-09-19  Marcus Brinkmann  <marcus@g10code.de>
+
+	* fdpassing.c: Update to new API.
+
+2009-08-26  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (AM_CFLAGS, LDADD): Add gpg-error.
+	* fdpassing.c: Change error values to gpg-error ones.
+
+2008-11-03  Marcus Brinkmann  <marcus@g10code.de>
+
+	* fdpassing.c (register_commands): Add missing initializer
+	to silence gcc -W warning.
+
+2006-10-10  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (LDADD): Add NETLIBS.
+
+2006-09-19  Werner Koch  <wk@g10code.com>
+
+	* fdpassing.c: Reverted Marcus changes.
+	(client): New arg FNAME to replace hardwired file name.
+	(main): Pass motd to client.
+	* Makefile.am (AM_CPPFLAGS): Removed.
+	(EXTRA_DIST): Add motd.
+
+2006-09-19  Marcus Brinkmann  <marcus@g10code.de>
+
+	* fdpassing.c (MOTD): New macro.
+	* Makefile.am (AM_CPPFLAGS): New variable.
+	* motd: New file.
+
+
+ Copyright 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+

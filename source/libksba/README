@@ -1,0 +1,44 @@
+                               LIBKSBA
+                              ---------
+
+      Copyright 2001, 2006, 2007, 2008, 2009, 2010 g10 Code GmbH
+
+This file is free software; as a special exception the author gives
+unlimited permission to copy and/or distribute it, with or without
+modifications, as long as this notice is preserved.
+
+This file is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+PURPOSE.
+
+Libksba itself is distributed under the terms of the GNU General
+Public License, see the file COPYING for details.
+
+
+                            KSBA Overview
+                            -------------
+
+KSBA (pronounced Kasbah) is a library to make X.509 certificates as
+well as the CMS easily accessible by other applications.  Both
+specifications are building blocks of S/MIME and TLS.
+
+In the first step we will concentrate on providing the profile
+required by the Aegypten project (i.e. the MailTrusT based BSI profile
+for SPHINX).  However, the architecture will be flexible enough to
+easily support other profiles too.
+
+KSBA will be made available as a standard shared library and reserves
+identifiers starting with "ksba" and "_ksba" (also uppercase and mixed
+case).  It does not rely on another cryptographic library but will
+provide hooks for easy integration with Libgcrypt.
+
+
+
+                            Documentation
+                            -------------
+
+A standard info format reference manual is included.  However the OCSP
+feature has not yet been documented.  See the comments in src/ocsp.c
+and the example tests/t-ocsp.c.  The package dirmngr make extensive
+use of the ocsp feature and may be used as another example.

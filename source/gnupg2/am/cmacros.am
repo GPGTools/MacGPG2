@@ -1,0 +1,55 @@
+# cmacros.am - C macro definitions
+#     Copyright (C) 2004 Free Software Foundation, Inc.
+#
+# This file is part of GnuPG.
+#
+# GnuPG is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# GnuPG is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, see <http://www.gnu.org/licenses/>.
+
+localedir = $(datadir)/locale
+
+AM_CPPFLAGS += -DLOCALEDIR=\"$(localedir)\" 
+
+if ! HAVE_DOSISH_SYSTEM
+AM_CPPFLAGS += -DGNUPG_BINDIR="\"$(bindir)\""            \
+               -DGNUPG_LIBEXECDIR="\"$(libexecdir)\""    \
+               -DGNUPG_LIBDIR="\"$(libdir)/@PACKAGE@\""  \
+               -DGNUPG_DATADIR="\"$(datadir)/@PACKAGE@\"" \
+               -DGNUPG_SYSCONFDIR="\"$(sysconfdir)/@PACKAGE@\""
+endif
+
+
+# If a specific protect tool program has been defined, pass its name
+# to cc.  Note that these macros should not be used directly but via
+# the gnupg_module_name function.
+if GNUPG_AGENT_PGM
+AM_CPPFLAGS += -DGNUPG_DEFAULT_AGENT="\"@GNUPG_AGENT_PGM@\""
+endif
+if GNUPG_PINENTRY_PGM
+AM_CPPFLAGS += -DGNUPG_DEFAULT_PINENTRY="\"@GNUPG_PINENTRY_PGM@\""
+endif
+if GNUPG_SCDAEMON_PGM
+AM_CPPFLAGS += -DGNUPG_DEFAULT_SCDAEMON="\"@GNUPG_SCDAEMON_PGM@\""
+endif
+if GNUPG_DIRMNGR_PGM
+AM_CPPFLAGS += -DGNUPG_DEFAULT_DIRMNGR="\"@GNUPG_DIRMNGR_PGM@\""
+endif
+if GNUPG_PROTECT_TOOL_PGM
+AM_CPPFLAGS += -DGNUPG_DEFAULT_PROTECT_TOOL="\"@GNUPG_PROTECT_TOOL_PGM@\""
+endif
+
+
+# Convenience macros
+libcommon = ../common/libcommon.a
+libcommonpth = ../common/libcommonpth.a
+

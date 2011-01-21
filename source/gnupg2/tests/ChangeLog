@@ -1,0 +1,137 @@
+2009-10-13  Werner Koch  <wk@g10code.com>
+
+	* asschk.c (die): Replace this vararg macro by C-89 compliant
+	macros die_0, die_1, die_2 and die_3.  Change all callers.
+	Reported by Nelson H. F. Beebe.
+
+2009-02-19  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (TESTS_ENVIRONMENT): Use /bin/pwd.
+	* inittests: Ditto.  Fixes bug#1001.
+
+2008-10-20  Werner Koch  <wk@g10code.com>
+
+	* asschk.c (cmd_echo): Mark unused arg.
+	(cmd_send, cmd_expect_ok, cmd_expect_err, cmd_pipeserver) 
+	(cmd_quit_if, cmd_fail_if): Ditto.
+
+2008-09-29  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (TESTS): Remove tests.
+
+2008-02-19  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am: Always run pkits tests.
+
+2008-01-17  Werner Koch  <wk@g10code.com>
+
+	* asschk.c (read_assuan): Use __func__ instead of __FUNCTION__.
+
+2006-11-05  Werner Koch  <wk@g10code.com>
+
+	* asschk.c (read_assuan): Minor cleanups.
+
+2006-09-06  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (openpgp): New variable.
+	(SUBDIRS): Conditionalize openpgp on RUN_GPG_TESTS.
+
+2006-08-21  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (SUBDIRS): New.
+	* openpgp/: New.
+
+2006-06-08  Marcus Brinkmann  <marcus@g10code.de>
+
+	* asschk.c (__func__) [__STDC_VERSION__ < 199901L && __GNUC__ >= 2]:
+	Define macro to __FUNCTION__.
+	(die): Use __func__ instead of __FUNCTION__.
+
+2005-10-07  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (TESTS_ENVIRONMENT): Remove LD_LIBRARY_PATH hack.
+	It's the responsibility of the person building the software to set
+	it properly.
+
+2004-09-30  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (SUBDIRS): Remove pkits until the copyright issues
+	have been cleared.
+
+2004-08-16  Werner Koch  <wk@g10code.de>
+
+	* Makefile.am: Descend into the new pkits directory
+
+2004-02-20  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am: Reset GPG_AGENT_INFO here
+	* runtest: and not anymore here.
+
+2002-12-04  Werner Koch  <wk@gnupg.org>
+
+	* inittests (gpgsm.conf): Fake system time.
+
+2002-10-31  Neal H. Walfield  <neal@g10code.de>
+
+	* Makefile.am (inittests.stamp): Do not set LD_LIBRARY_PATH here.
+	(TESTS_ENVIRONMENT): Do it here.  And also frob $(LIBGCRYPT_LIBS)
+	and $(PTH_LIBS).
+
+2002-10-31  Neal H. Walfield  <neal@g10code.de>
+
+	* asschk.c (die): New macro.
+	(read_assuan): If in verbose mode, dump the string that was read.
+	(write_assuan): Be more verbose on failure.
+
+2002-09-04  Neal H. Walfield  <neal@g10code.de>
+
+	* Makefile.am (inittests.stamp): Do not set LD_LIBRARY_PATH, but
+	rather prepend it.  Be more robust and prefer printf over echo -n.
+
+2002-09-04  Marcus Brinkmann  <marcus@g10code.de>
+
+	* asschk.c (start_server): Close the parent's file descriptors in
+	the child.
+	(read_assuan): Variable NREAD removed.  Cut off the received line
+	currectly if more than one line was read.
+
+2002-09-03  Neal H. Walfield  <neal@g10code.de>
+
+	* Makefile.am (inittests.stamp): Construct an LD_LIBRARY_PATH from
+	LDFLAGS.
+
+2002-08-09  Werner Koch  <wk@gnupg.org>
+
+	* asschk.c (cmd_getenv): New.
+	(expand_line): Allow / as variable name delimiter.
+	* sm-sign+verify, sm-verify: Use $srcdir so that a VPATH build works.
+
+	* Makefile.am: Fixes for make dist.
+	* samplekets/Makefile.am: New.
+	
+2002-08-08  Werner Koch  <wk@gnupg.org>
+
+	* asschk.c: Added some new features.
+	* runtest, inittests: New.
+	* text-1.txt, text-2.txt, text-3.txt: New.
+	* text-1.osig.pem, text-1.dsig.pem, text-1.osig-bad.pem: New.
+	* text-2.osig.pem, text-2.osig-bad.pem: New.
+	* samplekeys : New directory
+	* sm-verify, sm-sign+verify: The first test scripts.
+
+2002-08-06  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am, asschk.c: New.
+
+	
+ Copyright 2002 Free Software Foundation, Inc.
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+	
+

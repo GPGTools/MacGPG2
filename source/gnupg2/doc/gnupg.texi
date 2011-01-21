@@ -1,0 +1,222 @@
+\input texinfo                      @c -*-texinfo-*-
+@c %**start of header
+@setfilename gnupg.info
+@include version.texi
+@settitle Using the GNU Privacy Guard
+
+@c A couple of macros with no effect on texinfo
+@c but used by the yat2m processor. 
+@macro manpage {a}
+@end macro
+@macro mansect {a}
+@end macro
+@macro manpause 
+@end macro
+@macro mancont
+@end macro
+
+@c Create a separate index for command line options.
+@defcodeindex op
+@c Merge the standard indexes into a single one.
+@syncodeindex fn cp
+@syncodeindex vr cp
+@syncodeindex ky cp
+@syncodeindex pg cp
+@syncodeindex tp cp
+@c %**end of header
+@copying
+This is the @cite{The GNU Privacy Guard Manual} (version
+@value{VERSION}, @value{UPDATED-MONTH}).
+
+@iftex
+Published by the Free Software Foundation@*
+51 Franklin St, Fifth Floor@*
+Boston, MA 02110-1301 USA
+@end iftex
+
+Copyright @copyright{} 2002, 2004, 2005, 2006, 2007, 2010 Free Software Foundation, Inc.
+
+@quotation
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 3 of the License, or (at your
+option) any later version. The text of the license can be found in the
+section entitled ``Copying''.
+@end quotation
+@end copying
+
+
+@dircategory GNU Utilities
+@direntry
+* gpg2: (gnupg).           OpenPGP encryption and signing tool.
+* gpgsm: (gnupg).          S/MIME encryption and signing tool.
+* gpg-agent: (gnupg).      The secret key daemon.
+@ifset gpgtwoone
+* dirmngr: (gnupg).        X.509 CRL and OCSP server.
+* dirmngr-client: (gnupg). X.509 CRL and OCSP client.
+@end ifset
+@end direntry
+
+
+@c
+@c Printing stuff taken from gcc.
+@c
+@macro gnupgtabopt{body}
+@code{\body\}
+@end macro
+@macro gnupgoptlist{body}
+@smallexample
+\body\
+@end smallexample
+@end macro
+@c Makeinfo handles the above macro OK, TeX needs manual line breaks;
+@c they get lost at some point in handling the macro.  But if @macro is
+@c used here rather than @alias, it produces double line breaks.
+@iftex
+@alias gol = *
+@end iftex
+@ifnottex
+@macro gol
+@end macro
+@end ifnottex
+
+
+@c
+@c Titlepage
+@c
+@setchapternewpage odd
+@titlepage
+@title Using the GNU Privacy Guard
+@subtitle Version @value{VERSION}
+@subtitle @value{UPDATED-MONTH}
+
+@sp 3
+
+@image{gnupg-logo,16cm,,The GnuPG Logo}
+
+@sp 3
+
+@author Werner Koch (@email{wk@@gnupg.org})
+
+@page
+@vskip 0pt plus 1filll
+@insertcopying
+@end titlepage
+
+@ifnothtml
+@summarycontents
+@contents
+@page
+@end ifnothtml
+
+@ifhtml
+@center @image{gnupg-logo,6cm,,The GnuPG Logo}
+@end ifhtml
+
+@ifnottex
+@node Top
+@top 
+@insertcopying
+
+This manual documents how to use the GNU Privacy Guard system as well as
+the administration and the architecture.
+@end ifnottex
+
+@menu
+* Installation::        A short installation guide.
+
+* Invoking GPG-AGENT::  How to launch the secret key daemon.
+@ifset gpgtwoone
+* Invoking DIRMNGR::    How to launch the CRL and OCSP daemon.
+@end ifset
+* Invoking GPG::        Using the OpenPGP protocol.
+* Invoking GPGSM::      Using the S/MIME protocol.
+* Invoking SCDAEMON::   How to handle Smartcards.
+* Specify a User ID::   How to Specify a User Id.
+
+* Helper Tools::        Description of small helper tools
+
+* Howtos::              How to do certain things.
+* System Notes::        Notes pertaining to certain OSes.
+* Debugging::           How to solve problems
+
+* Copying::             GNU General Public License says
+                        how you can copy and share GnuPG
+* Contributors::        People who have contributed to GnuPG.
+
+* Glossary::            Short description of terms used.
+* Option Index::        Index to command line options.
+* Index::	        Index of concepts and symbol names.
+@end menu
+
+
+@ifhtml
+@page
+@summarycontents
+@contents
+@end ifhtml
+
+
+@include instguide.texi
+
+@include gpg-agent.texi
+@ifset gpgtwoone
+@include dirmngr.texi
+@end ifset
+@include gpg.texi
+@include gpgsm.texi
+@include scdaemon.texi
+
+@node Specify a User ID
+@chapter How to Specify a User Id
+@anchor{how-to-specify-a-user-id}
+@include specify-user-id.texi
+
+
+@include tools.texi
+
+@include howtos.texi
+
+@include sysnotes.texi
+
+@include debugging.texi
+
+@include gpl.texi
+
+@include contrib.texi
+
+@c ---------------------------------------------------------------------
+@c Indexes
+@c ---------------------------------------------------------------------
+
+@include glossary.texi
+
+@node Option Index
+@unnumbered Option Index
+
+@printindex op
+
+@node Index
+@unnumbered Index
+
+@printindex cp
+
+@c ---------------------------------------------------------------------
+@c Epilogue
+@c ---------------------------------------------------------------------
+
+@c @node History
+@c @unnumbered History
+@c 
+@c Here are the notices from the old dirmngr manual: 
+@c
+@c @itemize
+@c @item Using DirMngr, 2002, Steffen Hansen, Klar"alvdalens Datakonsult AB.
+@c @item Using DirMngr, 2004, 2005, 2006, 2008 Werner Koch, g10 Code GmbH.
+@c @end itemize
+@c 
+
+
+@bye
+
+

@@ -1,0 +1,4 @@
+#!/bin/sh
+[ -x "$1" ] && exec $1 $2
+exec ./asschk --no-echo -DGPGSM=${GPGSM} <"$1"
+

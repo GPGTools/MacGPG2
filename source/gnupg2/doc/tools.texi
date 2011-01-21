@@ -1,0 +1,1887 @@
+@c Copyright (C) 2004, 2008 Free Software Foundation, Inc.
+@c This is part of the GnuPG manual.
+@c For copying conditions, see the file GnuPG.texi.
+
+@node Helper Tools
+@chapter Helper Tools
+
+GnuPG comes with a couple of smaller tools:
+
+@menu
+* watchgnupg::            Read logs from a socket.
+* gpgv::                  Verify OpenPGP signatures.
+* addgnupghome::          Create .gnupg home directories.
+* gpgconf::               Modify .gnupg home directories.
+* applygnupgdefaults::    Run gpgconf for all users.
+* gpgsm-gencert.sh::      Generate an X.509 certificate request.
+* gpg-preset-passphrase:: Put a passphrase into the cache.
+* gpg-connect-agent::     Communicate with a running agent.
+@ifset gpgtwoone
+* dirmngr-client::        How to use the Dirmngr client tool.
+@end ifset
+* gpgparsemail::          Parse a mail message into an annotated format
+* symcryptrun::           Call a simple symmetric encryption tool.
+* gpg-zip::               Encrypt or sign files into an archive.
+@end menu
+
+@c
+@c  WATCHGNUPG
+@c
+@manpage watchgnupg.1
+@node watchgnupg
+@section Read logs from a socket
+@ifset manverb
+.B watchgnupg
+\- Read and print logs from a socket
+@end ifset
+
+@mansect synopsis
+@ifset manverb
+.B  watchgnupg
+.RB [ \-\-force ]
+.RB [ \-\-verbose ]
+.I socketname
+@end ifset
+
+@mansect description
+Most of the main utilities are able to write their log files to a Unix
+Domain socket if configured that way.  @command{watchgnupg} is a simple
+listener for such a socket.  It ameliorates the output with a time stamp
+and makes sure that long lines are not interspersed with log output from
+other utilities.  This tool is not available for Windows.
+
+
+@noindent
+@command{watchgnupg} is commonly invoked as
+
+@example
+watchgnupg --force ~/.gnupg/S.log
+@end example
+@manpause
+
+@noindent
+This starts it on the current terminal for listening on the socket
+@file{~/.gnupg/S.log}.  
+
+@mansect options
+@noindent
+@command{watchgnupg} understands these options:
+
+@table @gnupgtabopt
+
+@item --force 
+@opindex force
+Delete an already existing socket file.
+
+@anchor{option watchgnupg --tcp}
+@item --tcp @var{n}
+Instead of reading from a local socket, listen for connects on TCP port
+@var{n}.
+
+@item --verbose
+@opindex verbose
+Enable extra informational output.
+
+@item --version
+@opindex version
+Print version of the program and exit.
+
+@item --help
+@opindex help
+Display a brief help page and exit.
+
+@end table
+
+@noindent
+@mansect examples
+@chapheading Examples
+
+@example
+$ watchgnupg --force /home/foo/.gnupg/S.log
+@end example
+
+This waits for connections on the local socket
+@file{/home/foo/.gnupg/S.log} and shows all log entries.  To make this
+work the option @option{log-file} needs to be used with all modules
+which logs are to be shown.  The value for that option must be given
+with a special prefix (e.g. in the conf file):
+
+@example
+log-file socket:///home/foo/.gnupg/S.log
+@end example
+
+For debugging purposes it is also possible to do remote logging.  Take
+care if you use this feature because the information is send in the
+clear over the network.  Use this syntax in the conf files:
+
+@example
+log-file tcp://192.168.1.1:4711
+@end example
+
+You may use any port and not just 4711 as shown above; only IP addresses
+are supported (v4 and v6) and no host names.  You need to start
+@command{watchgnupg} with the @option{tcp} option.  Note that under
+Windows the registry entry @var{HKCU\Software\GNU\GnuPG:DefaultLogFile}
+can be used to change the default log output from @code{stderr} to
+whatever is given by that entry.  However the only useful entry is a TCP
+name for remote debugging.
+
+
+@mansect see also
+@ifset isman
+@command{gpg}(1), 
+@command{gpgsm}(1), 
+@command{gpg-agent}(1), 
+@command{scdaemon}(1)
+@end ifset
+@include see-also-note.texi
+
+
+@c
+@c  GPGV
+@c
+@include gpgv.texi
+
+
+@c
+@c    ADDGNUPGHOME
+@c
+@manpage addgnupghome.8
+@node addgnupghome
+@section Create .gnupg home directories.
+@ifset manverb
+.B addgnupghome 
+\- Create .gnupg home directories
+@end ifset
+
+@mansect synopsis
+@ifset manverb
+.B  addgnupghome
+.I account_1
+.IR account_2 ... account_n
+@end ifset
+
+@mansect description
+If GnuPG is installed on a system with existing user accounts, it is
+sometimes required to populate the GnuPG home directory with existing
+files.  Especially a @file{trustlist.txt} and a keybox with some
+initial certificates are often desired.  This scripts help to do this
+by copying all files from @file{/etc/skel/.gnupg} to the home
+directories of the accounts given on the command line.  It takes care
+not to overwrite existing GnuPG home directories.
+
+@noindent
+@command{addgnupghome} is invoked by root as:
+
+@example
+addgnupghome account1 account2 ... accountn
+@end example
+
+
+@c
+@c   GPGCONF
+@c
+@manpage gpgconf.1
+@node gpgconf
+@section Modify .gnupg home directories.
+@ifset manverb
+.B gpgconf
+\- Modify .gnupg home directories
+@end ifset
+
+@mansect synopsis
+@ifset manverb
+.B gpgconf
+.RI [ options ]
+.B \-\-list-components
+.br
+.B gpgconf
+.RI [ options ]
+.B \-\-list-options 
+.I component
+.br
+.B gpgconf
+.RI [ options ]
+.B \-\-change-options
+.I component
+@end ifset
+
+
+@mansect description
+The @command{gpgconf} is a utility to automatically and reasonable
+safely query and modify configuration files in the @file{.gnupg} home
+directory.  It is designed not to be invoked manually by the user, but
+automatically by graphical user interfaces (GUI).@footnote{Please note
+that currently no locking is done, so concurrent access should be
+avoided.  There are some precautions to avoid corruption with
+concurrent usage, but results may be inconsistent and some changes may
+get lost.  The stateless design makes it difficult to provide more
+guarantees.}
+
+@command{gpgconf} provides access to the configuration of one or more
+components of the GnuPG system.  These components correspond more or
+less to the programs that exist in the GnuPG framework, like GnuPG,
+GPGSM, DirMngr, etc.  But this is not a strict one-to-one
+relationship.  Not all configuration options are available through
+@command{gpgconf}.  @command{gpgconf} provides a generic and abstract
+method to access the most important configuration options that can
+feasibly be controlled via such a mechanism.
+
+@command{gpgconf} can be used to gather and change the options
+available in each component, and can also provide their default
+values.  @command{gpgconf} will give detailed type information that
+can be used to restrict the user's input without making an attempt to
+commit the changes.
+
+@command{gpgconf} provides the backend of a configuration editor.  The
+configuration editor would usually be a graphical user interface
+program, that allows to display the current options, their default
+values, and allows the user to make changes to the options.  These
+changes can then be made active with @command{gpgconf} again.  Such a
+program that uses @command{gpgconf} in this way will be called GUI
+throughout this section.
+
+@menu
+* Invoking gpgconf::       List of all commands and options.
+* Format conventions::     Formatting conventions relevant for all commands.
+* Listing components::     List all gpgconf components.
+* Checking programs::      Check all programs know to gpgconf.
+* Listing options::        List all options of a component.
+* Changing options::       Changing options of a component.
+* Listing global options:: List all global options.
+* Files used by gpgconf::  What files are used by gpgconf.
+@end menu
+
+@manpause
+@node Invoking gpgconf
+@subsection Invoking gpgconf
+
+@mansect commands
+One of the following commands must be given:
+
+@table @gnupgtabopt
+
+@item --list-components
+List all components.  This is the default command used if none is
+specified.
+
+@item --check-programs
+List all available backend programs and test whether they are runnable.
+
+@item --list-options @var{component}
+List all options of the component @var{component}.
+
+@item --change-options @var{component}
+Change the options of the component @var{component}.
+
+@item --check-options @var{component}
+Check the options for the component @var{component}.
+
+@item --apply-defaults
+Update all configuration files with values taken from the global
+configuration file (usually @file{/etc/gnupg/gpgconf.conf}).
+
+@item --list-dirs
+Lists the directories used by @command{gpgconf}.  One directory is
+listed per line, and each line consists of a colon-separated list where
+the first field names the directory type (for example @code{sysconfdir})
+and the second field contains the percent-escaped directory.  Although
+they are not directories, the socket file names used by
+@command{gpg-agent} and @command{dirmngr} are printed as well.  Note
+that the socket file names and the @code{homedir} lines are the default
+names and they may be overridden by command line switches.
+
+@item --list-config [@var{filename}]
+List the global configuration file in a colon separated format.  If
+@var{filename} is given, check that file instead.
+
+@item --check-config [@var{filename}]
+Run a syntax check on the global configuration file.  If @var{filename}
+is given, check that file instead.
+
+@item --reload [@var{component}]
+@opindex reload
+Reload all or the given component. This is basically the sam as sending
+a SIGHUP to the component.  Components which don't support reloading are
+ignored.
+
+@end table
+
+
+@mansect options
+
+The following options may be used:
+
+@table @gnupgtabopt
+@c FIXME: Not yet supported.
+@c @item -o @var{file}
+@c @itemx --output @var{file}
+@c Use @var{file} as output file.
+
+@item -v
+@itemx --verbose
+Outputs additional information while running.  Specifically, this
+extends numerical field values by human-readable descriptions.
+
+@item -n
+@itemx --dry-run
+Do not actually change anything.  This is currently only implemented
+for @code{--change-options} and can be used for testing purposes.
+
+@item -r
+@itemx --runtime
+Only used together with @code{--change-options}.  If one of the
+modified options can be changed in a running daemon process, signal
+the running daemon to ask it to reparse its configuration file after
+changing.
+
+This means that the changes will take effect at run-time, as far as
+this is possible.  Otherwise, they will take effect at the next start
+of the respective backend programs.
+@manpause
+@end table
+
+
+@node Format conventions
+@subsection Format conventions
+
+Some lines in the output of @command{gpgconf} contain a list of
+colon-separated fields.  The following conventions apply:
+
+@itemize @bullet
+@item
+The GUI program is required to strip off trailing newline and/or
+carriage return characters from the output.
+
+@item
+@command{gpgconf} will never leave out fields.  If a certain version
+provides a certain field, this field will always be present in all
+@command{gpgconf} versions from that time on.
+
+@item
+Future versions of @command{gpgconf} might append fields to the list.
+New fields will always be separated from the previously last field by
+a colon separator.  The GUI should be prepared to parse the last field
+it knows about up until a colon or end of line.
+
+@item
+Not all fields are defined under all conditions.  You are required to
+ignore the content of undefined fields.
+@end itemize
+
+There are several standard types for the content of a field:
+
+@table @asis
+@item verbatim
+Some fields contain strings that are not escaped in any way.  Such
+fields are described to be used @emph{verbatim}.  These fields will
+never contain a colon character (for obvious reasons).  No de-escaping
+or other formatting is required to use the field content.  This is for
+easy parsing of the output, when it is known that the content can
+never contain any special characters.
+
+@item percent-escaped
+Some fields contain strings that are described to be
+@emph{percent-escaped}.  Such strings need to be de-escaped before
+their content can be presented to the user.  A percent-escaped string
+is de-escaped by replacing all occurrences of @code{%XY} by the byte
+that has the hexadecimal value @code{XY}.  @code{X} and @code{Y} are
+from the set @code{0-9a-f}.
+
+@item localised
+Some fields contain strings that are described to be @emph{localised}.
+Such strings are translated to the active language and formatted in
+the active character set.
+
+@item @w{unsigned number}
+Some fields contain an @emph{unsigned number}.  This number will
+always fit into a 32-bit unsigned integer variable.  The number may be
+followed by a space, followed by a human readable description of that
+value (if the verbose option is used).  You should ignore everything
+in the field that follows the number.
+
+@item @w{signed number}
+Some fields contain a @emph{signed number}.  This number will always
+fit into a 32-bit signed integer variable.  The number may be followed
+by a space, followed by a human readable description of that value (if
+the verbose option is used).  You should ignore everything in the
+field that follows the number.
+
+@item @w{boolean value}
+Some fields contain a @emph{boolean value}.  This is a number with
+either the value 0 or 1.  The number may be followed by a space,
+followed by a human readable description of that value (if the verbose
+option is used).  You should ignore everything in the field that follows
+the number; checking just the first character is sufficient in this
+case.
+
+@item option
+Some fields contain an @emph{option} argument.  The format of an
+option argument depends on the type of the option and on some flags:
+
+@table @asis
+@item no argument
+The simplest case is that the option does not take an argument at all
+(@var{type} @code{0}).  Then the option argument is an unsigned number
+that specifies how often the option occurs.  If the @code{list} flag
+is not set, then the only valid number is @code{1}.  Options that do
+not take an argument never have the @code{default} or @code{optional
+arg} flag set.
+
+@item number
+If the option takes a number argument (@var{alt-type} is @code{2} or
+@code{3}), and it can only occur once (@code{list} flag is not set),
+then the option argument is either empty (only allowed if the argument
+is optional), or it is a number.  A number is a string that begins
+with an optional minus character, followed by one or more digits.  The
+number must fit into an integer variable (unsigned or signed,
+depending on @var{alt-type}).
+
+@item number list
+If the option takes a number argument and it can occur more than once,
+then the option argument is either empty, or it is a comma-separated
+list of numbers as described above.
+
+@item string
+If the option takes a string argument (@var{alt-type} is 1), and it
+can only occur once (@code{list} flag is not set) then the option
+argument is either empty (only allowed if the argument is optional),
+or it starts with a double quote character (@code{"}) followed by a
+percent-escaped string that is the argument value.  Note that there is
+only a leading double quote character, no trailing one.  The double
+quote character is only needed to be able to differentiate between no
+value and the empty string as value.
+
+@item string list
+If the option takes a number argument and it can occur more than once,
+then the option argument is either empty, or it is a comma-separated
+list of string arguments as described above.
+@end table
+@end table
+
+The active language and character set are currently determined from
+the locale environment of the @command{gpgconf} program.
+
+@c FIXME: Document the active language and active character set.  Allow
+@c to change it via the command line?
+
+
+@mansect usage
+@node Listing components
+@subsection Listing components
+
+The command @code{--list-components} will list all components that can
+be configured with @command{gpgconf}.  Usually, one component will
+correspond to one GnuPG-related program and contain the options of
+that programs configuration file that can be modified using
+@command{gpgconf}.  However, this is not necessarily the case.  A
+component might also be a group of selected options from several
+programs, or contain entirely virtual options that have a special
+effect rather than changing exactly one option in one configuration
+file.
+
+A component is a set of configuration options that semantically belong
+together.  Furthermore, several changes to a component can be made in
+an atomic way with a single operation.  The GUI could for example
+provide a menu with one entry for each component, or a window with one
+tabulator sheet per component.
+
+The command argument @code{--list-components} lists all available
+components, one per line.  The format of each line is:
+
+@code{@var{name}:@var{description}:@var{pgmname}:}
+
+@table @var
+@item name
+This field contains a name tag of the component.  The name tag is used
+to specify the component in all communication with @command{gpgconf}.
+The name tag is to be used @emph{verbatim}.  It is thus not in any
+escaped format.
+
+@item description
+The @emph{string} in this field contains a human-readable description
+of the component.  It can be displayed to the user of the GUI for
+informational purposes.  It is @emph{percent-escaped} and
+@emph{localized}.
+
+@item pgmname
+The @emph{string} in this field contains the absolute name of the
+program's file.  It can be used to unambiguously invoke that program.
+It is @emph{percent-escaped}.
+@end table
+
+Example:
+@example
+$ gpgconf --list-components
+gpg:GPG for OpenPGP:/usr/local/bin/gpg2:
+gpg-agent:GPG Agent:/usr/local/bin/gpg-agent:
+scdaemon:Smartcard Daemon:/usr/local/bin/scdaemon:
+gpgsm:GPG for S/MIME:/usr/local/bin/gpgsm:
+dirmngr:Directory Manager:/usr/local/bin/dirmngr:
+@end example
+
+
+
+@node Checking programs
+@subsection Checking programs
+
+The command @code{--check-programs} is similar to
+@code{--list-components} but works on backend programs and not on
+components.  It runs each program to test whether it is installed and
+runnable.  This also includes a syntax check of all config file options
+of the program.
+
+The command argument @code{--check-programs} lists all available
+programs, one per line.  The format of each line is:
+
+@code{@var{name}:@var{description}:@var{pgmname}:@var{avail}:@var{okay}:@var{cfgfile}:@var{line}:@var{error}:}
+
+@table @var
+@item name
+This field contains a name tag of the program which is identical to the
+name of the component.  The name tag is to be used @emph{verbatim}.  It
+is thus not in any escaped format.  This field may be empty to indicate
+a continuation of error descriptions for the last name.  The description
+and pgmname fields are then also empty.
+
+@item description
+The @emph{string} in this field contains a human-readable description
+of the component.  It can be displayed to the user of the GUI for
+informational purposes.  It is @emph{percent-escaped} and
+@emph{localized}.
+
+@item pgmname
+The @emph{string} in this field contains the absolute name of the
+program's file.  It can be used to unambiguously invoke that program.
+It is @emph{percent-escaped}.
+
+@item avail
+The @emph{boolean value} in this field indicates whether the program is
+installed and runnable.
+
+@item okay
+The @emph{boolean value} in this field indicates whether the program's
+config file is syntactically okay.
+
+@item cfgfile
+If an error occurred in the configuration file (as indicated by a false
+value in the field @code{okay}), this field has the name of the failing
+configuration file.  It is @emph{percent-escaped}.
+
+@item line
+If an error occurred in the configuration file, this field has the line
+number of the failing statement in the configuration file.  
+It is an @emph{unsigned number}.
+
+@item error
+If an error occurred in the configuration file, this field has the error
+text of the failing statement in the configuration file.  It is
+@emph{percent-escaped} and @emph{localized}.
+
+@end table
+
+@noindent
+In the following example the @command{dirmngr} is not runnable and the
+configuration file of @command{scdaemon} is not okay.
+
+@example
+$ gpgconf --check-programs
+gpg:GPG for OpenPGP:/usr/local/bin/gpg2:1:1:
+gpg-agent:GPG Agent:/usr/local/bin/gpg-agent:1:1:
+scdaemon:Smartcard Daemon:/usr/local/bin/scdaemon:1:0:
+gpgsm:GPG for S/MIME:/usr/local/bin/gpgsm:1:1:
+dirmngr:Directory Manager:/usr/local/bin/dirmngr:0:0:
+@end example
+
+@noindent
+The command @w{@code{--check-options @var{component}}} will verify the
+configuration file in the same manner as @code{--check-programs}, but
+only for the component @var{component}.
+
+
+@node Listing options
+@subsection Listing options
+
+Every component contains one or more options.  Options may be gathered
+into option groups to allow the GUI to give visual hints to the user
+about which options are related.
+
+The command argument @code{@w{--list-options @var{component}}} lists
+all options (and the groups they belong to) in the component
+@var{component}, one per line.  @var{component} must be the string in
+the field @var{name} in the output of the @code{--list-components}
+command.
+
+There is one line for each option and each group.  First come all
+options that are not in any group.  Then comes a line describing a
+group.  Then come all options that belong into each group.  Then comes
+the next group and so on.  There does not need to be any group (and in
+this case the output will stop after the last non-grouped option).
+
+The format of each line is:
+
+@code{@var{name}:@var{flags}:@var{level}:@var{description}:@var{type}:@var{alt-type}:@var{argname}:@var{default}:@var{argdef}:@var{value}}
+
+@table @var
+@item name
+This field contains a name tag for the group or option.  The name tag
+is used to specify the group or option in all communication with
+@command{gpgconf}.  The name tag is to be used @emph{verbatim}.  It is
+thus not in any escaped format.
+
+@item flags
+The flags field contains an @emph{unsigned number}.  Its value is the
+OR-wise combination of the following flag values:
+
+@table @code
+@item group (1)
+If this flag is set, this is a line describing a group and not an
+option.
+@end table
+
+The following flag values are only defined for options (that is, if
+the @code{group} flag is not used).
+
+@table @code
+@item optional arg (2)
+If this flag is set, the argument is optional.  This is never set for
+@var{type} @code{0} (none) options.
+
+@item list (4)
+If this flag is set, the option can be given multiple times.
+
+@item runtime (8)
+If this flag is set, the option can be changed at runtime.
+
+@item default (16)
+If this flag is set, a default value is available.
+
+@item default desc (32)
+If this flag is set, a (runtime) default is available.  This and the
+@code{default} flag are mutually exclusive.
+
+@item no arg desc (64)
+If this flag is set, and the @code{optional arg} flag is set, then the
+option has a special meaning if no argument is given.
+
+@item no change (128)
+If this flag is set, gpgconf ignores requests to change the value.  GUI
+frontends should grey out this option.  Note, that manual changes of the
+configuration files are still possible.
+@end table
+
+@item level
+This field is defined for options and for groups.  It contains an
+@emph{unsigned number} that specifies the expert level under which
+this group or option should be displayed.  The following expert levels
+are defined for options (they have analogous meaning for groups):
+
+@table @code
+@item basic (0)
+This option should always be offered to the user.
+
+@item advanced (1)
+This option may be offered to advanced users.
+
+@item expert (2)
+This option should only be offered to expert users.
+
+@item invisible (3)
+This option should normally never be displayed, not even to expert
+users.
+
+@item internal (4)
+This option is for internal use only.  Ignore it.
+@end table
+
+The level of a group will always be the lowest level of all options it
+contains.
+
+@item description
+This field is defined for options and groups.  The @emph{string} in
+this field contains a human-readable description of the option or
+group.  It can be displayed to the user of the GUI for informational
+purposes.  It is @emph{percent-escaped} and @emph{localized}.
+
+@item type
+This field is only defined for options.  It contains an @emph{unsigned
+number} that specifies the type of the option's argument, if any.  The
+following types are defined:
+
+Basic types:
+
+@table @code
+@item none (0)
+No argument allowed.
+
+@item string (1)
+An @emph{unformatted string}.
+
+@item int32 (2)
+A @emph{signed number}.
+
+@item uint32 (3)
+An @emph{unsigned number}.
+@end table
+
+Complex types:
+
+@table @code
+@item pathname (32)
+A @emph{string} that describes the pathname of a file.  The file does
+not necessarily need to exist.
+
+@item ldap server (33)
+A @emph{string} that describes an LDAP server in the format:
+
+@code{@var{hostname}:@var{port}:@var{username}:@var{password}:@var{base_dn}}
+
+@item key fingerprint (34)
+A @emph{string} with a 40 digit fingerprint specifying a certificate.
+
+@item pub key (35)
+A @emph{string} that describes a certificate by user ID, key ID or
+fingerprint.
+
+@item sec key (36)
+A @emph{string} that describes a certificate with a key by user ID,
+key ID or fingerprint.
+
+@item alias list (37)
+A @emph{string} that describes an alias list, like the one used with
+gpg's group option.  The list consists of a key, an equal sign and space
+separated values.
+@end table
+
+More types will be added in the future.  Please see the @var{alt-type}
+field for information on how to cope with unknown types.
+
+@item alt-type
+This field is identical to @var{type}, except that only the types
+@code{0} to @code{31} are allowed.  The GUI is expected to present the
+user the option in the format specified by @var{type}.  But if the
+argument type @var{type} is not supported by the GUI, it can still
+display the option in the more generic basic type @var{alt-type}.  The
+GUI must support all the defined basic types to be able to display all
+options.  More basic types may be added in future versions.  If the
+GUI encounters a basic type it doesn't support, it should report an
+error and abort the operation.
+
+@item argname
+This field is only defined for options with an argument type
+@var{type} that is not @code{0}.  In this case it may contain a
+@emph{percent-escaped} and @emph{localised string} that gives a short
+name for the argument.  The field may also be empty, though, in which
+case a short name is not known.
+
+@item default
+This field is defined only for options for which the @code{default} or
+@code{default desc} flag is set.  If the @code{default} flag is set,
+its format is that of an @emph{option argument} (@xref{Format
+conventions}, for details).  If the default value is empty, then no
+default is known.  Otherwise, the value specifies the default value
+for this option.  If the @code{default desc} flag is set, the field is
+either empty or contains a description of the effect if the option is
+not given.
+
+@item argdef
+This field is defined only for options for which the @code{optional
+arg} flag is set.  If the @code{no arg desc} flag is not set, its
+format is that of an @emph{option argument} (@xref{Format
+conventions}, for details).  If the default value is empty, then no
+default is known.  Otherwise, the value specifies the default argument
+for this option.  If the @code{no arg desc} flag is set, the field is
+either empty or contains a description of the effect of this option if
+no argument is given.
+
+@item value
+This field is defined only for options.  Its format is that of an
+@emph{option argument}.  If it is empty, then the option is not
+explicitly set in the current configuration, and the default applies
+(if any).  Otherwise, it contains the current value of the option.
+Note that this field is also meaningful if the option itself does not
+take a real argument (in this case, it contains the number of times
+the option appears).
+@end table
+
+
+@node Changing options
+@subsection Changing options
+
+The command @w{@code{--change-options @var{component}}} will attempt
+to change the options of the component @var{component} to the
+specified values.  @var{component} must be the string in the field
+@var{name} in the output of the @code{--list-components} command.  You
+have to provide the options that shall be changed in the following
+format on standard input:
+
+@code{@var{name}:@var{flags}:@var{new-value}}
+
+@table @var
+@item name
+This is the name of the option to change.  @var{name} must be the
+string in the field @var{name} in the output of the
+@code{--list-options} command.
+
+@item flags
+The flags field contains an @emph{unsigned number}.  Its value is the
+OR-wise combination of the following flag values:
+
+@table @code
+@item default (16)
+If this flag is set, the option is deleted and the default value is
+used instead (if applicable).
+@end table
+
+@item new-value
+The new value for the option.  This field is only defined if the
+@code{default} flag is not set.  The format is that of an @emph{option
+argument}.  If it is empty (or the field is omitted), the default
+argument is used (only allowed if the argument is optional for this
+option).  Otherwise, the option will be set to the specified value.
+@end table
+
+@noindent
+The output of the command is the same as that of
+@code{--check-options} for the modified configuration file.
+
+Examples:
+
+To set the force option, which is of basic type @code{none (0)}:
+
+@example
+$ echo 'force:0:1' | gpgconf --change-options dirmngr
+@end example
+
+To delete the force option:
+
+@example
+$ echo 'force:16:' | gpgconf --change-options dirmngr
+@end example
+
+The @code{--runtime} option can influence when the changes take
+effect.
+
+
+@node Listing global options
+@subsection Listing global options
+
+Sometimes it is useful for applications to look at the global options
+file @file{gpgconf.conf}. 
+The colon separated listing format is record oriented and uses the first
+field to identify the record type:
+
+@table @code
+@item k
+This describes a key record to start the definition of a new ruleset for
+a user/group.  The format of a key record is:
+
+  @code{k:@var{user}:@var{group}:}
+
+@table @var
+@item user
+This is the user field of the key.  It is percent escaped.  See the
+definition of the gpgconf.conf format for details.
+
+@item group
+This is the group field of the key.  It is percent escaped.
+@end table
+
+@item r
+This describes a rule record. All rule records up to the next key record
+make up a rule set for that key.  The format of a rule record is:
+
+  @code{r:::@var{component}:@var{option}:@var{flags}:@var{value}:}
+
+@table @var
+@item component
+This is the component part of a rule.  It is a plain string.
+
+@item option
+This is the option part of a rule.  It is a plain string.
+
+@item flag
+This is the flags part of a rule.  There may be only one flag per rule
+but by using the same component and option, several flags may be
+assigned to an option.  It is a plain string.
+
+@item value
+This is the optional value for the option.  It is a percent escaped
+string with a single quotation mark to indicate a string.  The quotation
+mark is only required to distinguish between no value specified and an
+empty string.
+@end table
+
+@end table
+
+@noindent
+Unknown record types should be ignored.  Note that there is intentionally
+no feature to change the global option file through @command{gpgconf}.
+
+
+
+@mansect files
+@node Files used by gpgconf
+@subsection Files used by gpgconf
+
+@table @file
+
+@item /etc/gnupg/gpgconf.conf
+@cindex gpgconf.conf
+  If this file exists, it is processed as a global configuration file.
+  A commented example can be found in the @file{examples} directory of
+  the distribution.
+@end table
+
+
+@mansect see also
+@ifset isman
+@command{gpg}(1), 
+@command{gpgsm}(1), 
+@command{gpg-agent}(1), 
+@command{scdaemon}(1),
+@command{dirmngr}(1)
+@end ifset
+@include see-also-note.texi
+
+
+
+@c
+@c    APPLYGNUPGDEFAULTS
+@c
+@manpage applygnupgdefaults.8
+@node applygnupgdefaults
+@section Run gpgconf for all users.
+@ifset manverb
+.B applygnupgdefaults
+\- Run gpgconf --apply-defaults for all users.
+@end ifset
+
+@mansect synopsis
+@ifset manverb
+.B  applygnupgdefaults
+@end ifset
+
+@mansect description
+This script is a wrapper around @command{gpgconf} to run it with the
+command @code{--apply-defaults} for all real users with an existing
+GnuPG home directory.  Admins might want to use this script to update he
+GnuPG configuration files for all users after
+@file{/etc/gnupg/gpgconf.conf} has been changed.  This allows to enforce
+certain policies for all users.  Note, that this is not a bulletproof of
+forcing a user to use certain options.  A user may always directly edit
+the configuration files and bypass gpgconf.
+
+@noindent
+@command{applygnupgdefaults} is invoked by root as:
+
+@example
+applygnupgdefaults
+@end example
+
+
+@c
+@c    GPGSM-GENCERT.SH
+@c
+@node gpgsm-gencert.sh
+@section Generate an X.509 certificate request
+@manpage gpgsm-gencert.sh.1
+@ifset manverb
+.B gpgsm-gencert.sh
+\- Generate an X.509 certificate request
+@end ifset 
+
+@mansect synopsis
+@ifset manverb
+.B  gpgsm-gencert.sh
+@end ifset
+
+@mansect description
+This is a simple tool to interactively generate a certificate request
+which will be printed to stdout.
+
+@manpause
+@noindent
+@command{gpgsm-gencert.sh} is invoked as:
+
+@samp{gpgsm-cencert.sh}
+
+@mansect see also
+@ifset isman
+@command{gpgsm}(1), 
+@command{gpg-agent}(1), 
+@command{scdaemon}(1)
+@end ifset
+@include see-also-note.texi
+
+
+
+@c
+@c   GPG-PRESET-PASSPHRASE
+@c
+@node gpg-preset-passphrase
+@section Put a passphrase into the cache.
+@manpage gpg-preset-passphrase.1
+@ifset manverb
+.B gpg-preset-passphrase
+\- Put a passphrase into gpg-agent's cache
+@end ifset
+
+@mansect synopsis
+@ifset manverb
+.B  gpg-preset-passphrase
+.RI [ options ]
+.RI [ command ]
+.I cache-id
+@end ifset
+
+@mansect description
+The @command{gpg-preset-passphrase} is a utility to seed the internal
+cache of a running @command{gpg-agent} with passphrases.  It is mainly
+useful for unattended machines, where the usual @command{pinentry} tool
+may not be used and the passphrases for the to be used keys are given at
+machine startup.
+
+Passphrases set with this utility don't expire unless the
+@option{--forget} option is used to explicitly clear them from the cache
+--- or @command{gpg-agent} is either restarted or reloaded (by sending a
+SIGHUP to it).  It is necessary to allow this passphrase presetting by
+starting @command{gpg-agent} with the
+@option{--allow-preset-passphrase}.
+
+@menu
+* Invoking gpg-preset-passphrase::   List of all commands and options.
+@end menu
+
+@manpause
+@node Invoking gpg-preset-passphrase
+@subsection List of all commands and options.
+@mancont
+
+@noindent
+@command{gpg-preset-passphrase} is invoked this way:
+
+@example
+gpg-preset-passphrase [options] [command] @var{cacheid}
+@end example
+
+@var{cacheid} is either a 40 character keygrip of hexadecimal
+characters identifying the key for which the passphrase should be set
+or cleared.  The keygrip is listed along with the key when running the
+command: @code{gpgsm --dump-secret-keys}.  Alternatively an arbitrary
+string may be used to identify a passphrase; it is suggested that such
+a string is prefixed with the name of the application (e.g
+@code{foo:12346}).
+
+@noindent
+One of the following command options must be given:
+
+@table @gnupgtabopt
+@item --preset
+@opindex preset
+Preset a passphrase. This is what you usually will
+use. @command{gpg-preset-passphrase} will then read the passphrase from
+@code{stdin}.
+
+@item --forget
+@opindex forget
+Flush the passphrase for the given cache ID from the cache.
+
+@end table
+
+@noindent
+The following additional options may be used:
+
+@table @gnupgtabopt
+@item -v
+@itemx --verbose
+@opindex verbose
+Output additional information while running.  
+
+@item -P @var{string}
+@itemx --passphrase @var{string}
+@opindex passphrase
+Instead of reading the passphrase from @code{stdin}, use the supplied
+@var{string} as passphrase.  Note that this makes the passphrase visible
+for other users.
+@end table
+
+@mansect see also
+@ifset isman
+@command{gpg}(1), 
+@command{gpgsm}(1), 
+@command{gpg-agent}(1), 
+@command{scdaemon}(1)
+@end ifset
+@include see-also-note.texi
+
+
+
+
+@c
+@c   GPG-CONNECT-AGENT
+@c
+@node gpg-connect-agent
+@section Communicate with a running agent.
+@manpage gpg-connect-agent.1
+@ifset manverb
+.B gpg-connect-agent
+\- Communicate with a running agent
+@end ifset
+
+@mansect synopsis
+@ifset manverb
+.B  gpg-connect-agent
+.RI [ options ] [commands]
+@end ifset
+
+@mansect description
+The @command{gpg-connect-agent} is a utility to communicate with a
+running @command{gpg-agent}.  It is useful to check out the commands
+gpg-agent provides using the Assuan interface.  It might also be useful
+for scripting simple applications.  Input is expected at stdin and out
+put gets printed to stdout.
+
+It is very similar to running @command{gpg-agent} in server mode; but
+here we connect to a running instance.
+
+@menu
+* Invoking gpg-connect-agent::       List of all options.
+* Controlling gpg-connect-agent::    Control commands.
+@end menu
+
+@manpause
+@node Invoking gpg-connect-agent
+@subsection List of all options.
+
+@noindent
+@command{gpg-connect-agent} is invoked this way:
+
+@example
+gpg-connect-agent [options] [commands]
+@end example
+@mancont
+
+@noindent
+The following options may be used:
+
+@table @gnupgtabopt
+@item -v
+@itemx --verbose
+@opindex verbose
+Output additional information while running.  
+
+@item -q
+@item --quiet
+@opindex q
+@opindex quiet
+Try to be as quiet as possible.
+
+@include opt-homedir.texi
+
+@item --agent-program @var{file}
+@opindex agent-program
+Specify the agent program to be started if none is running.
+
+
+@item -S
+@itemx --raw-socket @var{name}
+@opindex S        
+@opindex raw-socket
+Connect to socket @var{name} assuming this is an Assuan style server.
+Do not run any special initializations or environment checks.  This may
+be used to directly connect to any Assuan style socket server.
+
+@item -E
+@itemx --exec
+@opindex exec
+Take the rest of the command line as a program and it's arguments and
+execute it as an assuan server. Here is how you would run @command{gpgsm}:
+@smallexample
+ gpg-connect-agent --exec gpgsm --server
+@end smallexample
+Note that you may not use options on the command line in this case.
+
+@item --no-ext-connect
+@opindex no-ext-connect
+When using @option{-S} or @option{--exec}, @command{gpg-connect-agent}
+connects to the assuan server in extended mode to allow descriptor
+passing.  This option makes it use the old mode.
+
+@item --run @var{file}
+@opindex run 
+Run the commands from @var{file} at startup and then continue with the
+regular input method.  Note, that commands given on the command line are
+executed after this file.
+
+@item -s
+@itemx --subst
+@opindex subst
+Run the command @code{/subst} at startup.
+
+@item --hex
+@opindex hex
+Print data lines in a hex format and the ASCII representation of
+non-control characters.
+
+@item --decode
+@opindex decode
+Decode data lines.  That is to remove percent escapes but make sure that
+a new line always starts with a D and a space.
+
+@end table
+
+@mansect control commands
+@node Controlling gpg-connect-agent
+@subsection Control commands.
+
+While reading Assuan commands, gpg-agent also allows a few special
+commands to control its operation.  These control commands all start
+with a slash (@code{/}).
+
+@table @code
+
+@item /echo @var{args}
+Just print @var{args}.
+
+@item /let @var{name} @var{value}
+Set the variable @var{name} to @var{value}.  Variables are only
+substituted on the input if the @command{/subst} has been used.
+Variables are referenced by prefixing the name with a dollar sign and
+optionally include the name in curly braces.  The rules for a valid name
+are identically to those of the standard bourne shell.  This is not yet
+enforced but may be in the future.  When used with curly braces no
+leading or trailing white space is allowed. 
+
+If a variable is not found, it is searched in the environment and if
+found copied to the table of variables.
+
+Variable functions are available: The name of the function must be
+followed by at least one space and the at least one argument.  The
+following functions are available:
+
+@table @code
+@item get
+Return a value described by the argument.  Available arguments are:
+
+@table @code    
+@item cwd
+The current working directory.
+@item homedir
+The gnupg homedir.
+@item sysconfdir
+GnuPG's system configuration directory.
+@item bindir
+GnuPG's binary directory.
+@item libdir
+GnuPG's library directory.
+@item libexecdir
+GnuPG's library directory for executable files.
+@item datadir
+GnuPG's data directory.
+@item serverpid
+The PID of the current server. Command @command{/serverpid} must
+have been given to return a useful value.
+@end table
+
+@item unescape @var{args}
+Remove C-style escapes from @var{args}.  Note that @code{\0} and
+@code{\x00} terminate the returned string implicitly.  The string to be
+converted are the entire arguments right behind the delimiting space of
+the function name.
+
+@item unpercent @var{args}
+@itemx unpercent+ @var{args}
+Remove percent style escaping from @var{args}.  Note that @code{%00}
+terminates the string implicitly.  The string to be converted are the
+entire arguments right behind the delimiting space of the function
+name. @code{unpercent+} also maps plus signs to a spaces.
+
+@item percent @var{args}
+@itemx percent+ @var{args}
+Escape the @var{args} using percent style escaping.  Tabs, formfeeds,
+linefeeds, carriage returns and colons are escaped. @code{percent+} also
+maps spaces to plus signs.
+
+@item errcode @var{arg}
+@itemx errsource @var{arg}
+@itemx errstring @var{arg}
+Assume @var{arg} is an integer and evaluate it using @code{strtol}.  Return
+the gpg-error error code, error source or a formatted string with the
+error code and error source.
+
+
+@item +
+@itemx -
+@itemx *
+@itemx /
+@itemx %
+Evaluate all arguments as long integers using @code{strtol} and apply
+this operator.  A division by zero yields an empty string.
+
+@item !
+@itemx |
+@itemx &
+Evaluate all arguments as long integers using @code{strtol} and apply
+the logical oeprators NOT, OR or AND.  The NOT operator works on the
+last argument only.
+
+
+@end table
+
+
+@item /definq @var{name} @var{var}
+Use content of the variable @var{var} for inquiries with @var{name}.
+@var{name} may be an asterisk (@code{*}) to match any inquiry.
+
+
+@item /definqfile @var{name} @var{file}
+Use content of @var{file} for inquiries with @var{name}.
+@var{name} may be an asterisk (@code{*}) to match any inquiry.
+
+@item /definqprog @var{name} @var{prog}
+Run @var{prog} for inquiries matching @var{name} and pass the
+entire line to it as command line arguments.
+
+@item /datafile @var{name}
+Write all data lines from the server to the file @var{name}.  The file
+is opened for writing and created if it does not exists.  An existing
+file is first truncated to 0.  The data written to the file fully
+decoded.  Using a single dash for @var{name} writes to stdout.  The
+file is kept open until a new file is set using this command or this
+command is used without an argument.
+
+@item /showdef
+Print all definitions
+
+@item /cleardef
+Delete all definitions
+
+@item /sendfd @var{file} @var{mode}
+Open @var{file} in @var{mode} (which needs to be a valid @code{fopen}
+mode string) and send the file descriptor to the server.  This is
+usually followed by a command like @code{INPUT FD} to set the
+input source for other commands.
+
+@item /recvfd
+Not yet implemented.
+
+@item /open @var{var} @var{file} [@var{mode}]
+Open @var{file} and assign the file descriptor to @var{var}.  Warning:
+This command is experimental and might change in future versions.
+
+@item /close @var{fd}
+Close the file descriptor @var{fd}.  Warning: This command is
+experimental and might change in future versions.
+
+@item /showopen
+Show a list of open files.
+
+@item /serverpid
+Send the Assuan command @command{GETINFO pid} to the server and store
+the returned PID for internal purposes.
+
+@item /sleep
+Sleep for a second.
+
+@item /hex
+@itemx /nohex
+Same as the command line option @option{--hex}.
+
+@item /decode
+@itemx /nodecode
+Same as the command line option @option{--decode}.
+
+@item /subst
+@itemx /nosubst
+Enable and disable variable substitution.  It defaults to disabled
+unless the command line option @option{--subst} has been used.
+If /subst as been enabled once, leading whitespace is removed from
+input lines which makes scripts easier to read.
+
+@item /while @var{condition}
+@itemx /end
+These commands provide a way for executing loops.  All lines between the
+@code{while} and the corresponding @code{end} are executed as long as
+the evaluation of @var{condition} yields a non-zero value.  The
+evaluation is done by passing @var{condition} to the @code{strtol}
+function.  Example:
+
+@smallexample
+  /subst
+  /let i 3
+  /while $i
+    /echo loop couter is $i
+    /let i $@{- $i 1@}
+  /end
+@end smallexample
+
+
+@item /run @var{file}
+Run commands from @var{file}.
+
+@item /bye
+Terminate the connection and the program
+
+@item /help
+Print a list of available control commands.
+
+@end table
+
+
+@ifset isman
+@mansect see also
+@command{gpg-agent}(1), 
+@command{scdaemon}(1)
+@include see-also-note.texi
+@end ifset
+
+@ifset gpgtwoone
+@c
+@c   DIRMNGR-CLIENT
+@c
+@node dirmngr-client
+@section The Dirmngr Client Tool
+
+@manpage dirmngr-client.1
+@ifset manverb
+.B dirmngr-client
+\- Tool to access the Dirmngr services
+@end ifset
+
+@mansect synopsis
+@ifset manverb
+.B  dirmngr-client
+.RI [ options ]  
+.RI [ certfile | pattern ]  
+@end ifset
+
+@mansect description
+The @command{dirmngr-client} is a simple tool to contact a running
+dirmngr and test whether a certificate has been revoked --- either by
+being listed in the corresponding CRL or by running the OCSP protocol.
+If no dirmngr is running, a new instances will be started but this is
+in general not a good idea due to the huge performance overhead.
+
+@noindent
+The usual way to run this tool is either:
+
+@example
+dirmngr-client @var{acert}
+@end example
+
+@noindent
+or
+
+@example
+dirmngr-client <@var{acert}
+@end example
+
+Where @var{acert} is one DER encoded (binary) X.509 certificates to be
+tested. 
+@ifclear isman
+The return value of this command is
+@end ifclear
+
+@mansect return value
+@ifset isman
+@command{dirmngr-client} returns these values:
+@end ifset
+@table @code
+
+@item 0 
+The certificate under question is valid; i.e. there is a valid CRL
+available and it is not listed tehre or teh OCSP request returned that
+that certificate is valid.
+
+@item 1
+The certificate has been revoked
+
+@item 2 (and other values)
+There was a problem checking the revocation state of the certificate.
+A message to stderr has given more detailed information.  Most likely
+this is due to a missing or expired CRL or due to a network problem.
+
+@end table
+
+@mansect options
+@noindent
+@command{dirmngr-client} may be called with the following options:
+
+
+@table @gnupgtabopt
+@item --version
+@opindex version
+Print the program version and licensing information.  Note that you cannot
+abbreviate this command.
+
+@item --help, -h
+@opindex help
+Print a usage message summarizing the most useful command-line options.
+Note that you cannot abbreviate this command.
+
+@item --quiet, -q
+@opindex quiet
+Make the output extra brief by suppressing any informational messages.
+
+@item -v
+@item --verbose
+@opindex v
+@opindex verbose
+Outputs additional information while running.
+You can increase the verbosity by giving several
+verbose commands to @sc{dirmngr}, such as @samp{-vv}.
+
+@item --pem
+@opindex pem
+Assume that the given certificate is in PEM (armored) format.
+
+@item --ocsp
+@opindex ocsp
+Do the check using the OCSP protocol and ignore any CRLs.
+
+@item --force-default-responder
+@opindex force-default-responder
+When checking using the OCSP protocl, force the use of the default OCSP
+responder.  That is not to use the Reponder as given by the certificate.
+
+@item --ping
+@opindex ping
+Check whether the dirmngr daemon is up and running.
+
+@item --cache-cert
+@opindex cache-cert
+Put the given certificate into the cache of a running dirmngr.  This is
+mainly useful for debugging.
+
+@item --validate
+@opindex validate
+Validate the given certificate using dirmngr's internal validation code.
+This is mainly useful for debugging.
+
+@item --load-crl
+@opindex load-crl
+This command expects a list of filenames with DER encoded CRL files.
+With the option @option{--url} URLs are expected in place of filenames
+and they are loaded directly from the given location.  All CRLs will be
+validated and then loaded into dirmngr's cache.
+
+@item --lookup
+@opindex lookup
+Take the remaining arguments and run a lookup command on each of them.
+The results are Base-64 encoded outputs (without header lines).  This
+may be used to retrieve certificates from a server. However the output
+format is not very well suited if more than one certificate is returned.
+
+@item --url
+@itemx -u
+@opindex url
+Modify the @command{lookup} and @command{load-crl} commands to take an URL.
+
+@item --local
+@itemx -l
+@opindex url
+Let the @command{lookup} command only search the local cache.
+
+@item --squid-mode
+@opindex squid-mode
+Run @sc{dirmngr-client} in a mode suitable as a helper program for
+Squid's @option{external_acl_type} option.
+
+
+@end table
+
+@ifset isman
+@mansect see also
+@command{dirmngr}(8),
+@command{gpgsm}(1)
+@include see-also-note.texi
+@end ifset
+@end ifset
+
+@c
+@c   GPGPARSEMAIL
+@c
+@node gpgparsemail
+@section Parse a mail message into an annotated format
+
+@manpage gpgparsemail.1
+@ifset manverb
+.B gpgparsemail
+\- Parse a mail message into an annotated format
+@end ifset
+
+@mansect synopsis
+@ifset manverb
+.B  gpgparsemail
+.RI [ options ]
+.RI [ file ]
+@end ifset
+
+@mansect description
+The @command{gpgparsemail} is a utility currently only useful for
+debugging.  Run it with @code{--help} for usage information.
+
+
+
+@c
+@c   SYMCRYPTRUN
+@c
+@node symcryptrun
+@section Call a simple symmetric encryption tool.
+@manpage symcryptrun.1
+@ifset manverb
+.B symcryptrun
+\- Call a simple symmetric encryption tool
+@end ifset
+
+@mansect synopsis
+@ifset manverb
+.B  symcryptrun
+.B \-\-class
+.I class
+.B \-\-program
+.I program
+.B \-\-keyfile
+.I keyfile
+.RB [ --decrypt | --encrypt ]
+.RI [ inputfile ]
+@end ifset
+
+@mansect description
+Sometimes simple encryption tools are already in use for a long time and
+there might be a desire to integrate them into the GnuPG framework.  The
+protocols and encryption methods might be non-standard or not even
+properly documented, so that a full-fledged encryption tool with an
+interface like gpg is not doable.  @command{symcryptrun} provides a
+solution: It operates by calling the external encryption/decryption
+module and provides a passphrase for a key using the standard
+@command{pinentry} based mechanism through @command{gpg-agent}.
+
+Note, that @command{symcryptrun} is only available if GnuPG has been
+configured with @samp{--enable-symcryptrun} at build time.
+
+@menu
+* Invoking symcryptrun::   List of all commands and options.
+@end menu
+
+@manpause
+@node Invoking symcryptrun
+@subsection List of all commands and options.
+
+@noindent
+@command{symcryptrun} is invoked this way:
+
+@example
+symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE 
+   [--decrypt | --encrypt] [inputfile]
+@end example
+@mancont
+
+For encryption, the plain text must be provided on STDIN or as the
+argument @var{inputfile}, and the ciphertext will be output to STDOUT.
+For decryption vice versa.
+
+@var{CLASS} describes the calling conventions of the external tool.
+Currently it must be given as @samp{confucius}.  @var{PROGRAM} is
+the full filename of that external tool.
+ 
+For the class @samp{confucius} the option @option{--keyfile} is
+required; @var{keyfile} is the name of a file containing the secret key,
+which may be protected by a passphrase.  For detailed calling
+conventions, see the source code.
+ 
+@noindent
+Note, that @command{gpg-agent} must be running before starting
+@command{symcryptrun}.
+
+@noindent
+The following additional options may be used:
+
+@table @gnupgtabopt
+@item -v
+@itemx --verbose
+@opindex verbose
+Output additional information while running.  
+
+@item -q
+@item --quiet
+@opindex q
+@opindex quiet
+Try to be as quiet as possible.
+
+@include opt-homedir.texi
+
+
+@item --log-file @var{file}
+@opindex log-file
+Append all logging output to @var{file}.  Default is to write logging
+information to STDERR.
+
+@end table
+
+@noindent
+The possible exit status codes of @command{symcryptrun} are:
+
+@table @code
+@item 0 
+        Success.
+@item 1 
+        Some error occured.
+@item 2 
+        No valid passphrase was provided.
+@item 3 
+        The operation was canceled by the user.
+
+@end table
+
+@mansect see also
+@ifset isman
+@command{gpg}(1), 
+@command{gpgsm}(1), 
+@command{gpg-agent}(1), 
+@end ifset
+@include see-also-note.texi
+
+
+@c
+@c  GPG-ZIP
+@c
+@c The original manpage on which this section is based was written 
+@c by Colin Tuckley  <colin@tuckley.org> and Daniel Leidert 
+@c <daniel.leidert@wgdd.de> for the Debian distribution (but may be used by
+@c others).
+@manpage gpg-zip.1
+@node gpg-zip
+@section Encrypt or sign files into an archive
+@ifset manverb
+.B gpg-zip \- Encrypt or sign files into an archive
+@end ifset
+
+@mansect synopsis
+@ifset manverb
+.B  gpg-zip
+.RI [ options ]
+.I filename1
+.I [ filename2, ... ]
+.I directory1
+.I [ directory2, ... ]
+@end ifset
+
+@mansect description
+@command{gpg-zip} encrypts or signs files into an archive.  It is an
+gpg-ized tar using the same format as used by PGP's PGP Zip.
+
+@manpause
+@noindent
+@command{gpg-zip} is invoked this way:
+
+@example
+gpg-zip [options] @var{filename1} [@var{filename2}, ...] @var{directory} [@var{directory2}, ...]
+@end example
+
+@mansect options
+@noindent
+@command{gpg-zip} understands these options:
+
+@table @gnupgtabopt
+
+@item --encrypt
+@itemx -e
+@opindex encrypt
+Encrypt data.  This option may be combined with @option{--symmetric} (for  output that may be decrypted via a secret key or a passphrase).
+
+@item --decrypt
+@itemx -d
+@opindex decrypt
+Decrypt data.
+
+@item --symmetric
+@itemx -c
+Encrypt with a symmetric cipher using a passphrase.  The default
+symmetric cipher used is CAST5, but may be chosen with the
+@option{--cipher-algo} option to @command{gpg}.
+
+@item --sign
+@itemx -s
+Make a signature.  See @command{gpg}.
+
+@item --recipient @var{user}
+@itemx -r @var{user}
+@opindex recipient
+Encrypt for user id @var{user}. See @command{gpg}.
+
+@item --local-user @var{user}
+@itemx -u @var{user}
+@opindex local-user
+Use @var{user} as the key to sign with.  See @command{gpg}.
+
+@item --list-archive
+@opindex list-archive
+List the contents of the specified archive.
+
+@item --output @var{file}
+@itemx -o @var{file}
+@opindex output
+Write output to specified file @var{file}.
+
+@item --gpg @var{gpgcmd}
+@opindex gpg
+Use the specified command @var{gpgcmd} instead of @command{gpg}.
+
+@item --gpg-args @var{args}
+@opindex gpg-args
+Pass the specified options to @command{gpg}.
+
+@item --tar @var{tarcmd}
+@opindex tar
+Use the specified command @var{tarcmd} instead of @command{tar}.
+
+@item --tar-args @var{args}
+@opindex tar-args
+Pass the specified options to @command{tar}.
+
+@item --version
+@opindex version
+Print version of the program and exit.
+
+@item --help
+@opindex help
+Display a brief help page and exit.
+
+@end table
+
+@mansect diagnostics
+@noindent
+The program returns 0 if everything was fine, 1 otherwise.
+
+
+@mansect examples
+@ifclear isman
+@noindent
+Some examples:
+
+@end ifclear
+@noindent
+Encrypt the contents of directory @file{mydocs} for user Bob to file
+@file{test1}:
+
+@example
+gpg-zip --encrypt --output test1 --gpg-args  -r Bob mydocs
+@end example
+
+@noindent
+List the contents of archive @file{test1}:
+
+@example
+gpg-zip --list-archive test1
+@end example
+
+
+@mansect see also
+@ifset isman
+@command{gpg}(1), 
+@command{tar}(1), 
+@end ifset
+@include see-also-note.texi
+

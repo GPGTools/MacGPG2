@@ -1,0 +1,383 @@
+2010-08-09  Werner Koch  <wk@g10code.com>
+
+	Release 2.0.1
+
+	* configure.ac: Set LT version to C1/A1/R0.
+
+2010-04-20  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Change wording of the no-funopen warning.
+
+2010-03-22  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (CC_FOR_BUILD): Add test.
+
+2010-03-17  Werner Koch  <wk@g10code.com>
+
+	* tests/ChangeLog: New.  Move all relevant entries to there.
+
+2010-02-25  Werner Koch  <wk@g10code.com>
+
+	* m4/libtool.m4 (_LT_CHECK_MAGIC_METHOD): Fix for non x86 mingw
+	targets.
+
+2010-02-11  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (inet_pton): Check for it.
+
+2010-02-04  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (AC_TYPE_UINT16_T): New.
+
+2010-01-26  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (NETLIBS) [W32CE]: Use -lws2.
+
+2010-01-22  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Require libgpg-error 1.8.
+	(HAVE_W32CE_SYSTEM): New am_defines and am_conditionals.
+	* ltmain.sh (wrappers_required): Don't set for mingw32ce.
+	* autogen.sh: Add option --build-w32ce.  Remove --disable-shared
+	from --build-w32.
+
+2010-01-08  Marcus Brinkmann  <marcus@g10code.de>
+
+	Released 2.0.0.
+
+2010-01-05  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac (_DARWIN_C_SOURCE): Define on frapple.
+
+2009-12-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Do not use echo -n.
+
+2009-12-15  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Bump version to 2.0.0.
+
+2009-10-16  Marcus Brinkmann  <marcus@g10code.de>
+
+	* autogen.sh: Remove --with-pth-prefix from configure invocation.
+	* configure.ac (_ASSUAN_IN_LIBASSUAN, PTH_SYSCALL_SOFT): Do not
+	set anymore.
+	(GNUPG_PATH_PTH): Don't invoke.
+	(HAVE_PTH): Remove conditional.
+	(LIBASSUAN_CONFIG_THREAD_MODULES): Removed.
+
+2009-10-08  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: AC_REPLACE_FUNCS for vasprintf.
+
+2009-09-19  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Check for stdint.h and inttypes.h.  Invoke
+	AC_TYPE_UINTPTR_T.
+
+2009-09-08  Marcus Brinkmann  <marcus@g10code.de>
+
+	* m4/gpg-error.m4: New file.
+
+2009-09-01  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Set BUILD_REVISION and update calculation of data
+	for build info.  Update libtool macros.  Set NETLIBS for W32
+	targets.
+
+2009-08-26  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Test for versioned symbols support.
+	(LIBASSUAN_LT_CURRENT, LIBASSUAN_LT_AGE)
+	(LIBASSUAN_LT_REVISION): New, set to 0.
+	(LIBASSUAN_CONFIG_API_VERSION): Bump to 2.
+	(AC_CONFIG_MACRO_DIR, AC_DISABLE_STATIC, AC_LIBTOOL_WIN32_DLL)
+	(AC_LIBTOOL_RC, AC_PROG_LIBTOOL, AM_PATH_GPG_ERROR): Invoke.
+	(AC_PROG_RANLIB): Don't invoke.
+	(HAVE_W32_SYSTEM): New AM conditional.
+	(AC_CONFIG_FILES): Add src/versioninfo.rc.
+	* ltmain.sh, m4/libtool.m4, m4/ltoptions.m4, m4/ltsugar.m4,
+	m4/ltversion.m4, m4/lt~obsolete.m4: New files from libtool 2.2.6.
+
+2009-01-22  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Check for nanoleep only in libc.
+
+2008-05-25  Werner Koch  <wk@g10code.com>
+
+	Released 1.0.5.
+
+2008-05-23  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Use -fPIC with GCC under Linux.
+
+2007-12-12  Werner Koch  <wk@g10code.com>
+
+	Released 1.0.4.
+
+	* config.sub, config.guess: Update to version 2007-11-19.
+
+2007-08-24  Werner Koch  <wk@g10code.com>
+
+	Released 1.0.3.
+
+	Switched license of the library code back to LGPLv2.1.  See NEWS.
+
+	* COPYING.LIB: Replaced by LPGLv2.1
+
+2007-07-05  Werner Koch  <wk@g10code.com>
+
+	Released 1.0.2.
+
+	Relicensed to LGPLv3.
+
+	* COPYING: Replaced by GPLv3.
+	* COPYING.LESSER: Removed.
+	* COPYING.LIB: New.
+
+	* Makefile.am (ACLOCAL_AMFLAGS): Do not create gzipped tarball.
+
+2007-07-03  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (NETLIBS): Use ws2_32 instead of wsock32.
+
+2007-06-15  Werner Koch  <wk@g10code.com>
+
+	* autogen.sh: Use = and not == in test to be POSIXly correct.
+	Change shell back to /bin/sh.
+
+2007-06-15  Marcus Brinkmann  <marcus@g10code.de>
+
+	* autogen.sh: Require bash.
+
+2007-05-30  Werner Koch  <wk@g10code.com>
+
+	* autogen.sh <--build-w32>: Modernize.
+
+2007-05-29  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Require automake 1.10 and autoconf 2.61.
+	(AM_PROG_CC_C_O): New.  Error out if no C-89 cc is installed.
+	(gl_HEADER_SYS_SOCKET): Explicitly add this for documentation.
+
+2007-05-24  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Use -Wpointer-arith is possible.
+
+2006-11-22  Werner Koch  <wk@g10code.com>
+
+	Released 1.0.1.
+
+2006-11-21  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (AH_BOTTOM): Define PTH_SYSCALL_SOFT to 0.
+	(AC_INIT): Use the SVN magic.
+
+	* m4/gnupg-pth.m4 (GNUPG_PTH_VERSION_CHECK): Use --all with
+	pth-config.
+
+2006-11-15  Werner Koch  <wk@g10code.com>
+
+	* autogen.sh: Add convenience option --build-amd64.
+
+2006-10-31  Werner Koch  <wk@g10code.com>
+
+	Released 1.0.0.
+
+2006-10-20  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (stowinstall): New convenience target.
+
+2006-10-10  Werner Koch  <wk@g10code.com>
+
+	Released 0.9.3.
+
+	* configure.ac: Check for cmsghdr.
+	(USE_DESCRIPTOR_PASSING): Define it then.
+
+2006-10-09  Werner Koch  <wk@g10code.com>
+
+	* m4/gnupg-pth.m4: New.  Taked from GnuPG.
+
+2006-10-04  Werner Koch  <wk@g10code.com>
+
+	Released 0.9.2.
+
+2006-10-04  Werner Koch  <wk@g10code.com>
+
+	Released 0.9.1.
+
+	* configure.ac (AB_INIT): New.
+
+	* m4/autobuild.m4: New.
+
+2006-09-14  Werner Koch  <wk@g10code.com>
+
+	Released 0.9.0.
+
+	* configure.ac: Check for S_PEERCRED.  Include check for socklen_t.
+	* m4/sys_socket_h.m4, m4/onceonly.m4, m4/socklen.m4: New.
+	* m4/Makefile.am: New.
+
+2006-09-05  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (AH_BOTTOM): Define _ASSUAN_IN_LIBASSUAN.
+
+2005-10-24  Werner Koch  <wk@g10code.com>
+
+	* COPYING.LESSER: Added.
+	* README.CVS: Renamed to ..
+	* README.SVN: .. this.
+
+2005-10-08  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Check for socket library and add it to
+	LIBASSUAN_CONFIG_LIBS if necessary.
+
+2005-10-07  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Invoke AC_CANONICAL_HOST.  Define _XOPEN_SOURCE,
+	_XOPEN_SOURCE_EXTENDED and __EXTENSIONS__ on Solaris.
+	Add stpcy as replacement function.
+	Add setenv as replacement function (and check for unistd.h).
+
+2005-06-20  Werner Koch  <wk@g10code.com>
+
+	Released 0.6.10.
+
+2004-12-22  Werner Koch  <wk@g10code.com>
+
+	Released 0.6.9.
+
+	For security reasons switched to automake 1.9.
+
+2004-12-18  Werner Koch  <wk@g10code.com>
+
+	* autogen.sh: Add Option --build-w32.
+
+2004-12-07  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Define HAVE_W32_SYSTEM and HAVE_DOSISH_SYSTEM.
+	Add -lwsock2 to the config lib flags for W32.
+
+2004-11-25  Werner Koch  <wk@g10code.com>
+
+	Released 0.6.8.
+
+2004-09-27  Werner Koch  <wk@g10code.com>
+
+	* config.sub, config.guess: Updated.
+
+2004-06-23  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Check for <sys/uio.h>.
+
+2004-06-08  Werner Koch  <wk@gnupg.org>
+
+	Released 0.6.6.
+
+2004-04-02  Thomas Schwinge  <schwinge@nic-nac-project.de>
+
+	* autogen.sh: Added ACLOCAL_FLAGS.
+
+2004-02-20  Werner Koch  <wk@gnupg.org>
+
+	Released 0.6.4.
+
+2004-02-11  Werner Koch  <wk@gnupg.org>
+
+	* autogen.sh (check_version): Removed bashism and simplified.
+
+2004-01-29  Werner Koch  <wk@gnupg.org>
+
+	Released 0.6.3.
+
+2003-12-18  Werner Koch  <wk@gnupg.org>
+
+	Released 0.6.2.
+
+2003-12-08  Werner Koch  <wk@gnupg.org>
+
+	* TODO: New.
+	* Makefile.am: Add README.CVS and autogen.sh.  Removed m4/Makefile.
+	* README.CVS: New.
+	* autogen.sh: Revamped.
+	* configure.ac: Add automake version number for autogen.sh use.
+
+2003-11-17  Werner Koch  <wk@gnupg.org>
+
+	Released 0.6.1.
+
+2003-08-06  Werner Koch  <wk@gnupg.org>
+
+	Released 0.6.0.
+
+2003-07-29  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Cleanups for newer autoconf.
+
+2003-07-29  gettextize  <bug-gnu-gettext@gnu.org>
+
+	* Makefile.am (EXTRA_DIST): Add config.rpath.
+	* configure.ac (AC_CONFIG_FILES): Add po/Makefile.in,
+
+2003-04-28  gettextize  <bug-gnu-gettext@gnu.org>
+
+	* Makefile.am (SUBDIRS): Add m4.
+	(ACLOCAL_AMFLAGS): New variable.
+	(EXTRA_DIST): New variable.
+	* configure.ac (AC_CONFIG_FILES): Add po/Makefile.in,
+
+2003-02-18  Neal H. Walfield  <neal@g10code.de>
+
+	* COPYING: New file.
+
+2003-02-18  Neal H. Walfield  <neal@g10code.de>
+
+	* configure.ac: Fix typo.
+	(AC_CONFIG_FILES): Remove common/Makefile.am.
+	* common: Remove directory.
+
+2003-02-18  Neal H. Walfield  <neal@g10code.de>
+
+	* common: New directory.
+	* Makefile.am (SUBDIRS): Add common.
+
+	* configure.ac: Check for funopen.  If not present, check for
+	fopencookie and implement it in terms of that.  Otherwise, fail.
+	(AC_CONFIG_FILES): Add common/Makefile.
+
+2003-02-18  Neal H. Walfield  <neal@g10code.de>
+
+	* configure.ac (AC_CONFIG_FILES): Add src/libassuan-config.
+	(LIBASSUAN_CONFIG_LIBS, LIBASSUAN_CONFIG_CFLAGS): New variables.
+	AC_SUBST them.
+
+2003-02-17  Neal H. Walfield  <neal@g10code.de>
+
+	* AUTHORS: New file.
+	* INSTALL: New file.
+	* Makefile.am: New file.
+	* NEWS: New file.
+	* README: New file.
+	* autogen.sh: New file, copied from newpg.
+	* configure.ac: New file, imported from newpg.
+	* depcomp: New file.
+	* install-sh: New file.
+	* missing: New file.
+	* mkinstalldirs: New file.
+
+	* doc: New directory.
+	* src: New directory.
+	* tests: New directory.
+
+
+ Copyright 2003, 2004, 2005, 2006, 2007, 2010 Free Software Foundation, Inc.
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.

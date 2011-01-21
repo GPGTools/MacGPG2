@@ -1,0 +1,212 @@
+2010-08-04  Werner Koch  <wk@g10code.com>
+
+	* t-cms-parser.c (one_file): Use print_sexp_hex for the s/n.
+
+2010-07-15  Werner Koch  <wk@g10code.com>
+
+	* t-cms-parser.c (dummy_writer_cb): New.
+	(one_file): Use the dummy writer.
+
+2010-01-22  Werner Koch  <wk@g10code.com>
+
+	* cert-basic.c (getenv) [__MINGW32CE__]: Add dummy.
+	(one_file): Use binary flag for fopen.
+
+2008-10-30  Werner Koch  <wk@g10code.com>
+
+	* t-cms-parser.c (dummy_hash_fnc): Mark unused args.
+	* t-ocsp.c (my_hash_buffer): Ditto.
+
+2007-12-13  Werner Koch  <wk@g10code.com>
+
+	* t-cms-parser.c (one_file): Print the value of the signature.
+
+2007-08-08  Werner Koch  <wk@g10code.com>
+
+	* t-common.h (print_sexp_hex): New.
+
+2007-07-04  Werner Koch  <wk@g10code.com>
+
+	Changed license to GPLv3.
+
+2007-04-20  Werner Koch  <wk@g10code.com>
+
+	* cert-basic.c (main): Add option verbose
+	(one_file): Print public key and signature value in verbose mode.
+
+2006-08-31  Werner Koch  <wk@g10code.com>
+
+	* t-ocsp.c (one_response): Print the responder id.
+	(one_response): Print extension info.
+	(get_oid_desc): New.
+
+2006-08-30  Werner Koch  <wk@g10code.com>
+
+	* t-ocsp.c (one_response): Build the test request with the same nonce.
+
+2006-08-01  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (TESTS): Add t-dnparser.
+
+	* t-dnparser.c (test_0): New.  We need this good case test.
+
+2006-07-03  Werner Koch  <wk@g10code.com>
+
+	* t-dnparser.c: Use ksba_dn_str2der isntead of internal functions.
+	(test_1): Also test ksba_dn_test_str.
+	(test_2): New.
+
+2005-04-19  Werner Koch  <wk@g10code.com>
+
+	* t-ocsp.c (main): Add option --no-nonce.  Ret rid of the
+	libgcrypt requirement.
+	(one_request): Create a nonce.
+	* sha1.c: New.
+
+2005-04-18  Werner Koch  <wk@g10code.com>
+
+	* t-crl-parser.c (one_file): Print extension name if possible.
+
+	* Makefile.am (oidtranstbl.h): Debian install dumpasn1.cfg at
+	/etc/dumpasn1; try this too.
+
+2005-04-15  Werner Koch  <wk@g10code.com>
+
+	* cert-basic.c (list_extensions): Print the AKI.keyIdentifier and
+	the subjectKeyIdentifier.
+	* t-crl-parser.c (one_file): Print the AKI.keyIdentifier.
+
+2004-11-28  Werner Koch  <wk@g10code.com>
+
+	* t-cms-parser.c (one_file): Do not use a writer object.
+
+2004-04-28  Werner Koch  <wk@gnupg.org>
+
+	* t-crl-parser.c (print_names): New.
+	(one_file): Print extensions info.
+
+2004-03-23  Werner Koch  <wk@gnupg.org>
+
+	* cert-basic.c (print_oid_and_desc): New.
+	(list_extensions): Print info_access.
+	(print_names): Hack to optionally indent the first line too.
+	(print_oid_list): New.
+	(list_extensions): Use it.
+
+2004-03-16  Werner Koch  <wk@gnupg.org>
+
+	* cert-basic.c (one_file, get_oid_desc, list_extensions): Print a
+	description of the OIDs when possible.
+	* Makefile.am: Build oidtranstbl.h
+	* mkoidtbl.awk: New.
+
+2004-02-20  Werner Koch  <wk@gnupg.org>
+
+	* cert-basic.c (list_extensions): Print extKeyUsages.
+
+2003-11-28  Werner Koch  <wk@gnupg.org>
+
+	* t-common.h (print_sexp): Print alphanumeric tokens if possible.
+
+	* t-ocsp.c: New.
+
+2003-11-21  Werner Koch  <wk@gnupg.org>
+
+	* t-common.h: New.  Shared functions from other tests. 
+	* t-dnparser.c, t-cms-parser.c, t-crl-parser.c: Use it here.
+
+2003-11-17  Werner Koch  <wk@gnupg.org>
+
+	* cert-basic.c (list_extensions): Fixed test on EOF.
+	(list_extensions, one_file): Ditto.
+
+2003-11-12  Werner Koch  <wk@gnupg.org>
+
+	Adjusted everything for the new API. 
+
+2003-10-31  Werner Koch  <wk@gnupg.org>
+
+	* cert-basic.c (print_time, one_file): Now uses ksba_isotime_t.
+	* t-crl-parser.c (print_time, one_file): Ditto.
+
+2002-11-25  Werner Koch  <wk@gnupg.org>
+
+	* t-cms-parser.c (one_file): Print the content-type attribute.
+
+2002-05-17  Werner Koch  <wk@gnupg.org>
+
+	* t-cms-parser.c (one_file): Use ksba_cms_identify.
+
+2002-05-04  Werner Koch  <wk@gnupg.org>
+
+	* t-dnparser.c (test_1): Add test on empty elements.
+
+2002-03-22  Werner Koch  <wk@gnupg.org>
+
+	* cert-basic.c (print_names): New.
+	(list_extensions): Print the CRLdistPoints.
+
+2002-03-13  Werner Koch  <wk@gnupg.org>
+
+	* t-cms-parser.c (one_file): Distinguish between signed and
+	enveloped CMS objects.
+
+2002-03-12  Werner Koch  <wk@gnupg.org>
+
+	* t-cms-parser.c (one_file): Detect certs-only messages.
+	(print_sexp): Fixed printing of serial number
+
+2002-02-19  Werner Koch  <wk@gnupg.org>
+
+	* cert-basic.c (list_extensions): Print certificatePolicies.
+
+2002-02-07  Werner Koch  <wk@gnupg.org>
+
+	* crl_testpki_testpca.der: New.
+	* t-crl-parser.c (main): Changed the default test CRL.
+
+2002-01-23  Werner Koch  <wk@gnupg.org>
+
+	* cert-basic.c (one_file): Print key usage restrictions
+
+2002-01-22  Werner Koch  <wk@gnupg.org>
+
+	* cert-basic.c (list_extensions): New.
+
+2002-01-11  Werner Koch  <wk@gnupg.org>
+
+	* t-crl-parser.c: Add commented test to write a hash log
+
+2002-01-10  Werner Koch  <wk@gnupg.org>
+
+	* cert-basic.c (print_sexp): Replaced with the one from the other
+	tests.
+	(one_file): Add code to check the public key conversions.
+
+	* t-dnparser.c: New, but we need to define some test cases.
+
+2002-01-05  Werner Koch  <wk@gnupg.org>
+
+	* t-crl-parser.c: New.
+
+2001-12-18  Werner Koch  <wk@gnupg.org>
+
+	* cert-basic.c (main): Depend tests on $srcdir.
+
+2001-12-17  Werner Koch  <wk@gnupg.org>
+
+	* cert-basic.c, t-cms-parser.c (print_integer): Renamed to
+	(print_sexp): this and changed all callers.
+	
+
+ Copyright 2001, 2002, 2003, 2004, 2005 g10 Code GmbH
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+

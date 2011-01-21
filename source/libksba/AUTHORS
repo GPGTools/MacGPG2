@@ -1,0 +1,18 @@
+Program: Libksba
+Maintainer: Werner Koch <wk@gnupg.org>
+Bug reports: <bug-gnupg@gnu.org>
+Security related bug reports: <security@gnupg.org>
+License: GPLv3+
+
+
+g10 Code GmbH
+Design and most stuff.
+
+
+GNUTLS  Fabio Fiorina   2001-06-19
+[According to CVS log of  August 5, 2001 @ 11:38:
+"renamed cert_* to x509_*" , further more, the original names
+must have been changed from Fabio's orginal ones to cert_* when 
+Fabio commited them to CVS] We renamed the files further, see src/README.asn1 
+for details. We use these files:
+   (CertificateExample.c, README.asn1, asn1-parse.y, asn1-func.[ch])

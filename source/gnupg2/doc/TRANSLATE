@@ -1,0 +1,62 @@
+$Id$
+
+Note for translators
+--------------------
+
+Some strings in GnuPG are for matching user input against.  These
+strings can accept multiple values that mean essentially the same
+thing.
+
+For example, the string "yes" in English is "sí" in Spanish.  However,
+some users will type "si" (without the accent).  To accomodate both
+users, you can translate the string "yes" as "sí|si".  You can have
+any number of alternate matches seperated by the | character like
+"sí|si|seguro".
+
+The strings that can be handled in this way are of the form "yes|yes",
+(or "no|no", etc.) There should also be a comment in the .po file
+directing you to this file.
+
+
+Help files
+----------
+
+GnuPG provides a little help feature (entering a ? on a prompt).  This
+help used to be translated the usual way with gettext but it turned
+out that this is too inflexible and does for example not allow to
+correct little mistakes in the English text.  For some newer features
+we require editable help files anyway and thus the existing help
+strings have neen moved to plain text files names "help.LL.txt".  We
+distribute these files and allow overriding them by files of that name
+in /etc/gnupg.  The syntax of these files is documented in
+doc/help.txt.  This is also the original we use to describe new
+possible online help keys.  The source files are located in doc/ and
+need to be in encoded in UTF-8.  Strings which require a translation
+are disabled like this
+
+   .#gpgsm.some.help-item
+   This string is not translated.
+
+After translation you should remove the the hash mark so that the
+entry looks like.
+
+   .gpgsm.some.help-item
+   This string has been translated.
+
+The percent sign is not a special character and if there is something
+to watch out there will be a remark.
+
+
+
+Sending new or updated translations
+-----------------------------------
+
+Please note that we do not use the TP Robot but require that
+translations are to be send by mail to translations@gnupg.org.  We
+also strongly advise to get subscribed to i18n@gnupg.org and request
+assistance if it is not clear on how to translate certain strings.  A
+wrongly translated string may lead to a security problem.
+
+A copyright disclaimer to the FSF is required by all translators.
+
+
