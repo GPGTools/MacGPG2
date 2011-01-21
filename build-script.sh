@@ -10,15 +10,15 @@ function status {
 }
 
 function try {
-	status Trying "$@"
-	"$@"
+	status Trying $@
+	$@
 	if [ $? -ne 0 ]; then
 	  status "ERROR - ABORTING"
 	  exit
 	fi
 }
 
-PATH=/bin:/sbin:/usr/bin:/usr/sbin
+#PATH=/bin:/sbin:/usr/bin:/usr/sbin
 
 # Set up build environment
 WorkingDirectory="`pwd`"
