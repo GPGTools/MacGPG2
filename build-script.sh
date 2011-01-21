@@ -4,6 +4,8 @@
 # Released under version 3 of the GPL
 
 function try {
+	echo Trying "$@"
+	echo
 	"$@"
 	if [ $? -ne 0 ]; then
 	  echo
@@ -14,16 +16,16 @@ function try {
 }
 
 # Set up build environment
+WorkingDirectory="$PWD"
+BuildDirectory="$PWD/build"
+MacGPG2="/usr/local/MacGPG2"
+
 MACOSX_DEPLOYMENT_TARGET=10.5
 CFLAGS="-mmacosx-version-min=$MACOSX_DEPLOYMENT_TARGET -isysroot /Developer/SDKs/MacOSX$MACOSX_DEPLOYMENT_TARGET.sdk -arch i386 -arch x86_64"
 CPPFLAGS=-I$MacGPG2/include
 LDFLAGS=-L$MacGPG2/lib
 CC=/usr/bin/gcc-4.0
 CXX=/usr/bin/g++-4.0
-
-WorkingDirectory="$PWD"
-BuildDirectory="$PWD/build"
-MacGPG2="/usr/local/MacGPG2"
 
 # Create a build directory a level above
 #  Really need build directory now self contained in $MacGPG2?
