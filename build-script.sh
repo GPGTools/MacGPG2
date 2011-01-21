@@ -4,9 +4,11 @@
 # Released under version 3 of the GPL
 
 function try {
-	$@
+	"$@"
 	if [ $? -ne 0 ]; then
-	  echo *** ERROR - ABORTING ***
+	  echo
+	  echo "*** ERROR - ABORTING ***"
+	  echo
 	  exit
 	fi
 }
