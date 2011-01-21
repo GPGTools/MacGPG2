@@ -51,7 +51,7 @@ cd $WorkingDirectory/source/gettext
 try ./configure --enable-static=no --disable-dependency-tracking --prefix=$MacGPG2
 try make
 try sudo make install
-try sudo make -e prefix=BuildDirectory install
+try sudo make -e prefix=$BuildDirectory install
 
 status libiconv
 cd $WorkingDirectory/source/libiconv
@@ -59,7 +59,7 @@ try make distclean
 try ./configure --enable-static=no --disable-dependency-tracking --prefix=$MacGPG2 --enable-extra-encodings
 try make
 try sudo make install
-try sudo make -e prefix=BuildDirectory install
+try sudo make -e prefix=$BuildDirectory install
 
 # Next pth
 status pth
@@ -70,14 +70,14 @@ try patch -p0 < Makefile.patch
 try make
 try make test
 try sudo make install
-try sudo make -e prefix=BuildDirectory install
+try sudo make -e prefix=$BuildDirectory install
 
 status libusb
 cd $WorkingDirectory/source/libusb
 try ./configure --enable-static=no --disable-dependency-tracking --prefix=$MacGPG2
 try make
 try sudo make install
-try sudo make -e prefix=BuildDirectory install
+try sudo make -e prefix=$BuildDirectory install
 
 LIBUSB_1_0_CFLAGS=`$MacGPG2/bin/libusb-config --cflags`
 LIBUSB_1_0_LIBS=`$MacGPG2/bin/libusb-config --libs`
@@ -87,35 +87,35 @@ cd $WorkingDirectory/source/libusb-compat
 try ./configure --enable-static=no --disable-dependency-tracking --prefix=$MacGPG2
 try make
 try sudo make install
-try sudo make -e prefix=BuildDirectory install
+try sudo make -e prefix=$BuildDirectory install
 
 status libgpg-error
 cd $WorkingDirectory/source/libgpg-error
 try ./configure --enable-static=no --disable-dependency-tracking --prefix=$MacGPG2
 try make
 try sudo make install
-try sudo make -e prefix=BuildDirectory install
+try sudo make -e prefix=$BuildDirectory install
 
 status libassuan
 cd $WorkingDirectory/source/libassuan
 try ./configure --enable-static=no --disable-dependency-tracking --prefix=$MacGPG2 --with-gpg-error-prefix=$MacGPG2/
 try make
 try sudo make install
-try sudo make -e prefix=BuildDirectory install
+try sudo make -e prefix=$BuildDirectory install
 
 status libgcrypt
 cd $WorkingDirectory/source/libgcrypt
 try ./configure --enable-static=no --disable-dependency-tracking --prefix=$MacGPG2 --with-gpg-error-prefix=$MacGPG2 --with-pth-prefix=$MacGPG2 --disable-asm
 try make
 try sudo make install
-try sudo make -e prefix=BuildDirectory install
+try sudo make -e prefix=$BuildDirectory install
 
 status libksba
 cd $WorkingDirectory/source/libksba
 try ./configure --enable-static=no --disable-dependency-tracking --prefix=$MacGPG2 --with-gpg-error-prefix=$MacGPG2/
 try make
 try sudo make install
-try sudo make -e prefix=BuildDirectory install
+try sudo make -e prefix=$BuildDirectory install
 
 # make clean currently broke in GnuPG2
 status GnuPG2
@@ -123,5 +123,5 @@ cd $WorkingDirectory/source/gnupg2
 try ./configure --disable-dependency-tracking --with-pinentry-pgm=$MacGPG2/libexec/pinentry-mac.app/Contents/MacOS/pinentry-mac --prefix=$MacGPG2 --enable-standard-socket --with-gpg-error-prefix=$MacGPG2/ --with-libgcrypt-prefix=$MacGPG2/ --with-libassuan-prefix=$MacGPG2/ --with-ksba-prefix=$MacGPG2/ --with-pth-prefix=$MacGPG2/ --disable-gpgtar --with-libiconv-prefix=$MacGPG2 --with-libintl-prefix=$MacGPG2/
 try make
 try sudo make install
-try sudo make -e prefix=BuildDirectory install
+try sudo make -e prefix=$BuildDirectory install
 
