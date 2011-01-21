@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
         <key>Label</key>
-        <string>org.gpgtools.macgpg2.gpg-agent.plist</string>
+        <string>org.gpgtools.macgpg2.gpg-agent</string>
 	<key>RunAtLoad</key>
 	<true/>
         <key>ProgramArguments</key>

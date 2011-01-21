@@ -232,4 +232,4 @@ keyserver-options auto-key-retrieve
 # Try CERT, then PKA, then LDAP, then hkp://keys.gnupg.net:
 auto-key-locate cert pka ldap hkp://keys.gnupg.net
 
-comment MacGPG2 is now part of GPGTools - http://gpgtools.org
+comment GPGTools - http://gpgtools.org
