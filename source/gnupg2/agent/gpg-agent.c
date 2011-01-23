@@ -1090,19 +1090,15 @@ main (int argc, char **argv )
 #endif
 
       /* Create the sockets.  */
-      socket_name = create_socket_name (use_standard_socket,
-                                        "S.gpg-agent",
+      socket_name = create_socket_name ("S.gpg-agent",
                                         "/tmp/gpg-XXXXXX/S.gpg-agent");
       if (opt.ssh_support)
-	socket_name_ssh = create_socket_name (use_standard_socket, 
-                                            "S.gpg-agent.ssh",
+	socket_name_ssh = create_socket_name ("S.gpg-agent.ssh",
                                             "/tmp/gpg-XXXXXX/S.gpg-agent.ssh");
 
-      fd = create_server_socket (use_standard_socket, socket_name, 0,
-                                 &socket_nonce);
+      fd = create_server_socket (socket_name, 0, &socket_nonce);
       if (opt.ssh_support)
-	fd_ssh = create_server_socket (use_standard_socket, socket_name_ssh, 1,
-                                       &socket_nonce_ssh);
+	fd_ssh = create_server_socket (socket_name_ssh, 1, &socket_nonce_ssh);
       else
 	fd_ssh = GNUPG_INVALID_FD;
 
