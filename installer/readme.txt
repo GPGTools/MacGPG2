@@ -3,7 +3,7 @@ prior to install.  Public key needed available from http://www.gpgtools.org/
 
 Unzip the archive and then run the MacGPG2 installer.
 
- * MD5 (MacGPG2-2.0.17.zip) = 
+ * MD5 (MacGPG2-2.0.17.zip) = 9365959cf1bbba27e40d3fd429b01430
 
  * 121,836 downloads of MacGPG2 from 165 countries in two years!
 
@@ -14,15 +14,17 @@ What's New
 
  * Core upgraded to GnuPG v2.0.17
   = Configured to use standard socket and daemonise gpg agent on the fly if 
-    required.
+    required
 
- * Maximum key size increased to 8192 bits; recommended for expert users only.
+ * Maximum key size increased to 8192 bits; recommended for expert users only
 
- * Includes GPGTools gpg-agent cache-id option patch.
+ * Includes GPGTools gpg-agent cache-id option patch
 
  * Pinentry updated by GPGTools team and includes keychain support
 
- * Installs exclusively under /usr/local/MacGPG2/ removing previous v2.0.16 install.
+ * Installs exclusively under /usr/local/MacGPG2/ removing previous v2.0.16 install
+ 
+ * Creates default gpg configuration file if none exists
 
  * Libksba upgraded to v1.1.0
 
