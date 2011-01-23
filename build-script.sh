@@ -79,7 +79,7 @@ try make
 try sudo make install
 try sudo make -e prefix=$BuildDirectory install
 
-LIBUSB_1_0_CFLAGS="-I$MacGPG2/include"
+LIBUSB_1_0_CFLAGS="-I$MacGPG2/include/libusb-1.0"
 LIBUSB_1_0_LIBS="-L$MacGPG2/lib -lusb"
 
 status lib-compat
