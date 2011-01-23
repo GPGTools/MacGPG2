@@ -5,12 +5,12 @@
 
 function status {
 	echo "****"
-	echo $@
+	echo "$@"
 	echo "****"
 }
 
 function try {
-	status Trying $@
+	status Trying "$@"
 	$@
 	if [ $? -ne 0 ]; then
 	  status "ERROR - ABORTING"
@@ -18,7 +18,7 @@ function try {
 	fi
 }
 
-#PATH=/bin:/sbin:/usr/bin:/usr/sbin
+PATH=$PATH:/usr/local/MacGPG2/bin
 
 # Set up build environment
 WorkingDirectory="`pwd`"
@@ -79,8 +79,8 @@ try make
 try sudo make install
 try sudo make -e prefix=$BuildDirectory install
 
-LIBUSB_1_0_CFLAGS=`$MacGPG2/bin/libusb-config --cflags`
-LIBUSB_1_0_LIBS=`$MacGPG2/bin/libusb-config --libs`
+LIBUSB_1_0_CFLAGS="-I$MacGPG2/include"
+LIBUSB_1_0_LIBS="-L$MacGPG2/lib -lusb"
 
 status lib-compat
 cd $WorkingDirectory/source/libusb-compat
