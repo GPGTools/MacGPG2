@@ -736,4 +736,4 @@ Please see the MacGPG2 project homepage for further help and information {\field
 Thank for you installing MacGPG2.\
 \
 Benjamin Donnachie\
-MacGPG2 Project}]]></resource></locale></resources><flags/><item type="file">01macgpg.xml</item><item type="file">02gnupg.xml</item><mod>postinstallActions.actions</mod><mod>properties.title</mod><mod>properties.anywhereDomain</mod><mod>properties.systemDomain</mod></pkmkdoc>
+MacGPG2 Project}]]></resource></locale></resources><flags/><item type="file">01macgpg.xml</item><item type="file">02build.xml</item><mod>properties.systemDomain</mod><mod>properties.title</mod><mod>properties.anywhereDomain</mod><mod>postinstallActions.actions</mod></pkmkdoc>
