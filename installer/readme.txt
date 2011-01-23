@@ -3,7 +3,7 @@ prior to install.  Public key needed available from http://www.gpgtools.org/
 
 Unzip the archive and then run the MacGPG2 installer.
 
- * MD5 (MacGPG2-2.0.17.zip) = 9365959cf1bbba27e40d3fd429b01430
+ * MD5 (MacGPG2-2.0.17.zip) = f682dda810d665ed68e321dd9d230350
 
  * 121,836 downloads of MacGPG2 from 165 countries in two years!
 
