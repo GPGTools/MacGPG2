@@ -36,6 +36,8 @@ CXX=/usr/bin/g++-4.0
 #  Really need build directory now self contained in $MacGPG2?
 mkdir $BuildDirectory
 
+status EXPERIMENTAL!  USE AT OWN RISK!
+
 status Either run script as root with sudo or be available to enter password for make install
 
 # Circular dependency between iconv and gettext
