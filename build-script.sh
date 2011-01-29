@@ -18,19 +18,19 @@ function try {
 	fi
 }
 
-PATH=$PATH:/usr/local/MacGPG2/bin
+export PATH=$PATH:/usr/local/MacGPG2/bin
 
 # Set up build environment
-WorkingDirectory="`pwd`"
-BuildDirectory="$WorkingDirectory/build"
-MacGPG2="/usr/local/MacGPG2"
+export WorkingDirectory="`pwd`"
+export BuildDirectory="$WorkingDirectory/build"
+export MacGPG2="/usr/local/MacGPG2"
 
-MACOSX_DEPLOYMENT_TARGET=10.5
-CFLAGS="-mmacosx-version-min=$MACOSX_DEPLOYMENT_TARGET -isysroot /Developer/SDKs/MacOSX$MACOSX_DEPLOYMENT_TARGET.sdk -arch i386 -arch x86_64"
-CPPFLAGS=-I$MacGPG2/include
-LDFLAGS=-L$MacGPG2/lib
-CC=/usr/bin/gcc-4.0
-CXX=/usr/bin/g++-4.0
+export MACOSX_DEPLOYMENT_TARGET=10.5
+export CFLAGS="-mmacosx-version-min=$MACOSX_DEPLOYMENT_TARGET -isysroot /Developer/SDKs/MacOSX$MACOSX_DEPLOYMENT_TARGET.sdk -arch i386 -arch x86_64"
+export CPPFLAGS=-I$MacGPG2/include
+export LDFLAGS=-L$MacGPG2/lib
+export CC=/usr/bin/gcc-4.0
+export CXX=/usr/bin/g++-4.0
 
 # Create a build directory a level above
 #  Really need build directory now self contained in $MacGPG2?
@@ -81,8 +81,8 @@ try make
 try sudo make install
 try sudo make -e prefix=$BuildDirectory install
 
-LIBUSB_1_0_CFLAGS="-I$MacGPG2/include/libusb-1.0"
-LIBUSB_1_0_LIBS="-L$MacGPG2/lib -lusb"
+export LIBUSB_1_0_CFLAGS="-I/usr/local/MacGPG2/include"
+export LIBUSB_1_0_LIBS="-L$MacGPG2/lib -lusb"
 
 status lib-compat
 cd $WorkingDirectory/source/libusb-compat
