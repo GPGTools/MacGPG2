@@ -885,6 +885,19 @@ main (int argc, char **argv )
         default : pargs.err = configfp? 1:2; break;
 	}
     }
+    
+  /* When running under launchd control, only start for real users ie UID >= 500
+     Do this check early to avoid filling logs */
+
+  /* HAVE_LAUNCH implies non-Windows system */
+#ifdef HAVE_LAUNCH
+  if (1 == launchd_child && geteuid() < 500)
+    {
+      log_error ("launchd only supported for real users - ie UID >= 500\n");
+      exit (1);
+    }     
+#endif
+
   if (configfp)
     {
       fclose( configfp );
