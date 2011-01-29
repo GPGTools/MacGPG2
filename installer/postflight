@@ -19,7 +19,9 @@ osascript -e 'tell application "System Events" to delete login item "start-gpg-a
 
 # Iterate through each regular user account.
 #  Remove any mention of gpg from environment.plist as per previous behaviour
-#  Remove any sockets created by GPGTools
+#  Remove any sockets symlinks created by GPGTools
+#  Check for invalid gpg.conf options
+#  Check for invalid gpg-agent.conf options
 #  Copy skeleton gpg.conf if not exist
 
 for username in `dscl . -list /Users`
@@ -53,11 +55,23 @@ do
       chown $uniqueID:$primarygroup "$homedir/.gnupg"
       chmod og= "$homedir/.gnupg"
     fi
+
+    if [ -e "$homedir/.gnupg/gpg.conf" ]; then
+      # Bad gpg.conf options check
+      $MacGPG2/bin/gpg2 --gpgconf-test --options "$homedir/.gnupg/gpg.conf" || mv "$homedir/.gnupg/gpg.conf" "$homedir/.gnupg/gpg.conf.`date +%Y%m%d%H%M%S`$RANDOM"
+    fi
+    
+    if [ -e "$homedir/.gnupg/gpg-agent.conf" ]; then
+      # Remove any gpg-agent pinentry program options
+      sed -i '' 's/^[ 	]*pinentry-program/#pinentry-program/g' "$homedir/.gnupg/gpg-agent.conf"
+    fi
   
     if [ ! -e "$homedir/.gnupg/gpg.conf" ]; then
       if [ -e "$MacGPG2/share/gnupg/gpg-conf.skel" ]; then
-        # Skip first three lines
+        # If no options file and skeleton exists, copy over skipping
+        #  first three lines
         tail -n +4 "$MacGPG2/share/gnupg/gpg-conf.skel" > "$homedir/.gnupg/gpg.conf"
+        # Set correct ownership and reset permissions
         chown $uniqueID:$primarygroup "$homedir/.gnupg/gpg.conf"
         chmod og= "$homedir/.gnupg/gpg.conf"
       fi
