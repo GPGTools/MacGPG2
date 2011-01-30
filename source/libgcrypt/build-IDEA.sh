@@ -31,10 +31,7 @@ fi
 
 ./configure --enable-static=no --disable-dependency-tracking --prefix=$MacGPG2 --with-gpg-error-prefix=$MacGPG2 --with-pth-prefix=$MacGPG2 --disable-asm
 
-# Just in case
-make clean
-
-make
+make all
 
 echo
 echo "****************************"
