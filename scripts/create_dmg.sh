@@ -155,8 +155,7 @@ fi
 read -p "Create Sparkle appcast entry [y/n]? " input
 
 if [ "x$input" == "xy" -o "x$input" == "xY" ] ;then
-	PRIVATE_KEY_NAME="Sparkle GPGMail - Private key"
-
+	PRIVATE_KEY_NAME="$sparkle_keyname"
 
 	signature=$(openssl dgst -sha1 -binary < "$dmgPath" |
 	  openssl dgst -dss1 -sign <(security find-generic-password -g -s "$PRIVATE_KEY_NAME" 2>&1 >/dev/null | perl -pe '($_) = /<key>NOTE<\/key>.*<string>(.*)<\/string>/; s/\\012/\n/g') |
@@ -164,17 +163,15 @@ if [ "x$input" == "xy" -o "x$input" == "xY" ] ;then
 
 	date=$(LC_TIME=en_US date +"%a, %d %b %G %T %z")
 	size=$(stat -f "%z" "$dmgPath")
-
-
 	echo -e "\n"
 
 	cat <<EOT2
 <item>
 	<title>Version ${version}</title>
-	<description>Visit http://www.gpgtools.org/gpgmail.html for further information.</description>
-	<sparkle:releaseNotesLink>http://www.gpgtools.org/gpgmail_sparkle.html</sparkle:releaseNotesLink>
+	<description>Visit http://www.gpgtools.org/$html.html for further information.</description>
+	<sparkle:releaseNotesLink>http://www.gpgtools.org/$html_sparkle.html</sparkle:releaseNotesLink>
 	<pubDate>${date}</pubDate>
-	<enclosure url="https://github.com/downloads/GPGMail/GPGMail/${dmgName}"
+	<enclosure url="$sparkle_url"
 			   sparkle:version="${version}"
 			   sparkle:dsaSignature="${signature}"
 			   length="${size}"
@@ -187,6 +184,14 @@ fi
 #-------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------
+## todo: implement this
+####################################################
+read -p "Create github tag [y/n]? " input
+if [ "x$input" == "xy" -o "x$input" == "xY" ] ;then
+    echo "to be implemented. start this e.g. for each release";
+fi
+#-------------------------------------------------------------------------
+
 
 popd > /dev/null
-
