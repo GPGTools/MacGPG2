@@ -209,6 +209,13 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
                 csum += checksum (buffer, ndata);
                 gcry_mpi_release (sk->skey[i]);
 
+		/* Alon Bar-Lev's IDEA patch - needed as the raw key has
+		    two bits which are part of the checksum and not the key */
+		if (CIPHER_ALGO_IDEA == sk->protect.algo) {
+			buffer[0] = 0;
+			buffer[1] = 0;
+		}
+
 		err = gcry_mpi_scan( &sk->skey[i], GCRYMPI_FMT_PGP,
 				     buffer, ndata, &ndata );
 		xfree (buffer);
