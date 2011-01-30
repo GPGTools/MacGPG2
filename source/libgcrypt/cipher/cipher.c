@@ -71,6 +71,10 @@ static struct cipher_table_entry
     { &_gcry_cipher_spec_cast5,      
       &dummy_extra_spec,                  GCRY_CIPHER_CAST5 },
 #endif
+#ifdef USE_IDEA
+    { &_gcry_cipher_spec_idea,
+      &dummy_extra_spec,	          GCRY_CIPHER_IDEA },
+#endif
 #if USE_AES
     { &_gcry_cipher_spec_aes,        
       &_gcry_cipher_extraspec_aes,        GCRY_CIPHER_AES,    1 },
