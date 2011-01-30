@@ -59,7 +59,7 @@ if [ "x$input" == "xy" -o "x$input" == "xY" ] ;then
 	rm -rf "build/dmgTemp"
 
 	echo "Creating temp folder..."
-	mkdir build/dmgTemp
+	mkdir -p build/dmgTemp
 
 	echo "Copying files..."
 	if [ "" != "$rmPath" ]; then
