@@ -328,6 +328,7 @@ rm -f /Library/LaunchAgents/com.sourceforge.macgpg2.gpg-agent.plist &> /dev/null
 
 # Add symlinks in $OldMacGPG2/bin for any hardwired programs as necessary
 
+[ -d $OldMacGPG2/bin/ ]     || mkdir $OldMacGPG2/bin/
 [ -f $OldMacGPG2/bin/gpg ]  || ln -s $MacGPG2/bin/gpg2 $OldMacGPG2/bin/gpg
 [ -f $OldMacGPG2/bin/gpg2 ] || ln -s $MacGPG2/bin/gpg2 $OldMacGPG2/bin/gpg2
 
