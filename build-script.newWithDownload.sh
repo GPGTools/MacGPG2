@@ -8,6 +8,7 @@
 # @see      https://github.com/GPGTools/MacGPG1/blob/master/build-script.sh
 # @todo     Download and compile more sources first, e.g. gettext, libusb, ...
 # @todo     Create fat binaries for ppc, i386 and x86_64
+# @todo     Enhance speed by downloading / compiling in parallel (starting with the smallest file)
 ##
 
 # configuration ################################################################
@@ -113,23 +114,21 @@ function install {
 
 
 # libiconv #####################################################################
-echo " * Building libiconv...";
+echo " * Working on 'libiconv'...";
 download "$iconv_build" "$iconv_version" "$iconv_fileExt" "$iconv_sigExt" "$iconv_url"
 compile "$iconv_build" "z" "$iconv_version" "$iconv_fileExt" "$iconv_flags" "$iconv_patch"
-cd "$iconv_build" && make prefix="$prefix_build" install >> build.log 2>&1
-cd "$rootPath"
+install "$iconv_build" "$iconv_version" "$prefix_build"
 ################################################################################
 
 # pth ##########################################################################
-echo " * Building pth...";
-download $pth_build $pth_version $pth_fileExt $pth_sigExt $pth_url
-compile $pth_build "z" $pth_version $pth_fileExt $pth_flags $pth_patch
-cd $pth_build && make prefix="$prefix_build" install
-cd $rootPath
+echo " * Working on 'pth'...";
+download "$pth_build" "$pth_version" "$pth_fileExt" "$pth_sigExt" "$pth_url"
+compile "$pth_build" "z" "$pth_version" "$pth_fileExt" "$pth_flags" "$pth_patch"
+install "$pth_build" "$pth_version" "$prefix_build"
 ################################################################################
 
 # gpg ##########################################################################
-echo " * gpg";
+echo " * Working on 'gpg2'...";
 download "$gpg_build" "$gpg_version" "$gpg_fileExt" "$gpg_sigExt" "$gpg_url"
 compile "$gpg_build" "j" "$gpg_version" "$gpg_fileExt" "$gpg_flags" "$gpg_patch"
 install "$gpg_build" "$gpg_version" "$prefix_build"
