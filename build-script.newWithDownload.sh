@@ -13,13 +13,19 @@
 ##
 
 # configuration ################################################################
+export keys="A9C09E30 1CE0C630";
 export prefix_build="`pwd`/build/MacGPG2";
-export prefix_install="/usr/local/MacGPG2"
-export MACOSX_DEPLOYMENT_TARGET="10.5";
+export prefix_install="/usr/local/MacGPG2";
 export LOGFILE="`pwd`/build.log";
-export configureFlags="--enable-static=no --disable-maintainer-mode --disable-dependency-tracking --prefix=$prefix_install"
+export PATH=$PATH:$prefix_build/bin
+export configureFlags="--enable-static=no --disable-maintainer-mode --disable-dependency-tracking --prefix=$prefix_install";
 export rootPath="`pwd`";
-export CFLAGS="-mmacosx-version-min=10.5 -DUNIX -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch i386"
+export MACOSX_DEPLOYMENT_TARGET="10.5";
+export CFLAGS="-mmacosx-version-min=$MACOSX_DEPLOYMENT_TARGET -DUNIX -isysroot /Developer/SDKs/MacOSX$MACOSX_DEPLOYMENT_TARGET.sdk -arch i386";
+export CXXFLAGS="$CFLAGS";
+export CPPFLAGS="-I$prefix_build/include";
+export LDFLAGS="-L$prefix_build/lib";
+
 #export CFLAGS="-mmacosx-version-min=10.5 -DUNIX -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch i386 -arch ppc"
 
 iconv_url="ftp://ftp.gnu.org/pub/gnu/libiconv/";
@@ -101,17 +107,31 @@ gpg_version="gnupg-2.0.17";
 gpg_fileExt=".tar.bz2";
 gpg_sigExt=".tar.bz2.sig"
 gpg_build="`pwd`/build/gnupg";
-gpg_flags="$configureFlags --disable-gpgtar --enable-standard-socket --prefix=$prefix_install --with-pth-prefix=$pth_build/$pth_version/ --with-libiconv-prefix=$iconv_build/$iconv_version/";
+#gpg_flags="$configureFlags --with-pinentry-pgm=$prefix_install/libexec/pinentry-mac.app/Contents/MacOS/pinentry-mac --prefix=$prefix_install --enable-standard-socket --with-gpg-error-prefix=$prefix_install --with-libgcrypt-prefix=$prefix_install --with-libassuan-prefix=$prefix_install --with-ksba-prefix=$prefix_install --with-pth-prefix=$prefix_install --disable-gpgtar --with-libiconv-prefix=$prefix_install --with-libintl-prefix=$prefix_install";
+gpg_flags="$configureFlags --with-pinentry-pgm=$prefix_build/libexec/pinentry-mac.app/Contents/MacOS/pinentry-mac --prefix=$prefix_build --enable-standard-socket --with-gpg-error-prefix=$prefix_build --with-libgcrypt-prefix=$prefix_build --with-libassuan-prefix=$prefix_build --with-ksba-prefix=$prefix_build --with-pth-prefix=$prefix_build --disable-gpgtar --with-libiconv-prefix=$prefix_build --with-libintl-prefix=$prefix_build";
 gpg_patch="";
 ################################################################################
 
 # setup ########################################################################
+echo "Have a look at '$LOGFILE' for all the details...";
 : > $LOGFILE
 mkdir -p "$prefix_build";
-gpg2 --recv-keys A9C09E30 1CE0C630 >>$LOGFILE 2>&1
+which -s gpg2
 if [ "$?" != "0" ]; then
-  echo "Could not get keys!";
-  exit 1;
+    echo " * No GnuPG2 found.";
+else
+    echo -n " * Getting OpenPGP keys...";
+    gpg2 --list-keys "$keys" >>$LOGFILE 2>&1
+    if [ "$?" == "0" ]; then
+        echo "skipped";
+    else
+        echo "";
+        gpg2 --recv-keys "$keys"  >>$LOGFILE 2>&1
+    fi
+    if [ "$?" != "0" ]; then
+      echo "Could not get keys!";
+      exit 1;
+    fi
 fi
 ################################################################################
 
@@ -192,13 +212,6 @@ echo " * Working on 'gettext'...";
 download "$gettext_build" "$gettext_version" "$gettext_fileExt" "$gettext_sigExt" "$gettext_url"
 compile "$gettext_build" "j" "$gettext_version" "$gettext_fileExt" "$gettext_flags" "$gettext_patch"
 install "$gettext_build" "$gettext_version" "$prefix_build"
-################################################################################
-
-# libiconv #####################################################################
-echo " * Working on 'libiconv'...again?...";
-download "$iconv_build" "$iconv_version" "$iconv_fileExt" "$iconv_sigExt" "$iconv_url"
-compile "$iconv_build" "z" "$iconv_version" "$iconv_fileExt" "$iconv_flags" "$iconv_patch"
-install "$iconv_build" "$iconv_version" "$prefix_build"
 ################################################################################
 
 # pth ##########################################################################
