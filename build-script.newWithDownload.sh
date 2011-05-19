@@ -116,8 +116,7 @@ gpg_patch="";
 echo "Have a look at '$LOGFILE' for all the details...";
 : > $LOGFILE
 mkdir -p "$prefix_build";
-which -s gpg2
-if [ "$?" != "0" ]; then
+if [ "`which gpg2`" == "" ]; then
     echo " * No GnuPG2 found.";
 else
     echo -n " * Getting OpenPGP keys...";
@@ -144,9 +143,9 @@ function download {
     exec 3>&1 4>&2 >>$LOGFILE 2>&1
     echo " ############### Download: $5$2$3"
     curl -C - -L -O "$5$2$3"
-    if [ "$4" != "" ]; then
+    if [ "$4" != "" ] && [ "" != "`which gpg2`" ] ; then
         curl -O "$5$2$4"
-        gpg --verify "$2$4"
+        gpg2 --verify "$2$4"
     fi
     if [ "$?" != "0" ]; then
         exec 1>&3 2>&4
