@@ -4,10 +4,10 @@
 # This version downloads the sources. Based on the GnuPG 1 & 2 build script.
 #
 # @author   Alexander Willner <alex@gpgtools.org>
-# @version  2011-05-18
+# @version  2011-05-19
 # @see      https://github.com/GPGTools/MacGPG1/blob/master/build-script.sh
+# @see      https://github.com/GPGTools/MacGPG2/blob/master/build-script.sh
 # @todo     Create fat binaries for ppc, i386 and x86_64
-# @todo     Enhance speed by downloading / compiling in parallel (starting with the smallest file)
 # @todo     Add config to an assoc. array and iterate over it
 # @todo     Enhance this script for all possible platforms
 ##
@@ -137,9 +137,10 @@ fi
 
 # functions ####################################################################
 function download {
-    echo -n "   * Downloading...";
     mkdir -p "$1"; cd "$1"
-    if [ -e "$2$3" ]; then echo "skipped"; return 0; else echo ""; fi
+    if [ -e "$2$3" ]; then return 0; fi
+    #echo -n "   * Downloading...";
+    #if [ -e "$2$3" ]; then echo "skipped"; return 0; else echo ""; fi
     exec 3>&1 4>&2 >>$LOGFILE 2>&1
     echo " ############### Download: $5$2$3"
     curl -C - -L -O "$5$2$3"
@@ -198,73 +199,95 @@ function install {
 }
 ################################################################################
 
+# download files ###############################################################
+echo " * Downloading sources in the background...";
+download "$iconv_build" "$iconv_version" "$iconv_fileExt" "$iconv_sigExt" "$iconv_url"
+download "$pth_build" "$pth_version" "$pth_fileExt" "$pth_sigExt" "$pth_url" &
+pth_pid=${!}
+download "$gettext_build" "$gettext_version" "$gettext_fileExt" "$gettext_sigExt" "$gettext_url" &
+gettext_pid=${!}
+download "$libusb_build" "$libusb_version" "$libusb_fileExt" "$libusb_sigExt" "$libusb_url" &
+libusb_pid=${!}
+download "$libcompat_build" "$libcompat_version" "$libcompat_fileExt" "$libcompat_sigExt" "$libcompat_url" &
+libcompat_pid=${!}
+download "$libgpgerror_build" "$libgpgerror_version" "$libgpgerror_fileExt" "$libgpgerror_sigExt" "$libgpgerror_url" &
+libgpgerror_pid=${!}
+download "$libassuan_build" "$libassuan_version" "$libassuan_fileExt" "$libassuan_sigExt" "$libassuan_url" &
+libassuan_pid=${!}
+download "$libgcrypt_build" "$libgcrypt_version" "$libgcrypt_fileExt" "$libgcrypt_sigExt" "$libgcrypt_url" &
+libgcrypt_pid=${!}
+download "$libksba_build" "$libksba_version" "$libksba_fileExt" "$libksba_sigExt" "$libksba_url" &
+libksba_pid=${!}
+download "$gpg_build" "$gpg_version" "$gpg_fileExt" "$gpg_sigExt" "$gpg_url" &
+gpg_pid=${!}
+################################################################################
+
 
 # libiconv #####################################################################
 echo " * Working on 'libiconv'...";
-download "$iconv_build" "$iconv_version" "$iconv_fileExt" "$iconv_sigExt" "$iconv_url"
 compile "$iconv_build" "z" "$iconv_version" "$iconv_fileExt" "$iconv_flags" "$iconv_patch"
 install "$iconv_build" "$iconv_version" "$prefix_build"
 ################################################################################
 
-# gettext ####################################################################
-echo " * Working on 'gettext'...";
-download "$gettext_build" "$gettext_version" "$gettext_fileExt" "$gettext_sigExt" "$gettext_url"
-compile "$gettext_build" "j" "$gettext_version" "$gettext_fileExt" "$gettext_flags" "$gettext_patch"
-install "$gettext_build" "$gettext_version" "$prefix_build"
-################################################################################
-
 # pth ##########################################################################
 echo " * Working on 'pth'...";
-download "$pth_build" "$pth_version" "$pth_fileExt" "$pth_sigExt" "$pth_url"
+echo "   * Waiting for download..."; wait "$pth_pid";
 compile "$pth_build" "z" "$pth_version" "$pth_fileExt" "$pth_flags" "$pth_patch"
 install "$pth_build" "$pth_version" "$prefix_build"
 ################################################################################
 
+# gettext ####################################################################
+echo " * Working on 'gettext'...";
+echo "   * Waiting for download..."; wait "$gettext_pid";
+compile "$gettext_build" "j" "$gettext_version" "$gettext_fileExt" "$gettext_flags" "$gettext_patch"
+install "$gettext_build" "$gettext_version" "$prefix_build"
+################################################################################
+
 # libusb ##########################################################################
 echo " * Working on 'libusb'...";
-download "$libusb_build" "$libusb_version" "$libusb_fileExt" "$libusb_sigExt" "$libusb_url"
+echo "   * Waiting for download..."; wait "$libusb_pid";
 compile "$libusb_build" "z" "$libusb_version" "$libusb_fileExt" "$libusb_flags" "$libusb_patch"
 install "$libusb_build" "$libusb_version" "$prefix_build"
 ################################################################################
 
 # libcompat ##########################################################################
 echo " * Working on 'libcompat'...";
-download "$libcompat_build" "$libcompat_version" "$libcompat_fileExt" "$libcompat_sigExt" "$libcompat_url"
+echo "   * Waiting for download..."; wait "$libcompat_pid";
 compile "$libcompat_build" "j" "$libcompat_version" "$libcompat_fileExt" "$libcompat_flags" "$libcompat_patch"
 install "$libcompat_build" "$libcompat_version" "$prefix_build"
 ################################################################################
 
 # libgpgerror ####################################################################
 echo " * Working on 'libgpgerror'...";
-download "$libgpgerror_build" "$libgpgerror_version" "$libgpgerror_fileExt" "$libgpgerror_sigExt" "$libgpgerror_url"
+echo "   * Waiting for download..."; wait "$libgpgerror_pid";
 compile "$libgpgerror_build" "j" "$libgpgerror_version" "$libgpgerror_fileExt" "$libgpgerror_flags" "$libgpgerror_patch"
 install "$libgpgerror_build" "$libgpgerror_version" "$prefix_build"
 ################################################################################
 
 # libassuan ####################################################################
 echo " * Working on 'libassuan'...";
-download "$libassuan_build" "$libassuan_version" "$libassuan_fileExt" "$libassuan_sigExt" "$libassuan_url"
+echo "   * Waiting for download..."; wait "$libassuan_pid";
 compile "$libassuan_build" "z" "$libassuan_version" "$libassuan_fileExt" "$libassuan_flags" "$libassuan_patch"
 install "$libassuan_build" "$libassuan_version" "$prefix_build"
 ################################################################################
 
 # libgcrypt ####################################################################
 echo " * Working on 'libgcrypt'...";
-download "$libgcrypt_build" "$libgcrypt_version" "$libgcrypt_fileExt" "$libgcrypt_sigExt" "$libgcrypt_url"
+echo "   * Waiting for download..."; wait "$libgcrypt_pid";
 compile "$libgcrypt_build" "z" "$libgcrypt_version" "$libgcrypt_fileExt" "$libgcrypt_flags" "$libgcrypt_patch"
 install "$libgcrypt_build" "$libgcrypt_version" "$prefix_build"
 ################################################################################
 
 # libksba ####################################################################
 echo " * Working on 'libksba'...";
-download "$libksba_build" "$libksba_version" "$libksba_fileExt" "$libksba_sigExt" "$libksba_url"
+echo "   * Waiting for download..."; wait "$libksba_pid";
 compile "$libksba_build" "z" "$libksba_version" "$libksba_fileExt" "$libksba_flags" "$libksba_patch"
 install "$libksba_build" "$libksba_version" "$prefix_build"
 ################################################################################
 
 # gpg ##########################################################################
 echo " * Working on 'gpg2'...";
-download "$gpg_build" "$gpg_version" "$gpg_fileExt" "$gpg_sigExt" "$gpg_url"
+echo "   * Waiting for download..."; wait "$gpg_pid";
 compile "$gpg_build" "j" "$gpg_version" "$gpg_fileExt" "$gpg_flags" "$gpg_patch"
 install "$gpg_build" "$gpg_version" "$prefix_build"
 ################################################################################
