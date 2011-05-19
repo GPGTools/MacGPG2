@@ -28,7 +28,7 @@ for username in `dscl . -list /Users`
 do
   # Get UID
   uniqueID=`dscl . -read /Users/$username UniqueID | awk '{ print $2 }'`
-  
+
   # Only process regular accounts
   if [ $uniqueID -ge 500 ]; then
     homedir=`dscl . -read /Users/$username NFSHomeDirectory | awk '{ print $2 }'`
@@ -46,7 +46,7 @@ do
       fi
     fi
 
-    if [ -d "$homedir/.gnupg" ]; then 
+    if [ -d "$homedir/.gnupg" ]; then
       # Also clean up bad GPGTools behaviour:
       [ -h "$homedir/.gnupg/S.gpg-agent" ] && rm -f "$homedir/.gnupg/S.gpg-agent"
       [ -h "$homedir/.gnupg/S.gpg-agent.ssh" ] && rm -f "$homedir/.gnupg/S.gpg-agent.ssh"
@@ -60,12 +60,12 @@ do
       # Bad gpg.conf options check
       $MacGPG2/bin/gpg2 --gpgconf-test --options "$homedir/.gnupg/gpg.conf" || mv "$homedir/.gnupg/gpg.conf" "$homedir/.gnupg/gpg.conf.`date +%Y%m%d%H%M%S`$RANDOM"
     fi
-    
+
     if [ -e "$homedir/.gnupg/gpg-agent.conf" ]; then
       # Remove any gpg-agent pinentry program options
       sed -i '' 's/^[ 	]*pinentry-program/#pinentry-program/g' "$homedir/.gnupg/gpg-agent.conf"
     fi
-  
+
     if [ ! -e "$homedir/.gnupg/gpg.conf" ]; then
       if [ -e "$MacGPG2/share/gnupg/gpg-conf.skel" ]; then
         # If no options file and skeleton exists, copy over skipping
@@ -76,7 +76,7 @@ do
         chmod og= "$homedir/.gnupg/gpg.conf"
       fi
     fi
-  
+
   fi
 done
 
@@ -331,5 +331,6 @@ rm -f /Library/LaunchAgents/com.sourceforge.macgpg2.gpg-agent.plist &> /dev/null
 [ -d $OldMacGPG2/bin/ ]     || mkdir $OldMacGPG2/bin/
 [ -f $OldMacGPG2/bin/gpg ]  || ln -s $MacGPG2/bin/gpg2 $OldMacGPG2/bin/gpg
 [ -f $OldMacGPG2/bin/gpg2 ] || ln -s $MacGPG2/bin/gpg2 $OldMacGPG2/bin/gpg2
+[ -f $OldMacGPG2/bin/gpg-agent ] || ln -s $MacGPG2/bin/gpg-agent $OldMacGPG2/bin/gpg-agent
 
 exit 0
