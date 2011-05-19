@@ -6,19 +6,21 @@
 # @author   Alexander Willner <alex@gpgtools.org>
 # @version  2011-05-18
 # @see      https://github.com/GPGTools/MacGPG1/blob/master/build-script.sh
-# @todo     Download and compile more sources first, e.g. gettext, libusb, ...
 # @todo     Create fat binaries for ppc, i386 and x86_64
 # @todo     Enhance speed by downloading / compiling in parallel (starting with the smallest file)
+# @todo     Add config to an assoc. array and iterate over it
+# @todo     Enhance this script for all possible platforms
 ##
 
 # configuration ################################################################
 export prefix_build="`pwd`/build/MacGPG2";
 export prefix_install="/usr/local/MacGPG2"
 export MACOSX_DEPLOYMENT_TARGET="10.5";
-export LOGFILE="build.log";
+export LOGFILE="`pwd`/build.log";
 export configureFlags="--enable-static=no --disable-maintainer-mode --disable-dependency-tracking --prefix=$prefix_install"
 export rootPath="`pwd`";
-##export CFLAGS="-mmacosx-version-min=10.5 -DUNIX -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch i386 -arch ppc"
+export CFLAGS="-mmacosx-version-min=10.5 -DUNIX -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch i386"
+#export CFLAGS="-mmacosx-version-min=10.5 -DUNIX -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch i386 -arch ppc"
 
 iconv_url="ftp://ftp.gnu.org/pub/gnu/libiconv/";
 iconv_version="libiconv-1.13.1";
@@ -28,13 +30,71 @@ iconv_build="`pwd`/build/libiconv";
 iconv_flags="$configureFlags --enable-extra-encodings";
 iconv_patch="";
 
+gettext_url="ftp://ftp.gnu.org/pub/gnu/gettext/";
+gettext_version="gettext-0.18.1.1";
+gettext_fileExt=".tar.gz";
+gettext_sigExt=".tar.gz.sig"
+gettext_build="`pwd`/build/gettext";
+gettext_flags="$configureFlags --disable-csharp --disable-native-java --without-emacs --with-included-gettext --with-included-glib --with-included-libcroco --with-included-libxml --disable-java";
+gettext_patch="";
+
 pth_url="ftp://ftp.gnu.org/gnu/pth/";
 pth_version="pth-2.0.7";
 pth_fileExt=".tar.gz";
 pth_sigExt=".tar.gz.sig"
 pth_build="`pwd`/build/pth";
-pth_flags="--with-mctx-mth=sjlj --with-mctx-dsp=ssjlj --with-mctx-stk=sas";
+pth_flags="$configureFlags --with-mctx-mth=sjlj --with-mctx-dsp=ssjlj --with-mctx-stk=sas";
 pth_patch="pth/Makefile.patch";
+
+libusb_url="http://sourceforge.net/projects/libusb/files/libusb-1.0/libusb-1.0.8/";
+libusb_version="libusb-1.0.8";
+libusb_fileExt=".tar.bz2";
+libusb_sigExt=""
+libusb_build="`pwd`/build/libusb";
+libusb_flags="$configureFlags";
+libusb_patch="";
+
+libcompat_url="http://sourceforge.net/projects/libusb/files/libusb-compat-0.1/libusb-compat-0.1.3/";
+libcompat_version="libusb-compat-0.1.3";
+libcompat_fileExt=".tar.bz2";
+libcompat_sigExt=""
+libcompat_build="`pwd`/build/lib-compat";
+libcompat_flags="$configureFlags";
+libcompat_patch="";
+export LIBUSB_1_0_CFLAGS="-I$prefix_build/include/libusb-1.0/"
+export LIBUSB_1_0_LIBS="-L$prefix_build/lib"
+
+libgpgerror_url="ftp://ftp.gnupg.org/gcrypt/libgpg-error/";
+libgpgerror_version="libgpg-error-1.10";
+libgpgerror_fileExt=".tar.bz2";
+libgpgerror_sigExt=".tar.bz2.sig"
+libgpgerror_build="`pwd`/build/libgpg-error";
+libgpgerror_flags="$configureFlags";
+libgpgerror_patch="";
+
+libassuan_url="ftp://ftp.gnupg.org/gcrypt/libassuan/";
+libassuan_version="libassuan-2.0.1";
+libassuan_fileExt=".tar.bz2";
+libassuan_sigExt=".tar.bz2.sig"
+libassuan_build="`pwd`/build/libassuan";
+libassuan_flags="$configureFlags --with-gpg-error-prefix=$prefix_build";
+libassuan_patch="";
+
+libgcrypt_url="ftp://ftp.gnupg.org/gcrypt/libgcrypt/";
+libgcrypt_version="libgcrypt-1.4.6";
+libgcrypt_fileExt=".tar.gz";
+libgcrypt_sigExt=".tar.gz.sig"
+libgcrypt_build="`pwd`/build/libgcrypt";
+libgcrypt_flags="$configureFlags --with-gpg-error-prefix=$prefix_build --with-pth-prefix=$prefix_build --disable-asm --disable-endian-check";
+libgcrypt_patch="";
+
+libksba_url="ftp://ftp.gnupg.org/gcrypt/libksba/";
+libksba_version="libksba-1.2.0";
+libksba_fileExt=".tar.bz2";
+libksba_sigExt=".tar.bz2.sig"
+libksba_build="`pwd`/build/libksba";
+libksba_flags="$configureFlags --with-gpg-error-prefix=$prefix_build";
+libksba_patch="";
 
 gpg_url="ftp://ftp.gnupg.org/gcrypt/gnupg/";
 gpg_version="gnupg-2.0.17";
@@ -58,28 +118,31 @@ fi
 
 # functions ####################################################################
 function download {
-    echo "   * Downloading...";
+    echo -n "   * Downloading...";
+    mkdir -p "$1"; cd "$1"
+    if [ -e "$2$3" ]; then echo "skipped"; return 0; else echo ""; fi
     exec 3>&1 4>&2 >>$LOGFILE 2>&1
-    mkdir -p "$1" && cd "$1"
-    if [ ! -e "$2$3" ]; then
-        curl -O "$5$2$3"
+    echo " ############### Download: $5$2$3"
+    curl -C - -L -O "$5$2$3"
+    if [ "$4" != "" ]; then
         curl -O "$5$2$4"
+        gpg --verify "$2$4"
     fi
-    gpg --verify "$2$4"
     if [ "$?" != "0" ]; then
         exec 1>&3 2>&4
         echo "Could not get the sources for '$5$2$3'!";
         exit 1;
     fi
-    cd -
     exec 1>&3 2>&4
 }
 
 function compile {
-    echo "   * Compiling...";
+    echo -n "   * Compiling...";
+    cd "$1"
+    if [ -e "$3/.installed" ]; then echo "skipped"; return 0; else echo ""; fi
     exec 3>&1 4>&2 >>$LOGFILE 2>&1
-    cd "$1" && tar -x$2f "$3$4" && cd "$3" && \
-    ./configure "$5"
+    echo " ############### Configue: ./configure $5"
+    tar -x$2f "$3$4" && cd "$3" && ./configure "$5"
     if [ "$?" != "0" ]; then
         exec 1>&3 2>&4
         echo "Could not configure the sources for '$1'!";
@@ -88,26 +151,30 @@ function compile {
     if [ "$6" != "" ]; then
         patch -p0 < "$rootPath/patches/$6"
     fi
-    make -j2 #&& make check
+    echo " ############### Make..."
+    make # && make test
     if [ "$?" != "0" ]; then
         exec 1>&3 2>&4
         echo "Could not compile the sources for '$1'!";
         exit 1;
     fi
-    cd -
     exec 1>&3 2>&4
 }
 
 function install {
-    echo "   * Installing...";
+    echo -n "   * Installing...";
+    cd "$1/$2"
+    if [ -e '.installed' ]; then echo "skipped"; return 0; else echo ""; fi
     exec 3>&1 4>&2 >>$LOGFILE 2>&1
-    cd "$1/$2" && make prefix="$3" install
+    echo " ############### Make: make prefix=$3"
+
+    make prefix="$3" install
     if [ "$?" != "0" ]; then
         exec 1>&3 2>&4
         echo "Could not install the binaries for '$1'!";
         exit 1;
     fi
-    cd -
+    touch '.installed'
     exec 1>&3 2>&4
 }
 ################################################################################
@@ -120,11 +187,67 @@ compile "$iconv_build" "z" "$iconv_version" "$iconv_fileExt" "$iconv_flags" "$ic
 install "$iconv_build" "$iconv_version" "$prefix_build"
 ################################################################################
 
+# gettext ####################################################################
+echo " * Working on 'gettext'...";
+download "$gettext_build" "$gettext_version" "$gettext_fileExt" "$gettext_sigExt" "$gettext_url"
+compile "$gettext_build" "j" "$gettext_version" "$gettext_fileExt" "$gettext_flags" "$gettext_patch"
+install "$gettext_build" "$gettext_version" "$prefix_build"
+################################################################################
+
+# libiconv #####################################################################
+echo " * Working on 'libiconv'...again?...";
+download "$iconv_build" "$iconv_version" "$iconv_fileExt" "$iconv_sigExt" "$iconv_url"
+compile "$iconv_build" "z" "$iconv_version" "$iconv_fileExt" "$iconv_flags" "$iconv_patch"
+install "$iconv_build" "$iconv_version" "$prefix_build"
+################################################################################
+
 # pth ##########################################################################
 echo " * Working on 'pth'...";
 download "$pth_build" "$pth_version" "$pth_fileExt" "$pth_sigExt" "$pth_url"
 compile "$pth_build" "z" "$pth_version" "$pth_fileExt" "$pth_flags" "$pth_patch"
 install "$pth_build" "$pth_version" "$prefix_build"
+################################################################################
+
+# libusb ##########################################################################
+echo " * Working on 'libusb'...";
+download "$libusb_build" "$libusb_version" "$libusb_fileExt" "$libusb_sigExt" "$libusb_url"
+compile "$libusb_build" "z" "$libusb_version" "$libusb_fileExt" "$libusb_flags" "$libusb_patch"
+install "$libusb_build" "$libusb_version" "$prefix_build"
+################################################################################
+
+# libcompat ##########################################################################
+echo " * Working on 'libcompat'...";
+download "$libcompat_build" "$libcompat_version" "$libcompat_fileExt" "$libcompat_sigExt" "$libcompat_url"
+compile "$libcompat_build" "j" "$libcompat_version" "$libcompat_fileExt" "$libcompat_flags" "$libcompat_patch"
+install "$libcompat_build" "$libcompat_version" "$prefix_build"
+################################################################################
+
+# libgpgerror ####################################################################
+echo " * Working on 'libgpgerror'...";
+download "$libgpgerror_build" "$libgpgerror_version" "$libgpgerror_fileExt" "$libgpgerror_sigExt" "$libgpgerror_url"
+compile "$libgpgerror_build" "j" "$libgpgerror_version" "$libgpgerror_fileExt" "$libgpgerror_flags" "$libgpgerror_patch"
+install "$libgpgerror_build" "$libgpgerror_version" "$prefix_build"
+################################################################################
+
+# libassuan ####################################################################
+echo " * Working on 'libassuan'...";
+download "$libassuan_build" "$libassuan_version" "$libassuan_fileExt" "$libassuan_sigExt" "$libassuan_url"
+compile "$libassuan_build" "z" "$libassuan_version" "$libassuan_fileExt" "$libassuan_flags" "$libassuan_patch"
+install "$libassuan_build" "$libassuan_version" "$prefix_build"
+################################################################################
+
+# libgcrypt ####################################################################
+echo " * Working on 'libgcrypt'...";
+download "$libgcrypt_build" "$libgcrypt_version" "$libgcrypt_fileExt" "$libgcrypt_sigExt" "$libgcrypt_url"
+compile "$libgcrypt_build" "z" "$libgcrypt_version" "$libgcrypt_fileExt" "$libgcrypt_flags" "$libgcrypt_patch"
+install "$libgcrypt_build" "$libgcrypt_version" "$prefix_build"
+################################################################################
+
+# libksba ####################################################################
+echo " * Working on 'libksba'...";
+download "$libksba_build" "$libksba_version" "$libksba_fileExt" "$libksba_sigExt" "$libksba_url"
+compile "$libksba_build" "z" "$libksba_version" "$libksba_fileExt" "$libksba_flags" "$libksba_patch"
+install "$libksba_build" "$libksba_version" "$prefix_build"
 ################################################################################
 
 # gpg ##########################################################################
