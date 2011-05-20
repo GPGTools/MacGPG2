@@ -13,23 +13,26 @@
 #
 # @todo     Compatibility: adopt this script for all supported platforms
 # @todo     General: remove '$prefix_install' from the lib search path
-# @todo     Fix: libassuan: linker expects $prefix_install/lib/libintl*
-# @todo     Fix: libgpg-error: linker expects $prefix_install/lib/libiconv*
+# @todo     Fix: libiconv: requires $prefix_install/lib/libiconv* (2nd run)
+# @todo     Fix: libassuan: requires $prefix_install/lib/libint*
 # @todo     Fix: libgpg-error: not compatible with "clang -ansi"
 # @todo     Fix: pth: conftest crashes
-# @todo     Fix: i386/ppc/x86_64 mode: install-info crashes
+# @todo     Fix: i386/ppc/x86_64 mode: install-info crashes (_iconv_open missing)
 # @todo     Mac: pinentry-mac.app is missing
 # @todo     Enhancement: configure/compile more in the background (e.g. gettext)
+# @todo     Enhancement: re-enable gpg validation of the sources
+# @todo     Enhancement: replace curl by wget on demand
 #
 # @status   OS X 10.6.7 (i386)            : passes 'make check' on x86_64,
 # @status   OS X 10.6.7 (i386/ppc/x86_64) : passes 'make check' on x86_64
+# @status   Ubuntu 11.04 (i386)           : missing zlib for gnupg
 ##
 
 # configuration ################################################################
 ## where to start from
 export rootPath="`pwd`";
 ## where to copy the binaries to
-export prefix_build="$rootPath/build/MacGPG2";
+export prefix_build="$rootPath/build/dist/";
 ## where the binaries will get installed to (e.g. by using an installer)
 export prefix_install="/usr/local/MacGPG2";
 ## to speed up the configuration process
@@ -39,27 +42,28 @@ export LOGFILE="$rootPath/build.log";
 ## validation of the sources
 export keys="A9C09E30 1CE0C630";
 ## ...
-export PATH="$PATH:$prefix_build/bin";
-
-## to speed up the compile time
-#export CC="/usr/bin/clang -ansi"
+export PATH="$PATH:$prefix_build/$prefix_install/bin";
 
 ## for Mac OS X
-export DYLD_LIBRARY_PATH="$prefix_build/lib";
-export MACOSX_DEPLOYMENT_TARGET="10.5";
-export CFLAGS="-mmacosx-version-min=$MACOSX_DEPLOYMENT_TARGET -DUNIX -isysroot /Developer/SDKs/MacOSX$MACOSX_DEPLOYMENT_TARGET.sdk";
-export configureFlags="--enable-osx-universal-binaries"; # fat
-export CFLAGS="$CFLAGS -arch i386 -arch ppc -arch x86_64" # fat
-export CFLAGS="$CFLAGS -arch i386" # easy
+if [ "`uname`" == "Darwin" ]; then
+    export DYLD_LIBRARY_PATH="$prefix_build/$prefix_install/lib";
+    export MACOSX_DEPLOYMENT_TARGET="10.5";
+    export CFLAGS="-mmacosx-version-min=$MACOSX_DEPLOYMENT_TARGET -DUNIX -isysroot /Developer/SDKs/MacOSX$MACOSX_DEPLOYMENT_TARGET.sdk";
+    export configureFlags="--enable-osx-universal-binaries"; # fat
+    export CFLAGS="$CFLAGS -arch i386 -arch ppc -arch x86_64" # fat
+    #export CFLAGS="$CFLAGS -arch i386" # easy
+    ## faster modern compiler
+    #export CC="/usr/bin/clang -ansi"
+fi
 
 ## general flags
 export configureFlags="$configureFlags --enable-static=no --disable-maintainer-mode --disable-dependency-tracking --prefix=$prefix_install";
 export CXXFLAGS="$CFLAGS";
-export CPPFLAGS="-I$prefix_build/include";
-export LDFLAGS="-L$prefix_build/lib";
-export LD_LIBRARY_PATH="$prefix_build/lib";
-export LIBUSB_1_0_CFLAGS="-I$prefix_build/include/libusb-1.0/"
-export LIBUSB_1_0_LIBS="-L$prefix_build/lib"
+export CPPFLAGS="-I$prefix_build/$prefix_install/include";
+export LDFLAGS="-L$prefix_build/$prefix_install/lib";
+export LD_LIBRARY_PATH="$prefix_build/$prefix_install/lib";
+export LIBUSB_1_0_CFLAGS="-I$prefix_build/$prefix_install/include/libusb-1.0/"
+export LIBUSB_1_0_LIBS="-L$prefix_build/$prefix_install/lib"
 ################################################################################
 
 
@@ -68,7 +72,7 @@ iconv_url="ftp://ftp.gnu.org/pub/gnu/libiconv/";
 iconv_version="libiconv-1.13.1";
 iconv_fileExt=".tar.gz";
 iconv_sigExt=".tar.gz.sig"
-iconv_build="`pwd`/build/libiconv";
+iconv_build="$rootPath/build/libiconv";
 iconv_flags="--enable-extra-encodings";
 iconv_patch="";
 
@@ -76,7 +80,7 @@ gettext_url="ftp://ftp.gnu.org/pub/gnu/gettext/";
 gettext_version="gettext-0.18.1.1";
 gettext_fileExt=".tar.gz";
 gettext_sigExt=".tar.gz.sig"
-gettext_build="`pwd`/build/gettext";
+gettext_build="$rootPath/build/gettext";
 gettext_flags="--disable-csharp --disable-native-java --without-emacs --with-included-gettext --with-included-glib --with-included-libcroco --with-included-libxml --disable-java";
 gettext_patch="";
 
@@ -84,7 +88,7 @@ pth_url="ftp://ftp.gnu.org/gnu/pth/";
 pth_version="pth-2.0.7";
 pth_fileExt=".tar.gz";
 pth_sigExt=".tar.gz.sig"
-pth_build="`pwd`/build/pth";
+pth_build="$rootPath/build/pth";
 pth_flags="--with-mctx-mth=sjlj --with-mctx-dsp=ssjlj --with-mctx-stk=sas";
 pth_patch="pth/Makefile.patch";
 
@@ -92,7 +96,7 @@ libusb_url="http://sourceforge.net/projects/libusb/files/libusb-1.0/libusb-1.0.8
 libusb_version="libusb-1.0.8";
 libusb_fileExt=".tar.bz2";
 libusb_sigExt=""
-libusb_build="`pwd`/build/libusb";
+libusb_build="$rootPath/build/libusb";
 libusb_flags="";
 libusb_patch="";
 
@@ -100,7 +104,7 @@ libusbcompat_url="http://sourceforge.net/projects/libusb/files/libusb-compat-0.1
 libusbcompat_version="libusb-compat-0.1.3";
 libusbcompat_fileExt=".tar.bz2";
 libusbcompat_sigExt=""
-libusbcompat_build="`pwd`/build/lib-compat";
+libusbcompat_build="$rootPath/build/lib-compat";
 libusbcompat_flags="";
 libusbcompat_patch="";
 
@@ -108,7 +112,7 @@ libgpgerror_url="ftp://ftp.gnupg.org/gcrypt/libgpg-error/";
 libgpgerror_version="libgpg-error-1.10";
 libgpgerror_fileExt=".tar.bz2";
 libgpgerror_sigExt=".tar.bz2.sig"
-libgpgerror_build="`pwd`/build/libgpg-error";
+libgpgerror_build="$rootPath/build/libgpg-error";
 libgpgerror_flags="";
 libgpgerror_patch="";
 
@@ -116,32 +120,32 @@ libassuan_url="ftp://ftp.gnupg.org/gcrypt/libassuan/";
 libassuan_version="libassuan-2.0.1";
 libassuan_fileExt=".tar.bz2";
 libassuan_sigExt=".tar.bz2.sig"
-libassuan_build="`pwd`/build/libassuan";
-libassuan_flags="--with-gpg-error-prefix=$prefix_build";
+libassuan_build="$rootPath/build/libassuan";
+libassuan_flags="--with-gpg-error-prefix=$prefix_build/$prefix_install";
 libassuan_patch="";
 
 libgcrypt_url="ftp://ftp.gnupg.org/gcrypt/libgcrypt/";
 libgcrypt_version="libgcrypt-1.4.6";
 libgcrypt_fileExt=".tar.gz";
 libgcrypt_sigExt=".tar.gz.sig"
-libgcrypt_build="`pwd`/build/libgcrypt";
-libgcrypt_flags="--with-gpg-error-prefix=$prefix_build --with-pth-prefix=$prefix_build --disable-asm --disable-endian-check";
+libgcrypt_build="$rootPath/build/libgcrypt";
+libgcrypt_flags="--with-gpg-error-prefix=$prefix_build/$prefix_install --with-pth-prefix=$prefix_build/$prefix_install --disable-asm --disable-endian-check";
 libgcrypt_patch="";
 
 libksba_url="ftp://ftp.gnupg.org/gcrypt/libksba/";
 libksba_version="libksba-1.2.0";
 libksba_fileExt=".tar.bz2";
 libksba_sigExt=".tar.bz2.sig"
-libksba_build="`pwd`/build/libksba";
-libksba_flags="--with-gpg-error-prefix=$prefix_build";
+libksba_build="$rootPath/build/libksba";
+libksba_flags="--with-gpg-error-prefix=$prefix_build/$prefix_install";
 libksba_patch="";
 
 gpg_url="ftp://ftp.gnupg.org/gcrypt/gnupg/";
 gpg_version="gnupg-2.0.17";
 gpg_fileExt=".tar.bz2";
 gpg_sigExt=".tar.bz2.sig"
-gpg_build="`pwd`/build/gnupg";
-gpg_flags="--disable-gpgtar --enable-standard-socket --with-pinentry-pgm=$prefix_build/libexec/pinentry-mac.app/Contents/MacOS/pinentry-mac --with-gpg-error-prefix=$prefix_build --with-libgcrypt-prefix=$prefix_build --with-libassuan-prefix=$prefix_build --with-ksba-prefix=$prefix_build --with-pth-prefix=$prefix_build --with-libiconv-prefix=$prefix_build --with-libintl-prefix=$prefix_build";
+gpg_build="$rootPath/build/gnupg";
+gpg_flags="--disable-gpgtar --enable-standard-socket --with-pinentry-pgm=$prefix_build/$prefix_install/libexec/pinentry-mac.app/Contents/MacOS/pinentry-mac --with-gpg-error-prefix=$prefix_build/$prefix_install --with-libgcrypt-prefix=$prefix_build/$prefix_install --with-libassuan-prefix=$prefix_build/$prefix_install --with-ksba-prefix=$prefix_build/$prefix_install --with-pth-prefix=$prefix_build/$prefix_install --with-iconv-dir=$prefix_build/$prefix_install --with-libiconv-prefix=$prefix_build/$prefix_install --with-libintl-prefix=$prefix_build/$prefix_install";
 gpg_patch="";
 ################################################################################
 
@@ -149,8 +153,13 @@ gpg_patch="";
 # init #########################################################################
 if [ -e "$prefix_install" ]; then
     echo " * WARNING: Please delete '$prefix_install' first :/";
+    read
+fi
+if [ "`which curl`" == "" ]; then
+    echo " * WARNING: Please install 'curl' first :/";
     exit 1
 fi
+
 echo " * Logfiles: $LOGFILE.xyz";
 echo " * Target: $prefix_build"; mkdir -p "$prefix_build";
 #if [ "`which gpg2`" == "" ]; then
@@ -202,7 +211,7 @@ function download {
     curl -s -C - -L -O "$5$2$3"
     if [ "$4" != "" ] && [ "" != "`which gpg2`" ] ; then
         curl -s -O "$5$2$4"
-        gpg2 --verify "$2$4"
+        #gpg2 --verify "$2$4"
     fi
     if [ "$?" != "0" ]; then
         exec 1>&3 2>&4
@@ -249,7 +258,7 @@ function install {
     exec 3>&1 4>&2 >>$LOGFILE.$2 2>&1
     echo " ############### Make: make prefix=$3"
 
-    make prefix="$3" install
+    make -e DESTDIR="$prefix_build" prefix="$prefix_install" install
     if [ "$?" != "0" ]; then
         exec 1>&3 2>&4
         echo "Could not install the binaries for '$1'!";
@@ -294,28 +303,27 @@ gpg_pid=${!}
 echo " * Working on 'libiconv' (first run)...";
 compile "$iconv_build" "z" "$iconv_version" "$iconv_fileExt" "$iconv_flags" "$iconv_patch"
 install "$iconv_build" "$iconv_version" "$prefix_build"
-rm "$iconv_build/$iconv_version/.installed"; rm $ccache;
+rm "$iconv_build/$iconv_version/.installed";
+[ -e $ccache ] && rm $ccache;
 ################################################################################
+
 
 # gettext ####################################################################
 echo " * Working on 'gettext'...";
 waitfor "$gettext_version" "$gettext_pid";
-compile "$gettext_build" "j" "$gettext_version" "$gettext_fileExt" "$gettext_flags" "$gettext_patch"
+compile "$gettext_build" "z" "$gettext_version" "$gettext_fileExt" "$gettext_flags" "$gettext_patch"
 install "$gettext_build" "$gettext_version" "$prefix_build"
-rm $ccache;
+[ -e $ccache ] && rm $ccache;
 ################################################################################
-
-echo "   * Starting ugly workaround...";
-mkdir -p "$prefix_install/lib/"; cp $prefix_build/lib/libint* $prefix_install/lib/;
 
 # libiconv #####################################################################
 echo " * Working on 'libiconv' (second run)...";
+echo "   * Starting ugly workaround for 'libiconv' on OS X...";
+mkdir -p "$prefix_install/lib";
+cp $prefix_build/$prefix_install/lib/libiconv* "$prefix_install/lib";
 compile "$iconv_build" "z" "$iconv_version" "$iconv_fileExt" "$iconv_flags" "$iconv_patch"
 install "$iconv_build" "$iconv_version" "$prefix_build"
 ################################################################################
-
-echo "   * Starting ugly workaround...";
-mkdir -p "$prefix_install/lib/"; cp $prefix_build/lib/libiconv* $prefix_install/lib/;
 
 # pth ##########################################################################
 echo " * Working on 'pth'...";
@@ -327,7 +335,7 @@ install "$pth_build" "$pth_version" "$prefix_build"
 # libusb ##########################################################################
 echo " * Working on 'libusb'...";
 waitfor "$libusb_version" "$libusb_pid";
-compile "$libusb_build" "z" "$libusb_version" "$libusb_fileExt" "$libusb_flags" "$libusb_patch"
+compile "$libusb_build" "j" "$libusb_version" "$libusb_fileExt" "$libusb_flags" "$libusb_patch"
 install "$libusb_build" "$libusb_version" "$prefix_build"
 ################################################################################
 
@@ -347,8 +355,11 @@ install "$libgpgerror_build" "$libgpgerror_version" "$prefix_build"
 
 # libassuan ####################################################################
 echo " * Working on 'libassuan'...";
+echo "   * Starting ugly workaround for 'libassuan' on OS X...";
+mkdir -p "$prefix_install/lib";
+cp $prefix_build/$prefix_install/lib/libint* "$prefix_install/lib";
 waitfor "$libassuan_version" "$libassuan_pid";
-compile "$libassuan_build" "z" "$libassuan_version" "$libassuan_fileExt" "$libassuan_flags" "$libassuan_patch"
+compile "$libassuan_build" "j" "$libassuan_version" "$libassuan_fileExt" "$libassuan_flags" "$libassuan_patch"
 install "$libassuan_build" "$libassuan_version" "$prefix_build"
 ################################################################################
 
@@ -362,7 +373,7 @@ install "$libgcrypt_build" "$libgcrypt_version" "$prefix_build"
 # libksba ####################################################################
 echo " * Working on 'libksba'...";
 waitfor "$libksba_version" "$libksba_pid";
-compile "$libksba_build" "z" "$libksba_version" "$libksba_fileExt" "$libksba_flags" "$libksba_patch"
+compile "$libksba_build" "j" "$libksba_version" "$libksba_fileExt" "$libksba_flags" "$libksba_patch"
 install "$libksba_build" "$libksba_version" "$prefix_build"
 ################################################################################
 
@@ -375,6 +386,5 @@ install "$gpg_build" "$gpg_version" "$prefix_build"
 
 echo "";
 echo "What now: ";
-echo " * mv $prefix_build $prefix_install";
 echo " * cd $gpg_build/$gpg_version";
-echo " * make check";
+echo " * make LD_LIBRARY_PATH=$prefix_build/$prefix_install/lib DYLD_LIBRARY_PATH=$LD_LIBRARY_PATH check";
