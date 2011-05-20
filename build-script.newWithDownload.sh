@@ -1,7 +1,10 @@
 #!/bin/bash
 ##
-# Build file for GnuPG 2 on OS X.
-# This version downloads all sources. Based on the GnuPG 1 & 2 build script.
+# Click'n'go build file for GnuPG 2.
+# Based on the MacGPG 1 & 2 build script.
+#
+# @usage    time bash build-script.sh clean
+#           This should finish in about 6 minutes (in the year 2011)
 #
 # @author   Alexander Willner <alex@gpgtools.org>
 # @version  2011-05-20
@@ -9,16 +12,17 @@
 # @see      https://github.com/GPGTools/MacGPG2/blob/master/build-script.sh
 #
 # @todo     Compatibility: adopt this script for all supported platforms
+# @todo     General: remove '$prefix_install' from the lib search path
 # @todo     Fix: libassuan: linker expects $prefix_install/lib/libintl*
 # @todo     Fix: libgpg-error: linker expects $prefix_install/lib/libiconv*
 # @todo     Fix: libgpg-error: not compatible with "clang -ansi"
-# @todo     Fix: pth: not compatible with make -jX
 # @todo     Fix: pth: conftest crashes
 # @todo     Fix: i386/ppc/x86_64 mode: install-info crashes
 # @todo     Mac: pinentry-mac.app is missing
+# @todo     Enhancement: configure/compile more in the background (e.g. gettext)
 #
-# @status   OS X 10.6.7 (i386)            : passed tests on x86_64,
-# @status   OS X 10.6.7 (i386/ppc/x86_64) : passwd tests on x86_64
+# @status   OS X 10.6.7 (i386)            : passes 'make check' on x86_64,
+# @status   OS X 10.6.7 (i386/ppc/x86_64) : passes 'make check' on x86_64
 ##
 
 # configuration ################################################################
@@ -143,7 +147,11 @@ gpg_patch="";
 
 
 # init #########################################################################
-echo " * Logfile: $LOGFILE"; : > $LOGFILE
+if [ -e "$prefix_install" ]; then
+    echo " * WARNING: Please delete '$prefix_install' first :/";
+    exit 1
+fi
+echo " * Logfiles: $LOGFILE.xyz";
 echo " * Target: $prefix_build"; mkdir -p "$prefix_build";
 #if [ "`which gpg2`" == "" ]; then
 #    echo " * No GnuPG2 found.";
@@ -161,6 +169,25 @@ echo " * Target: $prefix_build"; mkdir -p "$prefix_build";
 #      exit 1;
 #    fi
 #fi
+
+if [ "$1" == "clean" ]; then
+    rm "$ccache"
+    rm -rf "$prefix_build"
+    rm $LOGFILE.*
+    rm -rf "$iconv_build/$iconv_version"
+    rm -rf "$gettext_build/$gettext_version"
+    rm -rf "$pth_build/$pth_version"
+    rm -rf "$libusb_build/$libusb_version"
+    rm -rf "$libusbcompat_build/$libusbcompat_version"
+    rm -rf "$libgpgerror_build/$libgpgerror_version"
+    rm -rf "$libassuan_build/$libassuan_version"
+    rm -rf "$libgcrypt_build/$libgcrypt_version"
+    rm -rf "$libksba_build/$libksba_version"
+    rm -rf "$gpg_build/$gpg_version"
+fi
+################################################################################
+
+
 ################################################################################
 
 
@@ -186,10 +213,11 @@ function download {
 }
 
 function compile {
-    echo -n "   * [`date '+%H:%M:%S'`] Configure...";
+    echo -n "   * [`date '+%H:%M:%S'`] Configuring '$3'...";
     cd "$1"
     if [ -e "$3/.installed" ]; then echo "skipped"; return 0; else echo ""; fi
-    exec 3>&1 4>&2 >>$LOGFILE 2>&1
+    :>$LOGFILE.$3
+    exec 3>&1 4>&2 >>$LOGFILE.$3 2>&1
     echo " ############### Configue: ./configure --cache-file=$ccache $configureFlags $5"
     tar -x$2f "$3$4" && cd "$3" && ./configure --cache-file=$ccache $configureFlags $5
     if [ "$?" != "0" ]; then
@@ -198,13 +226,13 @@ function compile {
         exit 1;
     fi
     exec 1>&3 2>&4
-    echo "   * [`date '+%H:%M:%S'`] Make...";
-    exec 3>&1 4>&2 >>$LOGFILE 2>&1
+    echo "   * [`date '+%H:%M:%S'`] Compiling '$3'...";
+    exec 3>&1 4>&2 >>$LOGFILE.$3 2>&1
     echo " ############### Make..."
     if [ "$6" != "" ]; then
         patch -p0 < "$rootPath/patches/$6"
     fi
-    make # && make test
+    make -j4 $7
     if [ "$?" != "0" ]; then
         exec 1>&3 2>&4
         echo "Could not compile the sources for '$1'!";
@@ -215,9 +243,10 @@ function compile {
 
 function install {
     cd "$1/$2"
-    echo -n "   * [`date '+%H:%M:%S'`] Installing...";
+    echo -n "   * [`date '+%H:%M:%S'`] Installing '$2'...";
     if [ -e '.installed' ]; then echo "skipped"; return 0; else echo ""; fi
-    exec 3>&1 4>&2 >>$LOGFILE 2>&1
+    :>LOGFILE.$2
+    exec 3>&1 4>&2 >>$LOGFILE.$2 2>&1
     echo " ############### Make: make prefix=$3"
 
     make prefix="$3" install
@@ -228,6 +257,11 @@ function install {
     fi
     touch '.installed'
     exec 1>&3 2>&4
+}
+
+function waitfor {
+    echo "   * [`date '+%H:%M:%S'`] Waiting for download of '$1'...";
+    wait "$2";
 }
 ################################################################################
 
@@ -257,83 +291,90 @@ gpg_pid=${!}
 ################################################################################
 
 # libiconv #####################################################################
-echo " * Working on 'libiconv'...";
+echo " * Working on 'libiconv' (first run)...";
 compile "$iconv_build" "z" "$iconv_version" "$iconv_fileExt" "$iconv_flags" "$iconv_patch"
 install "$iconv_build" "$iconv_version" "$prefix_build"
+rm "$iconv_build/$iconv_version/.installed"; rm $ccache;
 ################################################################################
 
 # gettext ####################################################################
 echo " * Working on 'gettext'...";
-echo "   * Waiting for download..."; wait "$gettext_pid";
+waitfor "$gettext_version" "$gettext_pid";
 compile "$gettext_build" "j" "$gettext_version" "$gettext_fileExt" "$gettext_flags" "$gettext_patch"
 install "$gettext_build" "$gettext_version" "$prefix_build"
+rm $ccache;
 ################################################################################
+
+echo "   * Starting ugly workaround...";
+mkdir -p "$prefix_install/lib/"; cp $prefix_build/lib/libint* $prefix_install/lib/;
+
+# libiconv #####################################################################
+echo " * Working on 'libiconv' (second run)...";
+compile "$iconv_build" "z" "$iconv_version" "$iconv_fileExt" "$iconv_flags" "$iconv_patch"
+install "$iconv_build" "$iconv_version" "$prefix_build"
+################################################################################
+
+echo "   * Starting ugly workaround...";
+mkdir -p "$prefix_install/lib/"; cp $prefix_build/lib/libiconv* $prefix_install/lib/;
 
 # pth ##########################################################################
 echo " * Working on 'pth'...";
-echo "   * Waiting for download..."; wait "$pth_pid";
-compile "$pth_build" "z" "$pth_version" "$pth_fileExt" "$pth_flags" "$pth_patch"
+waitfor "$pth_version" "$pth_pid"
+compile "$pth_build" "z" "$pth_version" "$pth_fileExt" "$pth_flags" "$pth_patch" "-j1"
 install "$pth_build" "$pth_version" "$prefix_build"
 ################################################################################
 
 # libusb ##########################################################################
 echo " * Working on 'libusb'...";
-echo "   * Waiting for download..."; wait "$libusb_pid";
+waitfor "$libusb_version" "$libusb_pid";
 compile "$libusb_build" "z" "$libusb_version" "$libusb_fileExt" "$libusb_flags" "$libusb_patch"
 install "$libusb_build" "$libusb_version" "$prefix_build"
 ################################################################################
 
 # libusb-compat ################################################################
 echo " * Working on 'libusb-compat'...";
-echo "   * Waiting for download..."; wait "$libusbcompat_pid";
+waitfor "$libusbcompat_version" "$libusbcompat_pid";
 compile "$libusbcompat_build" "j" "$libusbcompat_version" "$libusbcompat_fileExt" "$libusbcompat_flags" "$libusbcompat_patch"
 install "$libusbcompat_build" "$libusbcompat_version" "$prefix_build"
 ################################################################################
 
 # libgpgerror ####################################################################
 echo " * Working on 'libgpgerror'...";
-echo "   * Starting ugly workaround...";
-mkdir -p "$prefix_install/lib/"; cp $prefix_build/lib/libiconv* $prefix_install/lib/;
-echo "   * Waiting for download..."; wait "$libgpgerror_pid";
+waitfor "$libgpgerror_version" "$libgpgerror_pid";
 compile "$libgpgerror_build" "j" "$libgpgerror_version" "$libgpgerror_fileExt" "$libgpgerror_flags" "$libgpgerror_patch"
 install "$libgpgerror_build" "$libgpgerror_version" "$prefix_build"
 ################################################################################
 
 # libassuan ####################################################################
 echo " * Working on 'libassuan'...";
-echo "   * Starting ugly workaround...";
-mkdir -p "$prefix_install/lib/"; cp $prefix_build/lib/libint* $prefix_install/lib/;
-echo "   * Waiting for download..."; wait "$libassuan_pid";
+waitfor "$libassuan_version" "$libassuan_pid";
 compile "$libassuan_build" "z" "$libassuan_version" "$libassuan_fileExt" "$libassuan_flags" "$libassuan_patch"
 install "$libassuan_build" "$libassuan_version" "$prefix_build"
 ################################################################################
 
 # libgcrypt ####################################################################
 echo " * Working on 'libgcrypt'...";
-echo "   * Waiting for download..."; wait "$libgcrypt_pid";
+waitfor "$libgcrypt_version" "$libgcrypt_pid";
 compile "$libgcrypt_build" "z" "$libgcrypt_version" "$libgcrypt_fileExt" "$libgcrypt_flags" "$libgcrypt_patch"
 install "$libgcrypt_build" "$libgcrypt_version" "$prefix_build"
 ################################################################################
 
 # libksba ####################################################################
 echo " * Working on 'libksba'...";
-echo "   * Waiting for download..."; wait "$libksba_pid";
+waitfor "$libksba_version" "$libksba_pid";
 compile "$libksba_build" "z" "$libksba_version" "$libksba_fileExt" "$libksba_flags" "$libksba_patch"
 install "$libksba_build" "$libksba_version" "$prefix_build"
 ################################################################################
 
 # gpg ##########################################################################
 echo " * Working on 'gpg2'...";
-echo "   * Deleting cache..."; rm $ccache;
-echo "   * Waiting for download..."; wait "$gpg_pid";
+waitfor "$gpg_version" "$gpg_pid";
 compile "$gpg_build" "j" "$gpg_version" "$gpg_fileExt" "$gpg_flags" "$gpg_patch"
 install "$gpg_build" "$gpg_version" "$prefix_build"
 ################################################################################
 
 echo "";
-echo "To test: ";
+echo "What now: ";
+echo " * mv $prefix_build $prefix_install";
 echo " * cd $gpg_build/$gpg_version";
 echo " * make check";
-echo "To install: ";
-echo " * rm -rf $prefix_install";
-echo " * mv $prefix_build $prefix_install";
