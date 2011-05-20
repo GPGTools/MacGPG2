@@ -3,8 +3,7 @@
 # Click'n'go build file for GnuPG 2.
 # Based on the MacGPG 1 & 2 build script.
 #
-# @usage    time bash build-script.sh clean
-#           This should finish in about 6 minutes (in the year 2011)
+# @usage    ./build-script.sh clean
 #
 # @author   Alexander Willner <alex@gpgtools.org>
 # @version  2011-05-20
@@ -23,7 +22,7 @@
 # @todo     Enhancement: re-enable gpg validation of the sources
 # @todo     Enhancement: replace curl by wget on demand
 #
-# @status   OS X 10.6.7 (i386)            : passes 'make check' on x86_64,
+# @status   OS X 10.6.7 (i386)            : passes 'make check' on x86_64
 # @status   OS X 10.6.7 (i386/ppc/x86_64) : passes 'make check' on x86_64
 # @status   Ubuntu 11.04 (i386)           : compiles, fails 'make check' on i386
 ##
@@ -164,11 +163,11 @@ if [ -e "$prefix_install" ]; then
     read
 fi
 if [ "`which curl`" == "" ]; then
-    echo " * WARNING: Please install 'curl' first :/";
+    echo " * ERROR: Please install 'curl' first :/";
     exit 1
 fi
 
-echo " * Logfiles: $LOGFILE.xyz";
+echo " * Logfiles: $LOGFILE-xyz";
 echo " * Target: $prefix_build"; mkdir -p "$prefix_build";
 #if [ "`which gpg2`" == "" ]; then
 #    echo " * No GnuPG2 found.";
@@ -190,7 +189,7 @@ echo " * Target: $prefix_build"; mkdir -p "$prefix_build";
 if [ "$1" == "clean" ]; then
     rm "$ccache"
     rm -rf "$prefix_build"
-    rm $LOGFILE.*
+    rm $LOGFILE-*
     rm -rf "$iconv_build/$iconv_version"
     rm -rf "$gettext_build/$gettext_version"
     rm -rf "$pth_build/$pth_version"
@@ -233,8 +232,8 @@ function compile {
     echo -n "   * [`date '+%H:%M:%S'`] Configuring '$3'...";
     cd "$1"
     if [ -e "$3/.installed" ]; then echo "skipped"; return 0; else echo ""; fi
-    :>$LOGFILE.$3
-    exec 3>&1 4>&2 >>$LOGFILE.$3 2>&1
+    :>$LOGFILE-$3
+    exec 3>&1 4>&2 >>$LOGFILE-$3 2>&1
     echo " ############### Configue: ./configure $5"
     tar -x$2f "$3$4" && cd "$3" && ./configure $5
     if [ "$?" != "0" ]; then
@@ -244,7 +243,7 @@ function compile {
     fi
     exec 1>&3 2>&4
     echo "   * [`date '+%H:%M:%S'`] Compiling '$3'...";
-    exec 3>&1 4>&2 >>$LOGFILE.$3 2>&1
+    exec 3>&1 4>&2 >>$LOGFILE-$3 2>&1
     echo " ############### Make..."
     if [ "$6" != "" ]; then
         patch -p0 < "$rootPath/patches/$6"
@@ -262,8 +261,8 @@ function install {
     cd "$1/$2"
     echo -n "   * [`date '+%H:%M:%S'`] Installing '$2'...";
     if [ -e '.installed' ]; then echo "skipped"; return 0; else echo ""; fi
-    :>LOGFILE.$2
-    exec 3>&1 4>&2 >>$LOGFILE.$2 2>&1
+    :>LOGFILE-$2
+    exec 3>&1 4>&2 >>$LOGFILE-$2 2>&1
     echo " ############### Make: make prefix=$3"
 
     make -e DESTDIR="$prefix_build" prefix="$prefix_install" install
@@ -313,7 +312,7 @@ gpg_pid=${!}
 echo " * Working on 'libiconv' (first run)...";
 compile "$iconv_build" "z" "$iconv_version" "$iconv_fileExt" "$iconv_flags" "$iconv_patch"
 install "$iconv_build" "$iconv_version" "$prefix_build"
-#rm "$iconv_build/$iconv_version/.installed";
+rm "$iconv_build/$iconv_version/.installed";
 [ -e $ccache ] && rm $ccache;
 ################################################################################
 
