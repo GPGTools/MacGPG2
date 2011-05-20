@@ -11,12 +11,13 @@
 # @see      https://github.com/GPGTools/MacGPG2/blob/master/build-script.sh
 #
 # @todo     Compatibility: adopt this script for all supported platforms
-# @todo     General: remove '$prefix_install' from the lib search path
-# @todo     Fix: libiconv: requires $prefix_install/lib/libiconv* (2nd run)
-# @todo     Fix: libassuan: requires $prefix_install/lib/libint*
-# @todo     Fix: libgpg-error: not compatible with "clang -ansi"
-# @todo     Fix: pth: conftest crashes
-# @todo     Fix: i386/ppc/x86_64 mode: install-info crashes (_iconv_open missing)
+# @todo     Major: remove '$prefix_install' from the lib search path
+# @todo     Major: libiconv: requires $prefix_install/lib/libiconv* (2nd run)
+# @todo     Major: libassuan: requires $prefix_install/lib/libint*
+# @todo     Minor: libgpg-error: not compatible with "clang -ansi"
+# @todo     Minor: make sure gcc version 4 is being used
+# @todo     Minor: pth: conftest crashes
+# @todo     Minor: i386/ppc/x86_64 mode: install-info crashes (_iconv_open missing)
 # @todo     Mac: pinentry-mac.app is missing
 # @todo     Enhancement: configure/compile more in the background (e.g. gettext)
 # @todo     Enhancement: re-enable gpg validation of the sources
@@ -24,7 +25,10 @@
 #
 # @status   OS X 10.6.7 (i386)            : passes 'make check' on x86_64
 # @status   OS X 10.6.7 (i386/ppc/x86_64) : passes 'make check' on x86_64
-# @status   Ubuntu 11.04 (i386)           : compiles, fails 'make check' on i386
+# @status   CentOS release 4.8 (x86_64)   : passes 'make check' on x86_64
+# @status   CentOS release 5.6 (x86_64)   : passes 'make check' on x86_64
+# @status   Ubuntu release 7.10 (i386)    : passes 'make check' on i386
+# @status   Ubuntu release 11.04 (i386)   : gnupg does not find zlib
 ##
 
 # configuration ################################################################
@@ -42,6 +46,7 @@ export LOGFILE="$rootPath/build.log";
 export keys="A9C09E30 1CE0C630";
 ## ...
 export PATH="$PATH:$prefix_build/$prefix_install/bin";
+export CC=gcc
 
 ## for Mac OS X
 if [ "`uname`" == "Darwin" ]; then
@@ -53,6 +58,7 @@ if [ "`uname`" == "Darwin" ]; then
     #export CFLAGS="$CFLAGS -arch i386" # easy
     ## faster modern compiler
     #export CC="/usr/bin/clang -ansi"
+    export CC=gcc-4.2
 fi
 
 ## general flags
@@ -158,14 +164,16 @@ gpg_patch="";
 
 
 # init #########################################################################
-if [ -e "$prefix_install" ]; then
-    echo " * WARNING: Please delete '$prefix_install' first :/";
-    read
-fi
 if [ "`which curl`" == "" ]; then
     echo " * ERROR: Please install 'curl' first :/";
     exit 1
 fi
+
+echo " * Unfortunately, we've to delete/create $prefix_install (enter=continue,ctrl+c=cancel)....";
+read
+sudo rm -rf $prefix_install
+sudo mkdir -p $prefix_install
+sudo chown `whoami` $prefix_install
 
 echo " * Logfiles: $LOGFILE-xyz";
 echo " * Target: $prefix_build"; mkdir -p "$prefix_build";
@@ -400,7 +408,11 @@ compile "$gpg_build" "j" "$gpg_version" "$gpg_fileExt" "$gpg_flags" "$gpg_patch"
 install "$gpg_build" "$gpg_version" "$prefix_build"
 ################################################################################
 
+sudo rm -rf $prefix_install
 echo "";
 echo "What now: ";
 echo " * cd $gpg_build/$gpg_version";
 echo " * make LD_LIBRARY_PATH=$prefix_build/$prefix_install/lib DYLD_LIBRARY_PATH=$LD_LIBRARY_PATH check";
+echo "";
+
+
