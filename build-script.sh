@@ -14,7 +14,7 @@ function try {
 	$@
 	if [ $? -ne 0 ]; then
 	  status "ERROR - ABORTING"
-	  exit
+	  exit 1
 	fi
 }
 
