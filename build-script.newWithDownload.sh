@@ -5,7 +5,7 @@
 #
 # @usage    ./build-script.sh clean
 #
-# @author   Alexander Willner <alex@gpgtools.org>
+# @author   Alex <alex@gpgtools.org>
 # @version  2011-05-20
 # @see      https://github.com/GPGTools/MacGPG1/blob/master/build-script.sh
 # @see      https://github.com/GPGTools/MacGPG2/blob/master/build-script.sh
@@ -14,6 +14,7 @@
 # @todo     Major: remove '$prefix_install' from the lib search path
 # @todo     Major: libiconv: requires $prefix_install/lib/libiconv* (2nd run)
 # @todo     Major: libassuan: requires $prefix_install/lib/libint*
+# @todo     Major: create and integrate diff patches based on Benjamins changes
 # @todo     Minor: libgpg-error: not compatible with "clang -ansi"
 # @todo     Minor: make sure gcc version 4 is being used
 # @todo     Minor: pth: conftest crashes
