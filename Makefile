@@ -1,5 +1,9 @@
 all: compile
 
+update:
+	@git submodule foreach git pull origin master
+	@git pull
+
 compile:
 	@./build-script.sh
 
