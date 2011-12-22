@@ -5,10 +5,7 @@ update:
 	@git pull
 
 compile:
-	@./build-script.sh
-
-install:
-	@./build-script.sh --install
+	@./build.sh clean
 
 clean:
 	rm -fr build/

@@ -1,0 +1,45 @@
+diff -ru g10/options.skel g10/options.skel
+--- g10/options.skel	2011-01-09 23:06:16.000000000 +0100
++++ g10/options.skel	2011-12-22 12:45:02.000000000 +0100
+@@ -166,7 +166,7 @@
+ # no-include-attributes = do not include attribute IDs (aka "photo IDs")
+ #                         when sending keys to the keyserver.
+ 
+-#keyserver-options auto-key-retrieve
++keyserver-options auto-key-retrieve
+ 
+ # Uncomment this line to display photo user IDs in key listings and
+ # when a signature from a key with a photo is verified.
+@@ -204,3 +204,32 @@
+ # Use your MIME handler to view photos:
+ # photo-viewer "metamail -q -d -b -c %T -s 'KeyID 0x%k' -f GnuPG"
+ 
++#  *** Options for GPGTools ***
++
++# Automatic key location
++#
++# GnuPG can automatically locate and retrieve keys as needed using the
++# auto-key-locate option.  This happens when encrypting to an email
++# address (in the "user@example.com" form), and there are no
++# user@example.com keys on the local keyring.  This option takes the
++# following arguments, in the order they are to be tried:
++#
++# cert = locate a key using DNS CERT, as specified in RFC-4398.
++#        GnuPG can handle both the PGP (key) and IPGP (URL + fingerprint)
++#        CERT methods.
++#
++# pka = locate a key using DNS PKA.
++#
++# ldap = locate a key using the PGP Universal method of checking
++#        "ldap://keys.(thedomain)".  For example, encrypting to
++#        user@example.com will check ldap://keys.example.com.
++#
++# keyserver = locate a key using whatever keyserver is defined using
++#             the keyserver option.
++#
++# You may also list arbitrary keyservers here by URL.
++#
++# Try CERT, then PKA, then LDAP, then hkp://keys.gnupg.net:
++auto-key-locate cert pka ldap hkp://keys.gnupg.net
++
++comment GPGTools - http://gpgtools.org

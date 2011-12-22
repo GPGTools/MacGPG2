@@ -1,0 +1,66 @@
+# This patch adds cacheid to gpg-agent. This is needed for the Mac OS X keychain.
+
+diff -ru agent/agent.h agent/agent.h
+--- agent/agent.h	2011-01-09 23:06:14.000000000 +0100
++++ agent/agent.h	2011-12-22 12:45:02.000000000 +0100
+@@ -253,7 +253,7 @@
+                   struct pin_entry_info_s *pininfo);
+ int agent_get_passphrase (ctrl_t ctrl, char **retpass,
+                           const char *desc, const char *prompt,
+-                          const char *errtext, int with_qualitybar);
++                          const char *errtext, int with_qualitybar, const char *cacheid);
+ int agent_get_confirmation (ctrl_t ctrl, const char *desc, const char *ok,
+ 			    const char *notokay, int with_cancel);
+ int agent_show_message (ctrl_t ctrl, const char *desc, const char *ok_btn);
+
+
+diff -ru agent/call-pinentry.c agent/call-pinentry.c
+--- agent/call-pinentry.c	2011-01-09 23:06:14.000000000 +0100
++++ agent/call-pinentry.c	2011-12-22 12:45:02.000000000 +0100
+@@ -843,7 +843,7 @@
+ int 
+ agent_get_passphrase (ctrl_t ctrl,
+                       char **retpass, const char *desc, const char *prompt,
+-                      const char *errtext, int with_qualitybar)
++                      const char *errtext, int with_qualitybar, const char *cacheid)
+ {
+ 
+   int rc;
+@@ -859,6 +859,15 @@
+   if (rc)
+     return rc;
+ 
++	
++  if (cacheid) {
++    snprintf (line, DIM(line)-1, "OPTION cache-id=%s", cacheid);
++    rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
++    if (rc)
++      return unlock_pinentry (rc);
++  }
++	
++	
+   if (!prompt)
+     prompt = desc && strstr (desc, "PIN")? "PIN": _("Passphrase");
+
+
+diff -ru agent/command.c agent/command.c
+--- agent/command.c	2011-01-09 23:06:14.000000000 +0100
++++ agent/command.c	2011-12-22 12:45:02.000000000 +0100
+@@ -1121,7 +1121,7 @@
+     next_try:
+       rc = agent_get_passphrase (ctrl, &response, desc, prompt,
+                                  repeat_errtext? repeat_errtext:errtext,
+-                                 opt_qualbar);
++                                 opt_qualbar, cacheid);
+       xfree (repeat_errtext);
+       repeat_errtext = NULL;
+       if (!rc)
+@@ -1138,7 +1138,7 @@
+               char *response2;
+ 
+               rc = agent_get_passphrase (ctrl, &response2, desc2, prompt,
+-                                         errtext, 0);
++                                         errtext, 0, cacheid);
+               if (rc)
+                 break;
+               if (strcmp (response2, response))

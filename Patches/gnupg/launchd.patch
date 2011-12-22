@@ -1,0 +1,337 @@
+diff -ru agent/gpg-agent.c agent/gpg-agent.c
+--- agent/gpg-agent.c	2011-01-09 23:06:14.000000000 +0100
++++ agent/gpg-agent.c	2011-12-22 12:45:02.000000000 +0100
+@@ -37,6 +37,10 @@
+ #include <unistd.h>
+ #include <signal.h>
+ #include <pth.h>
++#define HAVE_LAUNCH 1
++#ifdef HAVE_LAUNCH
++# include <launch.h>
++#endif
+ 
+ #define JNLIB_NEED_LOG_LOGV
+ #define JNLIB_NEED_AFLOCAL
+@@ -74,6 +78,9 @@
+   oLogFile,
+   oServer,
+   oDaemon,
++#ifdef HAVE_LAUNCH
++  oLaunchd,
++#endif
+   oBatch,
+ 
+   oPinentryProgram,
+@@ -121,6 +128,9 @@
+ 
+   { oServer,   "server",     0, N_("run in server mode (foreground)") },
+   { oDaemon,   "daemon",     0, N_("run in daemon mode (background)") },
++#ifdef HAVE_LAUNCH
++  { oLaunchd,   "launchd",   0, N_("run in the foreground, under launched control") },
++#endif
+   { oVerbose, "verbose",     0, N_("verbose") },
+   { oQuiet,	"quiet",     0, N_("be somewhat more quiet") },
+   { oSh,	"sh",        0, N_("sh-style command output") },
+@@ -440,6 +450,63 @@
+ {
+   remove_socket (socket_name);
+   remove_socket (socket_name_ssh);
++#ifdef HAVE_LAUNCH
++  // Remove environment variables back from launchd.
++  launch_data_t resp, tmp, msg;
++
++  msg = launch_data_alloc(LAUNCH_DATA_DICTIONARY);
++
++  tmp = launch_data_new_string("GPG_AGENT_INFO");
++  launch_data_dict_insert(msg, tmp, "UnsetUserEnvironment");
++
++  resp = launch_msg(msg);
++  launch_data_free(msg); // Do NOT launch_data_free() on tmp
++
++  if (resp) 
++    {
++      launch_data_free(resp);
++    } 
++  else
++    {
++      log_error ("failed to remove environment variable GPG_AGENT_INFO from launchd: %s\n", strerror (errno));
++    }         
++
++  if (opt.ssh_support)
++    {
++      msg = launch_data_alloc(LAUNCH_DATA_DICTIONARY);
++
++      tmp = launch_data_new_string("SSH_AUTH_SOCK");
++      launch_data_dict_insert(msg, tmp, "UnsetUserEnvironment");
++
++      resp = launch_msg(msg);
++      launch_data_free(msg); // Do NOT launch_data_free() on tmp
++
++      if (resp) 
++        {
++          launch_data_free(resp);
++        } 
++      else
++        {
++          log_error ("failed to remove environment variable SSH_AUTH_SOCK from launchd: %s\n", strerror (errno));
++        }         
++      msg = launch_data_alloc(LAUNCH_DATA_DICTIONARY);
++
++      tmp = launch_data_new_string("SSH_AGENT_PID");
++      launch_data_dict_insert(msg, tmp, "UnsetUserEnvironment");
++
++      resp = launch_msg(msg);
++      launch_data_free(msg); // Do NOT launch_data_free() on tmp
++
++      if (resp) 
++        {
++          launch_data_free(resp);
++        } 
++      else
++        {
++          log_error ("failed to remove environment variable SSH_AGENT_PID from launchd: %s\n", strerror (errno));
++        }         
++    }
++#endif
+ }
+ 
+ 
+@@ -561,6 +628,9 @@
+   int nogreeting = 0;
+   int pipe_server = 0;
+   int is_daemon = 0;
++#ifdef HAVE_LAUNCH
++  int launchd_child = 0;
++#endif
+   int nodetach = 0;
+   int csh_style = 0;
+   char *logfile = NULL;
+@@ -777,6 +847,9 @@
+         case oSh: csh_style = 0; break;
+         case oServer: pipe_server = 1; break;
+         case oDaemon: is_daemon = 1; break;
++#ifdef HAVE_LAUNCH
++        case oLaunchd: launchd_child = 1; break;
++#endif
+ 
+         case oDisplay: default_display = xstrdup (pargs.r.ret_str); break;
+         case oTTYname: default_ttyname = xstrdup (pargs.r.ret_str); break;
+@@ -812,6 +885,19 @@
+         default : pargs.err = configfp? 1:2; break;
+ 	}
+     }
++    
++  /* When running under launchd control, only start for real users ie UID >= 500
++     Do this check early to avoid filling logs */
++
++  /* HAVE_LAUNCH implies non-Windows system */
++#ifdef HAVE_LAUNCH
++  if (1 == launchd_child && geteuid() < 500)
++    {
++      log_error ("launchd only supported for real users - ie UID >= 500\n");
++      exit (1);
++    }     
++#endif
++
+   if (configfp)
+     {
+       fclose( configfp );
+@@ -932,7 +1018,11 @@
+   /* If this has been called without any options, we merely check
+      whether an agent is already running.  We do this here so that we
+      don't clobber a logfile but print it directly to stderr. */
++#ifdef HAVE_LAUNCH
++  if (!pipe_server && !is_daemon && !launchd_child)
++#else
+   if (!pipe_server && !is_daemon)
++#endif
+     {
+       log_set_prefix (NULL, JNLIB_LOG_WITH_PREFIX); 
+       check_for_running_agent (0, 0);
+@@ -994,6 +1084,186 @@
+       agent_deinit_default_ctrl (ctrl);
+       xfree (ctrl);
+     }
++#ifdef HAVE_LAUNCH
++  else if (launchd_child)
++    { /* Launchd-compatible mode */
++      gnupg_fd_t fd;
++      gnupg_fd_t fd_ssh;
++      pid_t pid;
++
++      /* Remove the DISPLAY variable so that a pinentry does not
++         default to a specific display.  There is still a default
++         display when gpg-agent was started using --display or a
++         client requested this using an OPTION command.  Note, that we
++         don't do this when running in reverse daemon mode (i.e. when
++         exec the program given as arguments). */
++#ifndef HAVE_W32_SYSTEM
++      if (!opt.keep_display && !argc)
++        unsetenv ("DISPLAY");
++#endif
++
++      /* Create the sockets.  */
++      socket_name = create_socket_name ("S.gpg-agent",
++                                        "/tmp/gpg-XXXXXX/S.gpg-agent");
++      if (opt.ssh_support)
++	socket_name_ssh = create_socket_name ("S.gpg-agent.ssh",
++                                            "/tmp/gpg-XXXXXX/S.gpg-agent.ssh");
++
++      fd = create_server_socket (socket_name, 0, &socket_nonce);
++      if (opt.ssh_support)
++	fd_ssh = create_server_socket (socket_name_ssh, 1, &socket_nonce_ssh);
++      else
++	fd_ssh = GNUPG_INVALID_FD;
++
++      fflush (NULL);
++#ifdef HAVE_W32_SYSTEM
++      pid = getpid ();
++      printf ("set GPG_AGENT_INFO=%s;%lu;1\n", socket_name, (ulong)pid);
++#else /*!HAVE_W32_SYSTEM*/
++      pid = getpid ();
++
++          char *infostr, *infostr_ssh_sock, *infostr_ssh_pid;
++          
++          /* Create the info string: <name>:<pid>:<protocol_version> */
++          if (asprintf (&infostr, "GPG_AGENT_INFO=%s:%lu:1",
++                        socket_name, (ulong)pid ) < 0)
++            {
++              log_error ("out of core\n");
++              kill (pid, SIGTERM);
++              exit (1);
++            }
++	  if (opt.ssh_support)
++	    {
++	      if (asprintf (&infostr_ssh_sock, "SSH_AUTH_SOCK=%s",
++			    socket_name_ssh) < 0)
++		{
++		  log_error ("out of core\n");
++		  kill (pid, SIGTERM);
++		  exit (1);
++		}
++	      if (asprintf (&infostr_ssh_pid, "SSH_AGENT_PID=%u",
++			    pid) < 0)
++		{
++		  log_error ("out of core\n");
++		  kill (pid, SIGTERM);
++		  exit (1);
++		}
++	    }
++
++          if (env_file_name)
++            {
++              FILE *fp;
++              
++              fp = fopen (env_file_name, "w");
++              if (!fp)
++                log_error (_("error creating `%s': %s\n"),
++                             env_file_name, strerror (errno));
++              else
++                {
++                  fputs (infostr, fp);
++                  putc ('\n', fp);
++                  if (opt.ssh_support)
++                    {
++                      fputs (infostr_ssh_sock, fp);
++                      putc ('\n', fp);
++                      fputs (infostr_ssh_pid, fp);
++                      putc ('\n', fp);
++                    }
++                  fclose (fp);
++                }
++            }
++
++          // Pass environment variables back to launchd.
++          launch_data_t resp, tmp, tmpv, msg;
++    
++          msg = launch_data_alloc(LAUNCH_DATA_DICTIONARY);
++          tmp = launch_data_alloc(LAUNCH_DATA_DICTIONARY);
++    
++          tmpv = launch_data_new_string(strchr(infostr, '=') + 1); // Skip variable name and equal sign
++          launch_data_dict_insert(tmp, tmpv, "GPG_AGENT_INFO");
++          launch_data_dict_insert(msg, tmp, "SetUserEnvironment");
++    
++          resp = launch_msg(msg);
++          launch_data_free(msg); // Do NOT launch_data_free() on tmp, nor tmpv
++    
++          if (resp) 
++            {
++              launch_data_free(resp);
++            } 
++          else
++            {
++              log_error ("failed to pass environment variable GPG_AGENT_INFO to launchd: %s\n", strerror (errno));
++              kill (pid, SIGTERM);
++              exit (1);
++            }         
++        
++          if (opt.ssh_support)
++            {
++              msg = launch_data_alloc(LAUNCH_DATA_DICTIONARY);
++              tmp = launch_data_alloc(LAUNCH_DATA_DICTIONARY);
++        
++              tmpv = launch_data_new_string(strchr(infostr_ssh_sock, '=') + 1); // Skip variable name and equal sign
++              launch_data_dict_insert(tmp, tmpv, "SSH_AUTH_SOCK");
++              launch_data_dict_insert(msg, tmp, "SetUserEnvironment");
++        
++              resp = launch_msg(msg);
++              launch_data_free(msg); // Do NOT launch_data_free() on tmp, nor tmpv
++        
++              if (resp) 
++                {
++                  launch_data_free(resp);
++                } 
++              else
++                {
++                  log_error ("failed to pass environment variable SSH_AUTH_SOCK to launchd: %s\n", strerror (errno));
++                  kill (pid, SIGTERM);
++                  exit (1);
++                }         
++              msg = launch_data_alloc(LAUNCH_DATA_DICTIONARY);
++              tmp = launch_data_alloc(LAUNCH_DATA_DICTIONARY);
++        
++              tmpv = launch_data_new_string(strchr(infostr_ssh_pid, '=') + 1); // Skip variable name and equal sign
++              launch_data_dict_insert(tmp, tmpv, "SSH_AGENT_PID");
++              launch_data_dict_insert(msg, tmp, "SetUserEnvironment");
++        
++              resp = launch_msg(msg);
++              launch_data_free(msg); // Do NOT launch_data_free() on tmp, nor tmpv
++        
++              if (resp) 
++                {
++                  launch_data_free(resp);
++                } 
++              else
++                {
++                  log_error ("failed to pass environment variable SSH_AGENT_PID to launchd: %s\n", strerror (errno));
++                  kill (pid, SIGTERM);
++                  exit (1);
++                }         
++            }
++
++
++      {
++        struct sigaction sa;
++        
++        sa.sa_handler = SIG_IGN;
++        sigemptyset (&sa.sa_mask);
++        sa.sa_flags = 0;
++        sigaction (SIGPIPE, &sa, NULL);
++      }
++#endif /*!HAVE_W32_SYSTEM*/
++
++      handle_connections (fd, opt.ssh_support ? fd_ssh : GNUPG_INVALID_FD);
++
++      if (env_file_name)
++        {
++          if (unlink(env_file_name))
++            log_error (_("error deleting `%s': %s\n"),
++                         env_file_name, strerror (errno));
++        }
++
++      assuan_sock_close (fd);
++    }
++#endif /*HAVE_LAUNCH*/
+   else if (!is_daemon)
+     ; /* NOTREACHED */
+   else

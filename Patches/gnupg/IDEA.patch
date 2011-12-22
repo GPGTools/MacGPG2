@@ -1,0 +1,17 @@
+diff -ru g10/seckey-cert.c g10/seckey-cert.c
+--- g10/seckey-cert.c	2011-01-09 23:06:16.000000000 +0100
++++ g10/seckey-cert.c	2011-12-22 12:45:02.000000000 +0100
+@@ -209,6 +209,13 @@
+                 csum += checksum (buffer, ndata);
+                 gcry_mpi_release (sk->skey[i]);
+ 
++		/* Alon Bar-Lev's IDEA patch - needed as the raw key has
++		    two bits which are part of the checksum and not the key */
++		if (CIPHER_ALGO_IDEA == sk->protect.algo) {
++			buffer[0] = 0;
++			buffer[1] = 0;
++		}
++
+ 		err = gcry_mpi_scan( &sk->skey[i], GCRYMPI_FMT_PGP,
+ 				     buffer, ndata, &ndata );
+ 		xfree (buffer);
