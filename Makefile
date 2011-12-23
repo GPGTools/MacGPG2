@@ -5,10 +5,10 @@ update:
 	@git pull
 
 compile:
-	@./build.sh clean
+	@./build.sh
 
 clean:
-	rm -fr build/
+	@./build.sh clean
 
 dmg:
 	./Dependencies/GPGTools_Core/scripts/create_dmg.sh
