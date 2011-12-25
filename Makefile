@@ -10,5 +10,8 @@ compile:
 clean:
 	@./build.sh clean
 
-dmg:
+pinentry:
+	 $(MAKE) -C ./Dependencies/pinentry-mac
+
+dmg: compile pinentry
 	./Dependencies/GPGTools_Core/scripts/create_dmg.sh

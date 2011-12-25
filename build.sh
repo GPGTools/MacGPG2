@@ -10,7 +10,6 @@
 # @see      https://github.com/GPGTools/MacGPG1/blob/master/build-script.sh
 # @see      https://github.com/GPGTools/MacGPG2/blob/master/build-script.sh
 #
-# @todo     Major: pinentry-mac.app is missing
 # @todo	    Major: Can only compile libgcrypt wth "-arch i386 -arch x86_64" and not "-arch i386"
 # @todo     Major: We still need sudo commands (key word: $prefix_install.bak)
 # @todo     Minor: on error do 'sudo mv "$prefix_install.bak" "$prefix_install"'
@@ -302,7 +301,7 @@ function install {
     cd "$1/$2"
     echo -n "   * [`date '+%H:%M:%S'`] Installing '$2'..."
     if [ -e '.installed' ]; then
-		echo "skipped"
+		echo " skipped"
 		return 0
 	fi
 	echo
@@ -449,13 +448,19 @@ install "$gpg_build" "$gpg_version"
 ################################################################################
 
 
-echo " * Checking..."
-setLogPipe "check"
-cd $gpg_build/$gpg_version
-make check ||
-	errExit "Check of GnuPG failed!"
-resetLogPipe
+cd "$gpg_build/$gpg_version"
 
+echo -n " * Checking..."
+if [ -e .checked ] ;then
+	echo " skipped"
+else
+	echo
+	setLogPipe "check"
+	make check ||
+		errExit "Check of GnuPG failed!"
+	touch ".checked"
+	resetLogPipe
+fi
 
 if sudo rm -f "$prefix_install"; then
 	if [ -e "$prefix_install.bak" ]; then

@@ -1,3 +1,6 @@
 [submodule "Dependencies/GPGTools_Core"]
 	path = Dependencies/GPGTools_Core
 	url = git@github.com:GPGTools/GPGTools_Core.git
+[submodule "Dependencies/pinentry-mac"]
+	path = Dependencies/pinentry-mac
+	url = git://github.com/GPGTools/pinentry-mac.git
