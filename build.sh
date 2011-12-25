@@ -160,6 +160,15 @@ gpg_patch="gnupg/AllInOne.patch"
 ################################################################################
 
 
+## testing environment
+echo " * Testing environment..."
+echo -n "   * GCC: "
+echo "main() {return 0;}" | $CC $CFLAGS -xc -o /dev/null - 2>$LOGFILE
+if [ "$?" == 0 ]; then echo "OK"; else echo "FAIL (see $LOGFILE)"; fi
+exit 0
+################################################################################
+
+
 # init #########################################################################
 if [ "$1" == "clean" ]; then
     echo -n " * Cleaning..."
