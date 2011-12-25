@@ -170,15 +170,7 @@ gpg_patch="gnupg/AllInOne.patch"
 ################################################################################
 
 
-## testing environment
-echo " * Testing environment..."
-echo -n "   * GCC: "
-echo "main() {return 0;}" | $CC $CFLAGS -xc -o /dev/null - 2>$LOGFILE
-if [ "$?" == 0 ]; then echo "OK"; else echo "FAIL (see $LOGFILE)"; exit 1; fi
-################################################################################
-
-
-# init #########################################################################
+## init
 if [ "$1" == "clean" ]; then
     echo -n " * Cleaning..."
     rm -f "$ccache"
@@ -198,11 +190,21 @@ if [ "$1" == "clean" ]; then
 	echo " OK"
 	exit 0
 fi
+################################################################################
 
 
+## testing environment
 echo " * Logfiles: $LOGPATH/build-xyz.log"
 echo " * Target: $prefix_build"
+echo " * Testing environment..."
+#tbd
+#echo -n "   * GCC: "
+#echo "main() {return 0;}" | $CC $CFLAGS -xc -o /dev/null - 2>$LOGFILE
+if [ "$?" == 0 ]; then echo "OK"; else echo "FAIL (see $LOGFILE)"; exit 1; fi
+################################################################################
 
+
+## ugly hack ;)
 if [ -L "$prefix_install" ]; then
 	sudo rm "$prefix_install"
 elif [ -e "$prefix_install" ]; then
@@ -213,10 +215,6 @@ mkdir -p "$prefix_build/lib"
 sudo ln -Fs "$prefix_build" "$prefix_install"
 cp "$rootPath/Keys.gpg" "$buildDir/pubring.gpg"
 ################################################################################
-
-
-
-
 
 
 # functions ####################################################################
@@ -456,6 +454,7 @@ install "$gpg_build" "$gpg_version"
 ################################################################################
 
 
+## check
 echo " * Checking..."
 setLogPipe "check"
 cd $gpg_build/$gpg_version
@@ -469,7 +468,4 @@ if sudo rm -f "$prefix_install"; then
 		sudo mv "$prefix_install.bak" "$prefix_install"
 	fi
 fi
-
-
-
-
+################################################################################
