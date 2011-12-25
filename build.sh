@@ -16,16 +16,23 @@
 # @todo     Minor: on error do 'sudo mv "$prefix_install.bak" "$prefix_install"'
 # @todo     Minor: clang can not compile gnupg
 # @todo		Minor: Compile libgcrypt without --disable-aesni-support
+# @todo		Minor: Based on installation activate ppc or not
 #
 # @todo     Enhancement: configure/compile more in the background (e.g. gettext)
 # @todo     Enhancement: re-enable gpg validation of the sources
 #
 # Tipps to compile for ppc on 10.7:
 #	Follow this guid: http://hints.macworld.com/article.php?story=20110318050811544
-#     Xcode 3 URL: https://connect.apple.com/cgi-bin/WebObjects/MemberSite.woa/wa/getSoftware?bundleID=20792
-#	cd /Developer/SDKs/MacOSX10.5.sdk/usr/lib/gcc
-#	sudo ln -s i686-apple-darwin11 i686-apple-darwin10
-#	sudo ln -s powerpc-apple-darwin11 powerpc-apple-darwin10
+#     1. Download Xcode 3: https://connect.apple.com/cgi-bin/WebObjects/MemberSite.woa/wa/getSoftware?bundleID=20792
+#     2. Download Xcode 4: http://itunes.apple.com/us/app/xcode/id448457090?mt=12
+#     3. sudo /Developer/Library/uninstall-devtools --mode=all
+#     4. Install Xcode 3 Essentials > Xcode Toolset only to /Xcode3
+#     5. Install Xcode 4
+#     6. ...
+#   Also follow these steps:
+#	  cd /Developer/SDKs/MacOSX10.5.sdk/usr/lib/gcc
+#	  sudo ln -s i686-apple-darwin11 i686-apple-darwin10
+#	  sudo ln -s powerpc-apple-darwin11 powerpc-apple-darwin10
 ##
 
 # configuration ################################################################
