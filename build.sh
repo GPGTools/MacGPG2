@@ -21,6 +21,7 @@
 #
 # Tipps to compile for ppc on 10.7:
 #	Follow this guid: http://hints.macworld.com/article.php?story=20110318050811544
+#     Xcode 3 URL: https://connect.apple.com/cgi-bin/WebObjects/MemberSite.woa/wa/getSoftware?bundleID=20792
 #	cd /Developer/SDKs/MacOSX10.5.sdk/usr/lib/gcc
 #	sudo ln -s i686-apple-darwin11 i686-apple-darwin10
 #	sudo ln -s powerpc-apple-darwin11 powerpc-apple-darwin10
