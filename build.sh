@@ -15,16 +15,23 @@
 # @todo     Minor: on error do 'sudo mv "$prefix_install.bak" "$prefix_install"'
 # @todo     Minor: clang can not compile gnupg
 # @todo		Minor: Compile libgcrypt without --disable-aesni-support
+# @todo		Minor: Based on installation activate ppc or not
 #
 # @todo     Enhancement: configure/compile more in the background (e.g. gettext)
 # @todo     Enhancement: re-enable gpg validation of the sources
 #
 # Tipps to compile for ppc on 10.7:
 #	Follow this guid: http://hints.macworld.com/article.php?story=20110318050811544
-#     Xcode 3 URL: https://connect.apple.com/cgi-bin/WebObjects/MemberSite.woa/wa/getSoftware?bundleID=20792
-#	cd /Developer/SDKs/MacOSX10.5.sdk/usr/lib/gcc
-#	sudo ln -s i686-apple-darwin11 i686-apple-darwin10
-#	sudo ln -s powerpc-apple-darwin11 powerpc-apple-darwin10
+#     1. Download Xcode 3: https://connect.apple.com/cgi-bin/WebObjects/MemberSite.woa/wa/getSoftware?bundleID=20792
+#     2. Download Xcode 4: http://itunes.apple.com/us/app/xcode/id448457090?mt=12
+#     3. sudo /Developer/Library/uninstall-devtools --mode=all
+#     4. Install Xcode 3 Essentials > Xcode Toolset only to /Xcode3
+#     5. Install Xcode 4
+#     6. ...
+#   Also follow these steps:
+#	  cd /Developer/SDKs/MacOSX10.5.sdk/usr/lib/gcc
+#	  sudo ln -s i686-apple-darwin11 i686-apple-darwin10
+#	  sudo ln -s powerpc-apple-darwin11 powerpc-apple-darwin10
 ##
 
 # configuration ################################################################
@@ -162,15 +169,7 @@ gpg_patch="gnupg/AllInOne.patch"
 ################################################################################
 
 
-## testing environment
-echo " * Testing environment..."
-echo -n "   * GCC: "
-echo "main() {return 0;}" | $CC $CFLAGS -xc -o /dev/null - 2>$LOGFILE
-if [ "$?" == 0 ]; then echo "OK"; else echo "FAIL (see $LOGFILE)"; exit 1; fi
-################################################################################
-
-
-# init #########################################################################
+## init
 if [ "$1" == "clean" ]; then
     echo -n " * Cleaning..."
     rm -f "$ccache"
@@ -190,11 +189,21 @@ if [ "$1" == "clean" ]; then
 	echo " OK"
 	exit 0
 fi
+################################################################################
 
 
+## testing environment
 echo " * Logfiles: $LOGPATH/build-xyz.log"
 echo " * Target: $prefix_build"
+echo " * Testing environment..."
+#tbd
+#echo -n "   * GCC: "
+#echo "main() {return 0;}" | $CC $CFLAGS -xc -o /dev/null - 2>$LOGFILE
+#if [ "$?" == 0 ]; then echo "OK"; else echo "FAIL (see $LOGFILE)"; exit 1; fi
+################################################################################
 
+
+## ugly hack ;)
 if [ -L "$prefix_install" ]; then
 	sudo rm "$prefix_install"
 elif [ -e "$prefix_install" ]; then
@@ -205,10 +214,6 @@ mkdir -p "$prefix_build/lib"
 sudo ln -Fs "$prefix_build" "$prefix_install"
 cp "$rootPath/Keys.gpg" "$buildDir/pubring.gpg"
 ################################################################################
-
-
-
-
 
 
 # functions ####################################################################
@@ -357,7 +362,7 @@ install "$iconv_build" "$iconv_version"
 ################################################################################
 
 
-# gettext ####################################################################
+# gettext ######################################################################
 echo " * Working on 'gettext'..."
 waitfor "$gettext_version" "$gettext_pid"
 compile "$gettext_build" "$gettext_version" "$gettext_fileExt" "$gettext_flags" "$gettext_patch"
@@ -381,7 +386,7 @@ install "$pth_build" "$pth_version"
 ################################################################################
 
 
-# libusb ##########################################################################
+# libusb #######################################################################
 echo " * Working on 'libusb'..."
 waitfor "$libusb_version" "$libusb_pid"
 compile "$libusb_build" "$libusb_version" "$libusb_fileExt" "$libusb_flags" "$libusb_patch"
@@ -397,7 +402,7 @@ install "$libusbcompat_build" "$libusbcompat_version"
 ################################################################################
 
 
-# libgpgerror ####################################################################
+# libgpgerror ##################################################################
 echo " * Working on 'libgpgerror'..."
 waitfor "$libgpgerror_version" "$libgpgerror_pid"
 oldCFLAGS=$CFLAGS
@@ -424,7 +429,7 @@ install "$libgcrypt_build" "$libgcrypt_version"
 ################################################################################
 
 
-# libksba ####################################################################
+# libksba ######################################################################
 echo " * Working on 'libksba'..."
 waitfor "$libksba_version" "$libksba_pid"
 compile "$libksba_build" "$libksba_version" "$libksba_fileExt" "$libksba_flags" "$libksba_patch"
@@ -432,7 +437,7 @@ install "$libksba_build" "$libksba_version"
 ################################################################################
 
 
-# zlib ##########################################################################
+# zlib #########################################################################
 echo " * Working on 'zlib'..."
 waitfor "$zlib_version" "$zlib_pid"
 compile "$zlib_build" "$zlib_version" "$zlib_fileExt" "$zlib_flags" "$zlib_patch"
@@ -448,8 +453,8 @@ install "$gpg_build" "$gpg_version"
 ################################################################################
 
 
+## check #######################################################################
 cd "$gpg_build/$gpg_version"
-
 echo -n " * Checking..."
 if [ -e .checked ] ;then
 	echo " skipped"
@@ -467,7 +472,4 @@ if sudo rm -f "$prefix_install"; then
 		sudo mv "$prefix_install.bak" "$prefix_install"
 	fi
 fi
-
-
-
-
+################################################################################
