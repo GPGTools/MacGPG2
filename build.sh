@@ -167,8 +167,7 @@ gpg_patch="gnupg/AllInOne.patch"
 echo " * Testing environment..."
 echo -n "   * GCC: "
 echo "main() {return 0;}" | $CC $CFLAGS -xc -o /dev/null - 2>$LOGFILE
-if [ "$?" == 0 ]; then echo "OK"; else echo "FAIL (see $LOGFILE)"; fi
-exit 0
+if [ "$?" == 0 ]; then echo "OK"; else echo "FAIL (see $LOGFILE)"; exit 1; fi
 ################################################################################
 
 
