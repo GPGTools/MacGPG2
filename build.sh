@@ -200,7 +200,7 @@ echo " * Testing environment..."
 #tbd
 #echo -n "   * GCC: "
 #echo "main() {return 0;}" | $CC $CFLAGS -xc -o /dev/null - 2>$LOGFILE
-if [ "$?" == 0 ]; then echo "OK"; else echo "FAIL (see $LOGFILE)"; exit 1; fi
+#if [ "$?" == 0 ]; then echo "OK"; else echo "FAIL (see $LOGFILE)"; exit 1; fi
 ################################################################################
 
 
