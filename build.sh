@@ -13,6 +13,7 @@
 # @todo     Major: pinentry-mac.app is missing
 # @todo	    Major: Can only compile libgcrypt wth "-arch i386 -arch x86_64" and not "-arch i386"
 # @todo     Major: We still need sudo commands (key word: $prefix_install.bak)
+# @todo     Minor: on error do 'sudo mv "$prefix_install.bak" "$prefix_install"'
 # @todo     Minor: clang can not compile gnupg
 # @todo		Minor: Compile libgcrypt without --disable-aesni-support
 #
