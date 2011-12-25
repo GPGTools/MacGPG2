@@ -204,6 +204,7 @@ cp "$rootPath/Keys.gpg" "$buildDir/pubring.gpg"
 # functions ####################################################################
 
 function setLogPipe {
+    LOGFILE="$LOGPATH/build${1:+-$1}.log"
 	exec 3>&1 4>&2 >>"$LOGPATH/build${1:+-$1}.log" 2>&1
 }
 function resetLogPipe {
@@ -212,6 +213,7 @@ function resetLogPipe {
 function errExit {
 	resetLogPipe
 	echo "$1"
+	echo "See $LOGFILE for details."
 	exit 1
 }
 function waitfor {
@@ -228,22 +230,22 @@ function download {
 		return 0
 	fi
     setLogPipe
-	
+
     echo " ############### Download: $5$2$3"
-	
+
     curl -s -C - -L -O "$5$2$3" ||
 		errExit "Could not get the sources for '$5$2$3'!"
-		
-	
+
+
     if [ "$4" != "" ]; then
         curl -s -O "$5$2$4"
-		
+
 		if GPG=$(which gpg2) || GPG=$(which gpg); then
 			"$GPG" -q --no-permission-warning --no-auto-check-trustdb --trust-model always --verify "$2$4" >/dev/null 2>&1 ||
 				errExit "Signature of '$2$3' invalid!"
 		fi
     fi
-	
+
     resetLogPipe
 }
 
@@ -256,14 +258,14 @@ function compile {
 	fi
 	echo
     setLogPipe "$2"
-	
-	
+
+
     echo " ############### Extract"
     tar -xf "$2$3" ||
 		errExit "Could not extract the sources for '$1'!"
 	cd "$2"
 
-	
+
     if [ "$5" != "" ]; then
 		echo " ############### Patch"
 		patch -p0 < "$rootPath/Patches/$5" ||
@@ -281,7 +283,7 @@ function compile {
     make -j4 $6 ||
 		errExit "Could not compile the sources for '$1'!"
 
-	
+
     resetLogPipe
 }
 
@@ -294,14 +296,14 @@ function install {
 	fi
 	echo
     setLogPipe "$2"
-	
+
     echo " ############### Make: make -e prefix=$prefix_install install"
 
     make -e prefix="$prefix_install" install ||
         errExit "Could not install the binaries for '$1'!"
-	
+
     touch '.installed'
-	
+
     resetLogPipe
 }
 ################################################################################
