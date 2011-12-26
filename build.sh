@@ -12,6 +12,7 @@
 #
 # @todo	    Major: Can only compile libgcrypt wth "-arch i386 -arch x86_64" and not "-arch i386"
 # @todo     Major: We still need sudo commands (key word: $prefix_install.bak)
+# @todo     Major: Enhance autofix and environment testing
 # @todo     Minor: on error do 'sudo mv "$prefix_install.bak" "$prefix_install"'
 # @todo     Minor: clang can not compile gnupg
 # @todo		Minor: Compile libgcrypt without --disable-aesni-support
@@ -21,20 +22,24 @@
 # @todo     Enhancement: re-enable gpg validation of the sources
 #
 # Tipps to compile for ppc on 10.7:
-#	Follow this guid: http://hints.macworld.com/article.php?story=20110318050811544
+#	Follow this guide: http://hints.macworld.com/article.php?story=20110318050811544
 #     1. Download Xcode 3: https://connect.apple.com/cgi-bin/WebObjects/MemberSite.woa/wa/getSoftware?bundleID=20792
 #     2. Download Xcode 4: http://itunes.apple.com/us/app/xcode/id448457090?mt=12
-#     3. sudo /Developer/Library/uninstall-devtools --mode=all
-#     4. Install Xcode 3 Essentials > Xcode Toolset only to /Xcode3
-#     5. Install Xcode 4
-#     6. ...
-#   Also follow these steps:
-#	  cd /Developer/SDKs/MacOSX10.5.sdk/usr/lib/gcc
-#	  sudo ln -s i686-apple-darwin11 i686-apple-darwin10
-#	  sudo ln -s powerpc-apple-darwin11 powerpc-apple-darwin10
+#     3. Install only Xcode 3 Essentials > Xcode Toolset to /Xcode3 (export COMMAND_LINE_INSTALL=1; open "/Volumes/Xcode and iOS SDK/Xcode and iOS SDK.mpkg")
+#     4. Install Xcode 4
+#     5. Run build.sh autofix or:
+#        cd /Developer/SDKs/MacOSX10.5.sdk/usr/lib/gcc
+#        sudo ln -s i686-apple-darwin11 i686-apple-darwin10
+#        sudo ln -s powerpc-apple-darwin11 powerpc-apple-darwin10
 ##
 
 # configuration ################################################################
+## Xcode environment
+export xcode3sdk105="/Xcode3/SDKs/MacOSX10.5.sdk"
+export xcode4sdk105="/Developer/SDKs/MacOSX10.5.sdk"
+export xcode3as="/Xcode3/usr/bin/as"
+export xcode4as="/Developer/usr/bin/as"
+
 ## where to start from
 export rootPath="$(pwd)"
 export buildDir="$rootPath/build"
@@ -191,15 +196,56 @@ if [ "$1" == "clean" ]; then
 fi
 ################################################################################
 
+## autofix
+if [ "$1" == "autofix" ]; then
+    echo " * Autofixing..."
+    echo -n "   * 10.5 SDK: "
+    [ ! -e "$xcode4sdk105" ] && sudo ln -s "$xcode3sdk105" "$xcode4sdk105"
+    echo "OK"
+
+    echo -n "   * Assembler: "
+    [ ! -L "$xcode4as" ] && [ ! -e "$xcode4as.bak" ] && sudo mv "$xcode4as" "$xcode4as.bak"
+    [ ! -L "$xcode4as" ] && [ -e "$xcode4as.bak" ] && sudo ln -s "$xcode3as" "$xcode4as"
+    echo "OK"
+
+    echo -n "   * GCC (i686): "
+    [ ! -L "$xcode4sdk105/usr/lib/gcc/i686-apple-darwin11" ] && sudo ln -s "$xcode4sdk105/usr/lib/gcc/i686-apple-darwin10" "$xcode4sdk105/usr/lib/gcc/i686-apple-darwin11"
+    echo "OK"
+
+    echo -n "   * GCC (ppc): "
+    [ ! -L "$xcode4sdk105/usr/lib/gcc/powerpc-apple-darwin11" ] && sudo ln -s "$xcode4sdk105/usr/lib/gcc/powerpc-apple-darwin10" "$xcode4sdk105/usr/lib/gcc/powerpc-apple-darwin11"
+    echo "OK"
+
+	exit 0
+fi
 
 ## testing environment
 echo " * Logfiles: $LOGPATH/build-xyz.log"
 echo " * Target: $prefix_build"
 echo " * Testing environment..."
-#tbd
-#echo -n "   * GCC: "
-#echo "main() {return 0;}" | $CC $CFLAGS -xc -o /dev/null - 2>$LOGFILE
+
+echo -n "   * 10.5 SDK: "
+[ -e "$xcode4sdk105" ] && echo "OK"
+[ ! -e "$xcode4sdk105" ] && [ -e "$xcode3sdk105" ] && echo "run '$0 autofix'" # && exit 1
+[ ! -e "$xcode4sdk105" ] && [ ! -e "$xcode3sdk105" ] && echo "FAILED. Install Xcode3 first" # && exit 1
+
+echo -n "   * Assembler: "
+[ -L "$xcode4as" ] && echo "OK"
+[ ! -L "$xcode4as" ] && [ -e "$xcode3as" ] && echo "run '$0 autofix'" # && exit 1
+[ ! -L "$xcode4as" ] && [ ! -e "$xcode3as" ] && echo "FAILED. Install Xcode3 first" # && exit 1
+
+echo -n "   * GCC (i386): "
+[ -L "$xcode4sdk105/usr/lib/gcc/i686-apple-darwin11" ] && echo "OK"
+[ ! -L "$xcode4sdk105/usr/lib/gcc/i686-apple-darwin11" ] && echo "run '$0 autofix'" # && exit 1
+
+echo -n "   * GCC (ppc): "
+[ -L "$xcode4sdk105/usr/lib/gcc/powerpc-apple-darwin11" ] && echo "OK"
+[ ! -L "$xcode4sdk105/usr/lib/gcc/powerpc-apple-darwin11" ] && echo "run '$0 autofix'" # && exit 1
+
+#echo -n "   * GCC (compile test): "
+#echo "main() {return 0;}" | gcc $CFLAGS -xc -o /dev/null - 2>$LOGFILE
 #if [ "$?" == 0 ]; then echo "OK"; else echo "FAIL (see $LOGFILE)"; exit 1; fi
+
 ################################################################################
 
 
