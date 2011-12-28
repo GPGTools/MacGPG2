@@ -67,7 +67,7 @@ export CFLAGS="-mmacosx-version-min=$MACOSX_DEPLOYMENT_TARGET -DUNIX -isysroot /
 
 #export CC="/usr/bin/clang -ansi" # faster modern compiler
 export CC=gcc-4.2
-
+export CC=/Xcode3//usr/bin/gcc-4.2
 
 ## general flags
 export configureFlagsNoCache="$configureFlags --enable-static=no --disable-maintainer-mode --disable-dependency-tracking --prefix=$prefix_install"
@@ -79,86 +79,6 @@ export LD_LIBRARY_PATH="$prefix_install/lib"
 export LIBUSB_1_0_CFLAGS="-I$prefix_install/include/libusb-1.0/"
 export LIBUSB_1_0_LIBS="-L$prefix_install/lib"
 ################################################################################
-
-
-# setup ########################################################################
-mkdir -p "$prefix_build/lib"
-cp "$rootPath/Keys.gpg" "$buildDir/pubring.gpg"
-
-## clean
-if [ "$1" == "clean" ]; then
-    echo -n " * Cleaning..."
-    rm -f "$ccache"
-    rm -rf "$prefix_build"
-    rm -f "$LOGPATH/"*.log
-    rm -rf "$iconv_build/$iconv_version"
-    rm -rf "$gettext_build/$gettext_version"
-    rm -rf "$pth_build/$pth_version"
-    rm -rf "$libusb_build/$libusb_version"
-    rm -rf "$libusbcompat_build/$libusbcompat_version"
-    rm -rf "$libgpgerror_build/$libgpgerror_version"
-    rm -rf "$libassuan_build/$libassuan_version"
-    rm -rf "$libgcrypt_build/$libgcrypt_version"
-    rm -rf "$libksba_build/$libksba_version"
-    rm -rf "$zlib_build/$zlib_version"
-    rm -rf "$gpg_build/$gpg_version"
-	echo " OK"
-	exit 0
-fi
-################################################################################
-
-## autofix
-if [ "$1" == "autofix" ]; then
-    echo " * Autofixing..."
-    echo -n "   * 10.5 SDK: "
-    [ ! -e "$xcode4sdk105" ] && sudo ln -s "$xcode3sdk105" "$xcode4sdk105"
-    echo "OK"
-
-    echo -n "   * Assembler: "
-    [ ! -L "$xcode4as" ] && [ ! -e "$xcode4as.bak" ] && sudo mv "$xcode4as" "$xcode4as.bak"
-    [ ! -L "$xcode4as" ] && [ -e "$xcode4as.bak" ] && sudo ln -Fs "$xcode3as" "$xcode4as"
-    echo "OK"
-
-    echo -n "   * GCC (i686): "
-    [ ! -L "$xcode4sdk105/usr/lib/gcc/i686-apple-darwin11" ] && sudo ln -s "$xcode4sdk105/usr/lib/gcc/i686-apple-darwin10" "$xcode4sdk105/usr/lib/gcc/i686-apple-darwin11"
-    echo "OK"
-
-    echo -n "   * GCC (ppc): "
-    [ ! -L "$xcode4sdk105/usr/lib/gcc/powerpc-apple-darwin11" ] && sudo ln -s "$xcode4sdk105/usr/lib/gcc/powerpc-apple-darwin10" "$xcode4sdk105/usr/lib/gcc/powerpc-apple-darwin11"
-    echo "OK"
-
-	exit 0
-fi
-################################################################################
-
-## testing environment
-echo " * Logfiles: $LOGPATH/build-xyz.log"
-echo " * Target: $prefix_build"
-echo " * Testing environment..."
-
-echo -n "   * 10.5 SDK: "
-[ -e "$xcode4sdk105" ] && echo "OK"
-[ ! -e "$xcode4sdk105" ] && [ -e "$xcode3sdk105" ] && echo "run '$0 autofix'" # && exit 1
-[ ! -e "$xcode4sdk105" ] && [ ! -e "$xcode3sdk105" ] && echo "FAILED. Install Xcode3 first" # && exit 1
-
-echo -n "   * Assembler: "
-[ -L "$xcode4as" ] && echo "OK"
-[ ! -L "$xcode4as" ] && [ -e "$xcode3as" ] && echo "run '$0 autofix'" # && exit 1
-[ ! -L "$xcode4as" ] && [ ! -e "$xcode3as" ] && echo "FAILED. Install Xcode3 first" # && exit 1
-
-echo -n "   * GCC (i386): "
-[ -L "$xcode4sdk105/usr/lib/gcc/i686-apple-darwin11" ] && echo "OK"
-[ ! -L "$xcode4sdk105/usr/lib/gcc/i686-apple-darwin11" ] && echo "run '$0 autofix'" # && exit 1
-
-echo -n "   * GCC (ppc): "
-[ -L "$xcode4sdk105/usr/lib/gcc/powerpc-apple-darwin11" ] && echo "OK"
-[ ! -L "$xcode4sdk105/usr/lib/gcc/powerpc-apple-darwin11" ] && echo "run '$0 autofix'" # && exit 1
-
-#echo -n "   * GCC (compile test): "
-#echo "main() {return 0;}" | gcc $CFLAGS -xc -o /dev/null - 2>$LOGFILE
-#if [ "$?" == 0 ]; then echo "OK"; else echo "FAIL (see $LOGFILE)"; exit 1; fi
-################################################################################
-
 
 # the sources ##################################################################
 iconv_url="ftp://ftp.gnu.org/pub/gnu/libiconv/"
@@ -249,6 +169,85 @@ gpg_sigExt=".tar.bz2.sig"
 gpg_build="$buildDir/gnupg"
 gpg_flags="$configureFlags --disable-gpgtar --enable-standard-socket --with-pinentry-pgm=$prefix_install/libexec/pinentry-mac.app/Contents/MacOS/pinentry-mac --with-gpg-error-prefix=$prefix_install --with-libgcrypt-prefix=$prefix_install --with-libassuan-prefix=$prefix_install --with-ksba-prefix=$prefix_install --with-pth-prefix=$prefix_install --with-iconv-dir=$prefix_install --with-zlib=$prefix_install --with-libiconv-prefix=$prefix_install --with-libintl-prefix=$prefix_install"
 gpg_patch="gnupg/AllInOne.patch"
+################################################################################
+
+
+# setup ########################################################################
+mkdir -p "$prefix_build/lib"
+cp "$rootPath/Keys.gpg" "$buildDir/pubring.gpg"
+
+## clean
+if [ "$1" == "clean" ]; then
+    echo -n " * Cleaning..."
+    rm -f "$ccache"
+    rm -rf "$prefix_build"
+    rm -f "$LOGPATH/"*.log
+    rm -rf "$iconv_build/$iconv_version"
+    rm -rf "$gettext_build/$gettext_version"
+    rm -rf "$pth_build/$pth_version"
+    rm -rf "$libusb_build/$libusb_version"
+    rm -rf "$libusbcompat_build/$libusbcompat_version"
+    rm -rf "$libgpgerror_build/$libgpgerror_version"
+    rm -rf "$libassuan_build/$libassuan_version"
+    rm -rf "$libgcrypt_build/$libgcrypt_version"
+    rm -rf "$libksba_build/$libksba_version"
+    rm -rf "$zlib_build/$zlib_version"
+    rm -rf "$gpg_build/$gpg_version"
+	echo " OK"
+	exit 0
+fi
+################################################################################
+
+## autofix
+if [ "$1" == "autofix" ]; then
+    echo " * Autofixing..."
+    echo -n "   * 10.5 SDK: "
+    [ ! -e "$xcode4sdk105" ] && sudo ln -s "$xcode3sdk105" "$xcode4sdk105"
+    echo "OK"
+
+    echo -n "   * Assembler: "
+    [ ! -L "$xcode4as" ] && [ ! -e "$xcode4as.bak" ] && sudo mv "$xcode4as" "$xcode4as.bak"
+    [ ! -L "$xcode4as" ] && [ -e "$xcode4as.bak" ] && sudo ln -Fs "$xcode3as" "$xcode4as"
+    echo "OK"
+
+    echo -n "   * GCC (i686): "
+    [ ! -L "$xcode4sdk105/usr/lib/gcc/i686-apple-darwin11" ] && sudo ln -s "$xcode4sdk105/usr/lib/gcc/i686-apple-darwin10" "$xcode4sdk105/usr/lib/gcc/i686-apple-darwin11"
+    echo "OK"
+
+    echo -n "   * GCC (ppc): "
+    [ ! -L "$xcode4sdk105/usr/lib/gcc/powerpc-apple-darwin11" ] && sudo ln -s "$xcode4sdk105/usr/lib/gcc/powerpc-apple-darwin10" "$xcode4sdk105/usr/lib/gcc/powerpc-apple-darwin11"
+    echo "OK"
+
+	exit 0
+fi
+################################################################################
+
+## testing environment
+echo " * Logfiles: $LOGPATH/build-xyz.log"
+echo " * Target: $prefix_build"
+echo " * Testing environment..."
+
+echo -n "   * 10.5 SDK: "
+[ -e "$xcode4sdk105" ] && echo "OK"
+[ ! -e "$xcode4sdk105" ] && [ -e "$xcode3sdk105" ] && echo "run '$0 autofix'" # && exit 1
+[ ! -e "$xcode4sdk105" ] && [ ! -e "$xcode3sdk105" ] && echo "FAILED. Install Xcode3 first" # && exit 1
+
+echo -n "   * Assembler: "
+[ -L "$xcode4as" ] && echo "OK"
+[ ! -L "$xcode4as" ] && [ -e "$xcode3as" ] && echo "run '$0 autofix'" # && exit 1
+[ ! -L "$xcode4as" ] && [ ! -e "$xcode3as" ] && echo "FAILED. Install Xcode3 first" # && exit 1
+
+echo -n "   * GCC (i386): "
+[ -L "$xcode4sdk105/usr/lib/gcc/i686-apple-darwin11" ] && echo "OK"
+[ ! -L "$xcode4sdk105/usr/lib/gcc/i686-apple-darwin11" ] && echo "run '$0 autofix'" # && exit 1
+
+echo -n "   * GCC (ppc): "
+[ -L "$xcode4sdk105/usr/lib/gcc/powerpc-apple-darwin11" ] && echo "OK"
+[ ! -L "$xcode4sdk105/usr/lib/gcc/powerpc-apple-darwin11" ] && echo "run '$0 autofix'" # && exit 1
+
+#echo -n "   * GCC (compile test): "
+#echo "main() {return 0;}" | gcc $CFLAGS -xc -o /dev/null - 2>$LOGFILE
+#if [ "$?" == 0 ]; then echo "OK"; else echo "FAIL (see $LOGFILE)"; exit 1; fi
 ################################################################################
 
 
