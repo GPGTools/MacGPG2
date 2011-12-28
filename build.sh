@@ -33,6 +33,10 @@
 ##
 
 # configuration ################################################################
+
+# trap ctrl-c and call setUnsetSymLinks()
+trap setUnsetSymLinks INT
+
 ## Xcode environment
 export xcode3="/Xcode3"
 export xcode4="/Developer"
@@ -259,9 +263,13 @@ echo -n "   * GCC (ppc): "
 function setUnsetSymLinks {
   echo " * Changing MacGPG2 links (might need sudo password)..."
   [ -L "$prefix_install" ] && sudo rm "$prefix_install"
-  [ ! -d "$prefix_install.bak" ] && [ -d "$prefix_install" ] && sudo mv "$prefix_install" "$prefix_install.bak"
-  [ ! -d "$prefix_install.bak" ] && [ ! -d "$prefix_install" ] && sudo ln -Fs "$prefix_build" "$prefix_install"
-  [ -d "$prefix_install.bak" ] && sudo mv "$prefix_install.bak" "$prefix_install"
+  if [ -d "$prefix_install.bak" ]; then
+    sudo mv "$prefix_install.bak" "$prefix_install"
+  else if [ -d "$prefix_install" ]; then
+      sudo mv "$prefix_install" "$prefix_install.bak"
+      sudo ln -Fs "$prefix_build" "$prefix_install"
+    fi
+  fi
 }
 
 function setLogPipe {
