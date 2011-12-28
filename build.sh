@@ -34,10 +34,12 @@
 
 # configuration ################################################################
 ## Xcode environment
-export xcode3sdk105="/Xcode3/SDKs/MacOSX10.5.sdk"
-export xcode4sdk105="/Developer/SDKs/MacOSX10.5.sdk"
-export xcode3as="/Xcode3/usr/bin/as"
-export xcode4as="/Developer/usr/bin/as"
+export xcode3="/Xcode3"
+export xcode4="/Developer"
+export xcode3sdk105="/$xcode3/SDKs/MacOSX10.5.sdk"
+export xcode4sdk105="/$xcode4/SDKs/MacOSX10.5.sdk"
+export xcode3as="/$xcode3/usr/bin/as"
+export xcode4as="/$xcode4/usr/bin/as"
 
 ## where to start from
 export rootPath="$(pwd)"
@@ -66,8 +68,8 @@ export configureFlags="--enable-osx-universal-binaries"
 export CFLAGS="-mmacosx-version-min=$MACOSX_DEPLOYMENT_TARGET -DUNIX -isysroot /Developer/SDKs/MacOSX$MACOSX_DEPLOYMENT_TARGET.sdk $CFLAGS"
 
 #export CC="/usr/bin/clang -ansi" # faster modern compiler
-export CC=gcc-4.2
-export CC=/Xcode3//usr/bin/gcc-4.2
+#export CC=gcc-4.2
+export CC=/$xcode3/usr/bin/gcc-4.2
 
 ## general flags
 export configureFlagsNoCache="$configureFlags --enable-static=no --disable-maintainer-mode --disable-dependency-tracking --prefix=$prefix_install"
