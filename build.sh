@@ -14,10 +14,11 @@
 # @todo     Major: We still need sudo commands (key word: $prefix_install.bak)
 # @todo     Minor: clang can not compile gnupg
 # @todo	    Minor: Compile libgcrypt without --disable-aesni-support
-# @todo	    Minor: Based on installation activate ppc or not
+# @todo	    Minor: Based on installation activate ppc build or not
+# @todo     Minor: Fix crashes while compiling (e.g.  "Symbol not found: _iconv_open Referenced from: /usr/bin/install-info Expected in: /usr/local/MacGPG2/lib/libiconv.2.dylib")
 #
 # @todo     Enhancement: configure/compile more in the background (e.g. gettext)
-# @todo     Enhancement: re-enable gpg validation of the sources
+# @todo     Enhancement: re-enable gpg validation of the sources and/or validate hashes
 #
 # Tipps to compile for ppc on 10.7:
 #	Follow this guide: http://hints.macworld.com/article.php?story=20110318050811544
@@ -27,8 +28,8 @@
 #     4. Install Xcode 4
 #     5. Run "./build.sh autofix" or:
 #        cd /Developer/SDKs/MacOSX10.5.sdk/usr/lib/gcc
-#        sudo ln -s i686-apple-darwin11 i686-apple-darwin10
-#        sudo ln -s powerpc-apple-darwin11 powerpc-apple-darwin10
+#        sudo ln -s i686-apple-darwin10 i686-apple-darwin11
+#        sudo ln -s powerpc-apple-darwin10 powerpc-apple-darwin11
 ##
 
 # configuration ################################################################
@@ -65,13 +66,13 @@ export DYLD_LIBRARY_PATH="$prefix_install/lib"
 
 export MACOSX_DEPLOYMENT_TARGET="10.5"
 
+#export CFLAGS="-arch x86_64"
 export CFLAGS="-arch i386 -arch ppc"
 export configureFlags="--enable-osx-universal-binaries"
 
 export CFLAGS="-mmacosx-version-min=$MACOSX_DEPLOYMENT_TARGET -DUNIX -isysroot /Developer/SDKs/MacOSX$MACOSX_DEPLOYMENT_TARGET.sdk $CFLAGS"
 
 #export CC="/usr/bin/clang -ansi" # faster modern compiler
-#export CC=gcc-4.2
 export CC=/$xcode3/usr/bin/gcc-4.2
 
 ## general flags
@@ -244,15 +245,16 @@ echo -n "   * Assembler: "
 
 echo -n "   * GCC (i386): "
 [ -L "$xcode4sdk105/usr/lib/gcc/i686-apple-darwin11" ] && echo "OK"
-[ ! -L "$xcode4sdk105/usr/lib/gcc/i686-apple-darwin11" ] && echo "run '$0 autofix'" # && exit 1
+[ ! -L "$xcode4sdk105/usr/lib/gcc/i686-apple-darwin11" ] && echo "FAILED. Run '$0 autofix'" # && exit 1
 
 echo -n "   * GCC (ppc): "
 [ -L "$xcode4sdk105/usr/lib/gcc/powerpc-apple-darwin11" ] && echo "OK"
-[ ! -L "$xcode4sdk105/usr/lib/gcc/powerpc-apple-darwin11" ] && echo "run '$0 autofix'" # && exit 1
+[ ! -L "$xcode4sdk105/usr/lib/gcc/powerpc-apple-darwin11" ] && echo "FAILED. Run '$0 autofix'" # && exit 1
 
-#echo -n "   * GCC (compile test): "
-#echo "main() {return 0;}" | gcc $CFLAGS -xc -o /dev/null - 2>$LOGFILE
-#if [ "$?" == 0 ]; then echo "OK"; else echo "FAIL (see $LOGFILE)"; exit 1; fi
+echo -n "   * GCC (compile test): "
+echo "main() {return 0;}" | $CC $CFLAGS -xc -o /dev/null - 2>$LOGFILE
+[ "$?" == 0 ] && echo "OK"
+[ "$?" != 0 ] && echo "FAILED (see $LOGFILE)"
 ################################################################################
 
 
