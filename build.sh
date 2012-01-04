@@ -6,14 +6,14 @@
 # @usage    ./build-script.sh clean
 #
 # @author   Alex <alex@gpgtools.org> and Mento <mento@gpgtools.org>
-# @version  2011-12-23
+# @version  2012-01-04
 # @see      https://github.com/GPGTools/MacGPG1/blob/master/build-script.sh
 # @see      https://github.com/GPGTools/MacGPG2/blob/master/build-script.sh
 #
 # @todo	    Major: Can only compile libgcrypt wth "-arch i386 -arch x86_64" and not "-arch i386"
 # @todo     Major: We still need sudo commands (key word: $prefix_install.bak)
 # @todo     Minor: clang can not compile gnupg
-# @todo	    Minor: Compile libgcrypt without --disable-aesni-support
+# @todo	    Minor: Compile libgcrypt without --disable-ansi-support
 # @todo	    Minor: Based on installation activate ppc build or not
 # @todo     Minor: Fix crashes while compiling (e.g.  "Symbol not found: _iconv_open Referenced from: /usr/bin/install-info Expected in: /usr/local/MacGPG2/lib/libiconv.2.dylib")
 #
@@ -21,15 +21,12 @@
 # @todo     Enhancement: re-enable gpg validation of the sources and/or validate hashes
 #
 # Tipps to compile for ppc on 10.7:
-#	Follow this guide: http://hints.macworld.com/article.php?story=20110318050811544
+# Follow this guide: http://hints.macworld.com/article.php?story=20110318050811544
 #     1. Download Xcode 3: https://connect.apple.com/cgi-bin/WebObjects/MemberSite.woa/wa/getSoftware?bundleID=20792
 #     2. Download Xcode 4: http://itunes.apple.com/us/app/xcode/id448457090?mt=12
 #     3. Install only Xcode 3 Essentials > Xcode Toolset to /Xcode3 (export COMMAND_LINE_INSTALL=1; open "/Volumes/Xcode and iOS SDK/Xcode and iOS SDK.mpkg")
 #     4. Install Xcode 4
-#     5. Run "./build.sh autofix" or:
-#        cd /Developer/SDKs/MacOSX10.5.sdk/usr/lib/gcc
-#        sudo ln -s i686-apple-darwin10 i686-apple-darwin11
-#        sudo ln -s powerpc-apple-darwin10 powerpc-apple-darwin11
+#     5. Run "./build.sh autofix"
 ##
 
 # configuration ################################################################
