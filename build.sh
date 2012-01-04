@@ -14,7 +14,6 @@
 # @todo     Major: We still need sudo commands (key word: $prefix_install.bak)
 # @todo     Minor: clang can not compile gnupg
 # @todo	    Minor: Compile libgcrypt without --disable-ansi-support
-# @todo	    Minor: Based on installation activate ppc build or not
 # @todo     Minor: Fix crashes while compiling (e.g.  "Symbol not found: _iconv_open Referenced from: /usr/bin/install-info Expected in: /usr/local/MacGPG2/lib/libiconv.2.dylib")
 #
 # @todo     Enhancement: configure/compile more in the background (e.g. gettext)
@@ -61,13 +60,13 @@ export PATH="$PATH:$prefix_install/bin"
 export DYLD_LIBRARY_PATH="$prefix_install/lib"
 
 
-export MACOSX_DEPLOYMENT_TARGET="10.5"
-
-#export CFLAGS="-arch x86_64"
-export CFLAGS="-arch i386 -arch ppc"
+# Compiler flags / target system
+export CFLAGS_CAN_PPC="1"
+export CFLAGS_64="-arch x86_64"
+export CFLAGS_32="-arch i386"
+export CFLAGS_PPC="-arch ppc"
 export configureFlags="--enable-osx-universal-binaries"
-
-export CFLAGS="-mmacosx-version-min=$MACOSX_DEPLOYMENT_TARGET -DUNIX -isysroot /Developer/SDKs/MacOSX$MACOSX_DEPLOYMENT_TARGET.sdk $CFLAGS"
+export MACOSX_DEPLOYMENT_TARGET="10.5"
 
 #export CC="/usr/bin/clang -ansi" # faster modern compiler
 export CC=/$xcode3/usr/bin/gcc-4.2
@@ -182,6 +181,7 @@ cp "$rootPath/Keys.gpg" "$buildDir/pubring.gpg"
 ## clean
 if [ "$1" == "clean" ]; then
     echo -n " * Cleaning..."
+    chmod -R +w "$buildDir"
     rm -f "$ccache"
     rm -rf "$prefix_build"
     rm -f "$LOGPATH/"*.log
@@ -196,8 +196,8 @@ if [ "$1" == "clean" ]; then
     rm -rf "$libksba_build/$libksba_version"
     rm -rf "$zlib_build/$zlib_version"
     rm -rf "$gpg_build/$gpg_version"
-	echo " OK"
-	exit 0
+    echo " OK"
+    exit 0
 fi
 ################################################################################
 
@@ -232,26 +232,35 @@ echo " * Testing environment..."
 
 echo -n "   * 10.5 SDK: "
 [ -e "$xcode4sdk105" ] && echo "OK"
-[ ! -e "$xcode4sdk105" ] && [ -e "$xcode3sdk105" ] && echo "run '$0 autofix'" # && exit 1
-[ ! -e "$xcode4sdk105" ] && [ ! -e "$xcode3sdk105" ] && echo "FAILED. Install Xcode3 first" # && exit 1
+[ ! -e "$xcode4sdk105" ] && [ -e "$xcode3sdk105" ] && echo "run '$0 autofix'" && CFLAGS_CAN_PPC="0"
+[ ! -e "$xcode4sdk105" ] && [ ! -e "$xcode3sdk105" ] && echo "FAILED. Install Xcode3 first" && CFLAGS_CAN_PPC="0"
 
 echo -n "   * Assembler: "
 [ -L "$xcode4as" ] && echo "OK"
-[ ! -L "$xcode4as" ] && [ -e "$xcode3as" ] && echo "run '$0 autofix'" # && exit 1
-[ ! -L "$xcode4as" ] && [ ! -e "$xcode3as" ] && echo "FAILED. Install Xcode3 first" # && exit 1
+[ ! -L "$xcode4as" ] && [ -e "$xcode3as" ] && echo "run '$0 autofix'" && CFLAGS_CAN_PPC="0"
+[ ! -L "$xcode4as" ] && [ ! -e "$xcode3as" ] && echo "FAILED. Install Xcode3 first" && CFLAGS_CAN_PPC="0"
 
 echo -n "   * GCC (i386): "
 [ -L "$xcode4sdk105/usr/lib/gcc/i686-apple-darwin11" ] && echo "OK"
-[ ! -L "$xcode4sdk105/usr/lib/gcc/i686-apple-darwin11" ] && echo "FAILED. Run '$0 autofix'" # && exit 1
+[ ! -L "$xcode4sdk105/usr/lib/gcc/i686-apple-darwin11" ] && echo "FAILED. Run '$0 autofix'" && CFLAGS_CAN_PPC="0"
 
 echo -n "   * GCC (ppc): "
 [ -L "$xcode4sdk105/usr/lib/gcc/powerpc-apple-darwin11" ] && echo "OK"
-[ ! -L "$xcode4sdk105/usr/lib/gcc/powerpc-apple-darwin11" ] && echo "FAILED. Run '$0 autofix'" # && exit 1
+[ ! -L "$xcode4sdk105/usr/lib/gcc/powerpc-apple-darwin11" ] && echo "FAILED. Run '$0 autofix'" && CFLAGS_CAN_PPC="0"
 
-echo -n "   * GCC (compile test): "
+if [ "$CLAGS_CAN_PPC" == "0" ]; then
+  export CFLAGS="$CFLAGS_64"
+else
+  export CFLAGS="$CFLAGS_32 $CFLAGS_PPC"
+fi
+echo " * Compiling for: $CFLAGS..."
+export CFLAGS="-mmacosx-version-min=$MACOSX_DEPLOYMENT_TARGET -DUNIX -isysroot /Developer/SDKs/MacOSX$MACOSX_DEPLOYMENT_TARGET.sdk $CFLAGS"
+
+# TODO: using wrong crt1.10.5.o on my system
+echo -n "   * Running compile test: "
 echo "main() {return 0;}" | $CC $CFLAGS -xc -o /dev/null - 2>$LOGFILE
 [ "$?" == 0 ] && echo "OK"
-[ "$?" != 0 ] && echo "FAILED (see $LOGFILE)"
+[ "$?" != 0 ] && echo "FAILED (see $LOGFILE)" # && CFLAGS_CAN_PPC="0"
 ################################################################################
 
 
