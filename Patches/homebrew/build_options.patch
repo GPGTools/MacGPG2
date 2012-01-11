@@ -1,0 +1,32 @@
+diff --git a/Library/Homebrew/extend/ENV.rb b/Library/Homebrew/extend/ENV.rb
+index 9f95791..60714de 100644
+--- a/Library/Homebrew/extend/ENV.rb
++++ b/Library/Homebrew/extend/ENV.rb
+@@ -233,7 +233,25 @@ Please take one of the following actions:
+       replace_in_cflags(/-march=\S*/, '-Xarch_i386 \0') if Hardware.is_32_bit?
+     end
+   end
+-
++  
++  def build_32_bit
++    %w{ CFLAGS LDFLAGS }.each do |compiler_flag|
++      remove compiler_flag, "-arch x86_64"
++      append compiler_flag, "-arch i386"
++    end
++    
++    replace_in_cflags(/-march=\S*/, '')
++  end
++  
++  def build_64_bit
++    %w{ CFLAGS LDFLAGS }.each do |compiler_flag|
++      remove compiler_flag, "-arch i386"
++      append compiler_flag, "-arch x86_64"
++    end
++    
++    replace_in_cflags(/-march=\S*/, '')
++  end
++  
+   def prepend key, value, separator = ' '
+     # Value should be a string, but if it is a pathname then coerce it.
+     value = value.to_s
+
