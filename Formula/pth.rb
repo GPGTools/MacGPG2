@@ -1,3 +1,38 @@
+require 'formula'
+
+class Pth < Formula
+  url 'http://ftpmirror.gnu.org/pth/pth-2.0.7.tar.gz'
+  mirror 'http://ftp.gnu.org/gnu/pth/pth-2.0.7.tar.gz'
+  homepage 'http://www.gnu.org/software/pth/'
+  md5 '9cb4a25331a4c4db866a31cbe507c793'
+  
+  keep_install_names true
+  
+  def patches
+    { :p0 => DATA }
+  end
+  
+  def install
+    ENV.deparallelize
+    ENV.universal_binary if ARGV.build_universal?
+    
+    ENV.prepend 'LDFLAGS', "-Wl,-rpath,@loader_path/../lib -Wl,-rpath,#{HOMEBREW_PREFIX}/lib"
+    ENV.prepend 'LDFLAGS', '-headerpad_max_install_names'
+    
+    # Note: shared library will not be build with --disable-debug, so don't add that flag
+    system "./configure", "--disable-dependency-tracking",
+                          "--with-mctx-mth=sjlj",
+                          "--with-mctx-dsp=ssjlj",
+                          "--with-mctx-stk=sas",
+                          "--enable-static=no", "--disable-maintainer-mode",
+                          "--prefix=#{prefix}",
+                          "--mandir=#{man}"
+    system "make test"
+    system "make install"
+  end
+end
+
+__END__
 --- Makefile.in	2006-06-08 19:54:01.000000000 +0200
 +++ Makefile.in	2011-12-22 20:26:32.000000000 +0100
 @@ -168,10 +168,10 @@

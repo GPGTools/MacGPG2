@@ -5,10 +5,10 @@ update:
 	@git pull
 
 compile:
-	@./build.sh
+	@./build-homebrew.sh
 
 clean:
-	@./build.sh clean
+	@./build-homebrew.sh clean
 
 pinentry:
 	 $(MAKE) -C ./Dependencies/pinentry-mac compile_with_ppc

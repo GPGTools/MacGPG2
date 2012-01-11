@@ -1,5 +1,3 @@
-# This patch adds IDEA support to libgcrypt.
-
 diff -Nur cipher/cipher.c cipher/cipher.c
 --- cipher/cipher.c	2010-07-13 16:06:07.000000000 +0200
 +++ cipher/cipher.c	2011-12-22 12:45:02.000000000 +0100
@@ -381,3 +379,4 @@ diff -Nurp cipher/idea.c cipher/idea.c
 +    "IDEA", NULL, NULL, IDEA_BLOCKSIZE, 128, sizeof (IDEA_context),
 +    idea_setkey, idea_encrypt, idea_decrypt,
 +  };
+
