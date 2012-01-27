@@ -4,7 +4,7 @@ update:
 	@git submodule foreach git pull origin master
 	@git pull
 
-compile:
+compile: pinentry
 	@./build-homebrew.sh
 
 clean:
