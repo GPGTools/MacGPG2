@@ -37,6 +37,9 @@ class Macgpg2 < Formula
     # programs can't link to libraries using @rpath.
     ENV.prepend 'LDFLAGS', '-headerpad_max_install_names'
     ENV.prepend 'LDFLAGS', "-Wl,-rpath,@loader_path/../lib -Wl,-rpath,#{HOMEBREW_PREFIX}/lib"
+    # For some reason configure fails to include the link to libresolve
+    # which is necessary for pka and cert options for the keyserver to work.
+    ENV.prepend 'LDFLAGS', '-lresolv'
     system "./configure", "--prefix=#{prefix}",
                           "--disable-maintainer-mode",
                           "--disable-dependency-tracking",
