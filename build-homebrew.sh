@@ -2,7 +2,7 @@
 
 export SOURCEDIR="`pwd`"
 export PATCHDIR="$SOURCEDIR/Patches"
-export BUILDDIR="$SOURCEDIR/build.final"
+export BUILDDIR="$SOURCEDIR/build"
 export INSTALLDIR="$BUILDDIR/MacGPG2"
 
 export NO_BUILDROOT_EXISTS=$(test -d $INSTALLDIR -a -w $INSTALLDIR; echo $?)
