@@ -21,19 +21,10 @@ class Libgcrypt < Formula
 
   def install
     ENV.build_32_bit
-    #ENV.universal_binary	# build fat so wine can use it
     
-    ENV.append 'CFLAGS', "-fheinous-gnu-extensions -std=gnu89" if ENV.compiler == :clang
     ENV.prepend 'LDFLAGS', '-headerpad_max_install_names'
     ENV.prepend 'LDFLAGS', "-Wl,-rpath,@loader_path/../lib -Wl,-rpath,#{HOMEBREW_PREFIX}/lib"
-    # # Set the correct loader_path so the test files can find the libgpg-error library.
-    #     inreplace 'src/Makefile.in' do |s|
-    #       s.change_make_var! "GPGT_LOADER_PATH", "\"-Wl,-rpath,@loader_path/../lib -Wl,-rpath,#{HOMEBREW_PREFIX}/lib\""
-    #     end
-    #     inreplace 'tests/Makefile.in' do |s|
-    #       s.change_make_var! "GPGT_LOADER_PATH", "\"-Wl,-rpath,@loader_path/../lib -Wl,-rpath,#{HOMEBREW_PREFIX}/lib\""
-    #     end
-    #     
+    
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
                           "--disable-asm",

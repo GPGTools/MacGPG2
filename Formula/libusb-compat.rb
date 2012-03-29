@@ -10,10 +10,6 @@ class LibusbCompat < Formula
   
   keep_install_names true
   
-  # def patches
-  #     { :p1 => DATA }
-  #   end
-  
   def install
     # Otherwise homebrew fails to find libusb.
     dep = Formula.factory 'libusb'
@@ -26,6 +22,4 @@ class LibusbCompat < Formula
     system "make install"
   end
 end
-
-__END__
 

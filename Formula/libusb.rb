@@ -11,10 +11,6 @@ class Libusb < Formula
     [["--universal", "Build a universal binary."]]
   end
   
-  # def patches
-  #   { :p1 => DATA }
-  # end
-  # 
   def install
     ENV.universal_binary if ARGV.build_universal?
     ENV.prepend 'LDFLAGS', '-headerpad_max_install_names'
@@ -25,6 +21,3 @@ class Libusb < Formula
     system "make install"
   end
 end
-
-__END__
-

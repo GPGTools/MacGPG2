@@ -18,18 +18,6 @@ class LibgpgError < Formula
     # programs can't link to libraries using @rpath.
     ENV.prepend 'LDFLAGS', '-headerpad_max_install_names'
     ENV.prepend 'LDFLAGS', "-Wl,-rpath,@loader_path/../lib -Wl,-rpath,#{HOMEBREW_PREFIX}/lib"
-    # # Set the correct loader_path so the test files can find the libgpg-error library.
-    #     # Interestingly the libgpg-error linker flags have to be modified to work properly.
-    #     inreplace 'src/Makefile.in' do |s|
-    #       s.change_make_var! "GPGT_LOADER_PATH", "-Wl,-rpath,@loader_path/../lib,-rpath,#{HOMEBREW_PREFIX}/lib"
-    #     end
-    #     inreplace 'tests/Makefile.in' do |s|
-    #       s.change_make_var! "GPGT_LOADER_PATH", "-Wl,-rpath,@loader_path/../lib,-rpath,#{HOMEBREW_PREFIX}/lib"
-    #     end
-    #     
-    #     puts "LDFLAGS: ", ENV['LDFLAGS']
-    #     puts "CFLAGS: ", ENV['CFLAGS']
-    #     puts "LIBS: ", ENV['LIBS']
     
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
