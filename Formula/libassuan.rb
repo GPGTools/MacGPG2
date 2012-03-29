@@ -24,10 +24,7 @@ class Libassuan < Formula
     system "./configure", "--disable-dependency-tracking", "--prefix=#{prefix}",
            "--with-gpg-error-prefix=#{HOMEBREW_PREFIX}",
            "--enable-static=no", "--disable-maintainer-mode"
-    system "make check"
     system "make install"
   end
 end
-
-__END__
 
