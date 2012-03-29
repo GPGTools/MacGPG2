@@ -5,10 +5,10 @@ update:
 	@git pull
 
 compile:
-	@./build-homebrew.sh
+	@./build.sh
 
 clean:
-	@./build-homebrew.sh clean
+	@./build.sh clean
 
 dmg: compile
 	./Dependencies/GPGTools_Core/scripts/create_dmg.sh
