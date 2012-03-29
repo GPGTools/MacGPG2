@@ -246,16 +246,17 @@ index e0b9259..cdf5b7e 100644
 +    end
 +  end
  end
-diff --git a/Library/Homebrew/utils.rb b/Library/Homebrew/utils.rb
-index 9b19801..9317497 100644
 --- a/Library/Homebrew/utils.rb
 +++ b/Library/Homebrew/utils.rb
-@@ -112,7 +112,7 @@ def curl *args
+@@ -112,8 +112,10 @@ def curl *args
    # See https://github.com/mxcl/homebrew/issues/6103
    args << "--insecure" if MacOS.version < 10.6
    args << "--verbose" if ENV['HOMEBREW_CURL_VERBOSE']
 -  args << "--silent" unless $stdout.tty?
-+  args << "--silent" unless $stdout.tty? || ARGV.quieter?
- 
+-
++  if !$stdout.tty? || ARGV.quieter?
++    args << "--silent"
++  end
++  
    safe_system curl, *args
  end
