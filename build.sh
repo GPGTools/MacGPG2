@@ -11,6 +11,9 @@ export BUILDENV_MOUNT_DIR="$SOURCEDIR/build-env"
 export BUILD_PPC=0
 export NO_BUILDROOT_EXISTS=$(test -d $INSTALLDIR -a -w $INSTALLDIR; echo $?)
 
+# Include the make file config.
+. Makefile.config
+
 # Include status messages functions.
 . status.sh
 
