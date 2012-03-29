@@ -1243,7 +1243,7 @@
 															<key>GID</key>
 															<integer>0</integer>
 															<key>PATH</key>
-															<string>../Dependencies/pinentry-mac/build/Release with ppc/pinentry-mac.app</string>
+															<string>../build/MacGPG2/libexec/pinentry-mac.app</string>
 															<key>PATH_TYPE</key>
 															<integer>1</integer>
 															<key>PERMISSIONS</key>
