@@ -1422,7 +1422,7 @@
 				<key>BACKGROUND_PATH</key>
 				<dict>
 					<key>PATH</key>
-					<string>/Users/Roman/Documents/OpenSource/GPG/MacGPG2/Installer/installer_background.png</string>
+					<string>installer_background.png</string>
 					<key>PATH_TYPE</key>
 					<integer>0</integer>
 				</dict>
