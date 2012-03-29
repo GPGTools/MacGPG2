@@ -1,3 +1,5 @@
+include Dependencies/GPGTools_Core/make/default
+
 all: compile
 
 update:
