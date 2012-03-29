@@ -17,7 +17,7 @@ class Pinentry < Formula
       target = "compile_with_ppc"
       build_dir = "Release with ppc"
       inreplace 'pinentry-mac.xcodeproj/project.pbxproj' do |s|
-        s.gsub! /SDKROOT\s*=\s*.*;/, "SDKROOT = #{ARGV.build_env}/SDKs/MacOSX10.5.sdk;"
+        s.gsub! /SDKROOT\s*=\s*.*;/, "SDKROOT = \"#{ARGV.build_env}/SDKs/MacOSX10.5.sdk\";"
         s.gsub! /GCC_VERSION\s*=\s*.*;/, "GCC_VERSION = com.apple.compilers.llvmgcc42;"
       end
     end
