@@ -1,9 +1,9 @@
 require 'formula'
 
 class Macgpg2 < Formula
-  url 'ftp://ftp.gnupg.org/gcrypt/gnupg/gnupg-2.0.18.tar.bz2'
+  url 'ftp://ftp.gnupg.org/gcrypt/gnupg/gnupg-2.0.19.tar.bz2'
   homepage 'http://www.gnupg.org/'
-  sha1 '5ec2f718760cc3121970a140aeea004b64545c46'
+  sha1 '190c09e6688f688fb0a5cf884d01e240d957ac1f'
   
   depends_on 'libiconv'
   depends_on 'gettext'
@@ -14,6 +14,7 @@ class Macgpg2 < Formula
   depends_on 'libgcrypt'
   depends_on 'libksba'
   depends_on 'zlib'
+  depends_on 'pinentry'
   
   keep_install_names true
   
@@ -66,22 +67,6 @@ class Macgpg2 < Formula
 end
 
 __END__
-# fix configure's failure to detect libcurl
-# http://git.gnupg.org/cgi-bin/gitweb.cgi?p=gnupg.git;a=commit;h=57ef0d6
-diff --git a/configure b/configure
-index 3df3900..35c474f 100755
---- a/configure
-+++ b/configure
-@@ -9384,7 +9384,7 @@ else
- 
-            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
- /* end confdefs.h.  */
--include <curl/curl.h>
-+#include <curl/curl.h>
- int
- main ()
- {
-
 # fix runtime data location
 # http://git.gnupg.org/cgi-bin/gitweb.cgi?p=gnupg.git;a=commitdiff;h=c3f08dc
 diff --git a/common/homedir.c b/common/homedir.c
