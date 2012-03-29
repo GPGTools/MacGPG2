@@ -28,10 +28,10 @@ class Libgcrypt < Formula
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
                           "--disable-asm",
+                          "--enable-m-guard",
                           "--with-gpg-error-prefix=#{HOMEBREW_PREFIX}",
                           "--with-pth-prefix=#{HOMEBREW_PREFIX}",
-                          "--enable-static=no", "--disable-maintainer-mode",
-                          "--disable-aesni-support"
+                          "--enable-static=no", "--disable-maintainer-mode"
     # Separate steps, or parallel builds fail
     system "make"
     system "make check"
