@@ -211,6 +211,8 @@ def main():
     if os.path.isdir(DEST_DIR) and options.prune:
         shutil.rmtree(DEST_DIR)
     
+    os.makedirs(DEST_DIR)
+    
     title("Prepare MacGPG2 files for the installer")
     
     status("Collect files to exclude")
