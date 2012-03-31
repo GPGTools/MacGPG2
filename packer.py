@@ -213,6 +213,9 @@ def main():
     
     os.makedirs(DEST_DIR)
     
+    if not os.path.isdir(DEST_DIR):
+        error("Failed to create target directory: %s" % (DEST_DIR_ORIGINAL))
+    
     title("Prepare MacGPG2 files for the installer")
     
     status("Collect files to exclude")
@@ -273,8 +276,10 @@ def main():
     try:
         copy_from_homebrew(BASE_DIR, DEST_DIR, distro_files)
     except Exception, e:
+        import traceback
+        traceback.print_exc()
         error("Failed to copy files from %s - %s" % (BASE_DIR_ORIGINAL, e))
-    
+        
     # Change back to the original directory
     os.chdir(working_dir)
     
