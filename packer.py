@@ -85,7 +85,7 @@ def xcopy(src, dst, makedirs=False):
     import shutil, xattr
     stat = os.stat(src)
     if makedirs and not os.path.isdir(os.path.dirname(dst)):
-        os.makedirs(os.path.dirname(dst))
+        os.makedirs(os.path.dirname(dst), 775)
     # Copy the file
     shutil.copy2(src, dst)
     os.lchown(dst, stat.st_uid, stat.st_gid)
@@ -211,7 +211,7 @@ def main():
     if os.path.isdir(DEST_DIR) and options.prune:
         shutil.rmtree(DEST_DIR)
     
-    os.makedirs(DEST_DIR)
+    os.makedirs(DEST_DIR,775)
     
     if not os.path.isdir(DEST_DIR):
         error("Failed to create target directory: %s" % (DEST_DIR_ORIGINAL))
