@@ -112,22 +112,17 @@ if [ "$BUILD_PPC" == "1" ]; then
     tryToUnmountBuildEnvironment
 fi
 
-if [ "$EXIT" == "0" ]; then
-    if [ -d "$DEPLOYDIR" ] && [ "$DEPLOYDIR" != "/" ]; then
-        rm -rf "$DEPLOYDIR"
-    fi
-    # After building successfully
-    mkdir "$DEPLOYDIR"
-    DIRS="usr bin sbin include lib libexec man share"
-    for dir in $DIRS; do
-        if [ -d "$INSTALLDIR/$dir" ]; then
-            cp -RL "$INSTALLDIR/$dir" "$DEPLOYDIR/"
-        fi
-    done
-    
-    success "Build succeeded!"
-    exit 0
-else
+if [ "$EXIT" != "0" ]; then
     error "Build failed!"
     exit 1
 fi
+
+/usr/bin/python packer.py --prune "$INSTALLDIR" "$DEPLOYDIR"
+
+if [ "$?" != "0" ]; then
+    error "Preparing files for the installer failed."
+    exit 1
+fi
+
+success "Build succeeded!"
+exit 0
