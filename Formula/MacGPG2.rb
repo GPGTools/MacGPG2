@@ -44,7 +44,7 @@ class Macgpg2 < Formula
     system "./configure", "--prefix=#{prefix}",
                           "--disable-maintainer-mode",
                           "--disable-dependency-tracking",
-                          "--disable-gpgtar",
+                          "--enable-symcryptrun",
                           "--enable-standard-socket",
                           "--with-pinentry-pgm=#{HOMEBREW_PREFIX}/libexec/pinentry-mac.app/Contents/MacOS/pinentry-mac",
                           "--with-gpg-error-prefix=#{HOMEBREW_PREFIX}",
@@ -78,7 +78,7 @@ index 5f2e31e..d797b68 100644
    return name;
  #else /*!HAVE_W32_SYSTEM*/
 -  return "/var/run/dirmngr/socket";
-+  return "HOMEBREW_PREFIX/var/run/dirmngr/socket";
++  return "/usr/local/MacGPG2/var/run/dirmngr/socket";
  #endif /*!HAVE_W32_SYSTEM*/
  }
  
