@@ -20,6 +20,7 @@ class Libgcrypt < Formula
   end
 
   def install
+    ENV.universal_binary if ARGV.build_universal?
     ENV.build_32_bit
     
     ENV.prepend 'LDFLAGS', '-headerpad_max_install_names'

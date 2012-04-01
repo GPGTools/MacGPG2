@@ -13,7 +13,6 @@ class Pinentry < Formula
   
   def install
     ENV.universal_binary if ARGV.build_universal?
-    ENV.build_ppc if ARGV.build_ppc?
     
     target = "compile"
     build_dir = "Release"

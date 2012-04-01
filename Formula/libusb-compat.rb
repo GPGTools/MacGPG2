@@ -11,6 +11,7 @@ class LibusbCompat < Formula
   keep_install_names true
   
   def install
+    ENV.universal_binary if ARGV.build_universal?
     # Otherwise homebrew fails to find libusb.
     dep = Formula.factory 'libusb'
     ENV.prepend 'PKG_CONFIG_PATH', dep.lib+'pkgconfig', ':'

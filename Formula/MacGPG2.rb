@@ -30,6 +30,7 @@ class Macgpg2 < Formula
 
   def install
     (var+'run').mkpath
+    ENV.universal_binary if ARGV.build_universal?
     ENV.build_32_bit
     
     # so we don't use Clang's internal stdint.h
