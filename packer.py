@@ -85,10 +85,14 @@ def xcopy(src, dst, makedirs=False):
     import shutil, xattr
     stat = os.stat(src)
     if makedirs and not os.path.isdir(os.path.dirname(dst)):
-        os.makedirs(os.path.dirname(dst), 775)
+        os.makedirs(os.path.dirname(dst), 0755)
     # Copy the file
     shutil.copy2(src, dst)
-    os.lchown(dst, stat.st_uid, stat.st_gid)
+    # Might fail on some files. simply ignore.
+    try:
+        os.lchown(dst, stat.st_uid, stat.st_gid)
+    except:
+        pass
     # And copy the extended attributes.
     src_attrs = xattr.xattr(src)
     dst_attrs = xattr.xattr(dst)
@@ -211,7 +215,8 @@ def main():
     if os.path.isdir(DEST_DIR) and options.prune:
         shutil.rmtree(DEST_DIR)
     
-    os.makedirs(DEST_DIR,775)
+    # Reset the umask.
+    os.makedirs(DEST_DIR, 0755)
     
     if not os.path.isdir(DEST_DIR):
         error("Failed to create target directory: %s" % (DEST_DIR_ORIGINAL))
