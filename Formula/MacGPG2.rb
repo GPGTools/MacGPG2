@@ -41,12 +41,15 @@ class Macgpg2 < Formula
     # For some reason configure fails to include the link to libresolve
     # which is necessary for pka and cert options for the keyserver to work.
     ENV.prepend 'LDFLAGS', '-lresolv'
+    final_install_directory = "/usr/local/MacGPG2"
     system "./configure", "--prefix=#{prefix}",
                           "--disable-maintainer-mode",
                           "--disable-dependency-tracking",
                           "--enable-symcryptrun",
                           "--enable-standard-socket",
-                          "--with-pinentry-pgm=#{HOMEBREW_PREFIX}/libexec/pinentry-mac.app/Contents/MacOS/pinentry-mac",
+                          "--with-pinentry-pgm=#{final_install_directory}/libexec/pinentry-mac.app/Contents/MacOS/pinentry-mac",
+                          "--with-agent-pgm=#{final_install_directory}/bin/gpg-agent",
+                          "--with-scdaemon-pgm=#{final_install_directory}/bin/scdaemon",
                           "--with-gpg-error-prefix=#{HOMEBREW_PREFIX}",
                           "--with-libgcrypt-prefix=#{HOMEBREW_PREFIX}",
                           "--with-libassuan-prefix=#{HOMEBREW_PREFIX}",
