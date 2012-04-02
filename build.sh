@@ -6,13 +6,15 @@ export BUILDDIR="$SOURCEDIR/build"
 export LOGPATH="$BUILDDIR"
 export INSTALLDIR="$BUILDDIR/homebrew"
 export DEPLOYDIR="$BUILDDIR/MacGPG2"
-export BUILDENV_DMG="/Users/lukele/Desktop/MacGPG2PPCBuildEnv.dmg"
+export BUILDENV_DMG=""
 export BUILDENV_MOUNT_DIR="$SOURCEDIR/build-env"
 export BUILD_PPC=0
 export NO_BUILDROOT_EXISTS=$(test -d $INSTALLDIR -a -w $INSTALLDIR; echo $?)
 
-# Include the make file config.
-. Makefile.config
+# Include the build-env file.
+test -f ".build-env" && source ".build-env"
+# Include the local build-env file which is not in git.
+test -f ".build-env.local" && source ".build-env.local"
 
 # Include status messages functions.
 . status.sh
