@@ -63,10 +63,11 @@ class Macgpg2 < Formula
     system "make"
     system "make check"
     system "make install"
-
-    # conflicts with a manpage from the 1.x formula, and
-    # gpg-zip isn't installed by this formula anyway
-    #rm man1+'gpg-zip.1'
+    
+    # Homebrew doesn't like touching libexec for some reason.
+    # That's why we have to manually symlink.
+    # Also uninstalling wouldn't take care of libexec, so I've pachted keg.rb
+    Pathname.new("#{HOMEBREW_PREFIX}/libexec/gnupg-pcsc-wrapper").make_relative_symlink("#{prefix}/libexec/gnupg-pcsc-wrapper")
   end
 end
 
@@ -159,3 +160,17 @@ index db5ddf5..c34fcc7 100644
    textdomain (PACKAGE_GT);
  # endif
  #endif
+
+diff --git a/scd/Makefile.in b/scd/Makefile.in
+index d3a924c..319e3ed 100644
+--- a/scd/Makefile.in
++++ b/scd/Makefile.in
+@@ -74,7 +74,7 @@ bin_PROGRAMS = scdaemon$(EXEEXT)
+ DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
+ 	$(top_srcdir)/am/cmacros.am
+ @HAVE_DOSISH_SYSTEM_FALSE@am__append_1 = -DGNUPG_BINDIR="\"$(bindir)\""            \
+-@HAVE_DOSISH_SYSTEM_FALSE@               -DGNUPG_LIBEXECDIR="\"$(libexecdir)\""    \
++@HAVE_DOSISH_SYSTEM_FALSE@               -DGNUPG_LIBEXECDIR="\"/usr/local/MacGPG2/libexec\""    \
+ @HAVE_DOSISH_SYSTEM_FALSE@               -DGNUPG_LIBDIR="\"$(libdir)/@PACKAGE@\""  \
+ @HAVE_DOSISH_SYSTEM_FALSE@               -DGNUPG_DATADIR="\"$(datadir)/@PACKAGE@\"" \
+ @HAVE_DOSISH_SYSTEM_FALSE@               -DGNUPG_SYSCONFDIR="\"$(sysconfdir)/@PACKAGE@\""
