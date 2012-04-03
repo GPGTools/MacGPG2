@@ -120,7 +120,7 @@ if [ "$EXIT" != "0" ]; then
     exit 1
 fi
 
-/usr/bin/python packer.py --prune "$INSTALLDIR" "$DEPLOYDIR"
+/usr/bin/python packer --prune "$INSTALLDIR" "$DEPLOYDIR"
 
 if [ "$?" != "0" ]; then
     error "Preparing files for the installer failed."
