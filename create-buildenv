@@ -4,6 +4,8 @@ import os, sys
 from optparse import OptionParser
 from subprocess import check_output
 
+import traceback
+
 sys.path.insert(1, './Dependencies/GPGTools_Core/python')
 
 from clitools import *
@@ -197,7 +199,7 @@ def parse_options():
     
     return (options, args)
 
-def cleanup(error_=False):
+def cleanup(error_=False, error_message=None, verbose=False):
     ppcExtras = globals().get("ppcExtras")
     if ppcExtras:
         ppcExtras.unmount()
@@ -217,12 +219,16 @@ def cleanup(error_=False):
         xcode3.unmount()
     
     if error_:
-        error("Failed to create the MacGPG2 build environment")
+        msg = []
+        msg.append("Failed to create the MacGPG2 build environment")
+        if verbose and error_message:
+            msg.append(error_message)
+        error("\n".join(msg))
         return
     
     success("Successfully created the MacGPG2 build environment")
 
-def main():
+def main(options, args):
     """
     Creates a MacGPG2 build environment which includes all llvm compiler tools with PPC support.
     
@@ -236,9 +242,9 @@ def main():
     
     The two disk images will be auto detected if available.
     """
-    (options, args) = parse_options()
-    
     workingDir = os.path.realpath(os.curdir)
+    
+    raise
     
     BUILD_IMAGE_PATH = os.path.realpath(os.path.expanduser(args[0]))
     XCODE3_IMAGE_PATH = options.xcode3_image
@@ -349,10 +355,11 @@ def main():
     cleanup()
     
 if __name__ == '__main__':
+    (options, args) = parse_options()
     try:
-        main()
+        main(options, args)
     except SystemExit:
         pass
     except:
-        cleanup(True)
+        cleanup(True, error_message=traceback.format_exc(), verbose=options.debug)
         print "%s" % (TerminalColor.reset())
