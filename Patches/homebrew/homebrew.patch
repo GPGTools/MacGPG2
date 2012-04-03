@@ -15,15 +15,13 @@ index 26d16c4..8b0237e 100644
      Apple distributes #{name} with OS X, you can find it in /usr/lib.
      However not all build scripts look for these hard enough, so you may need
 diff --git a/Library/Homebrew/extend/ARGV.rb b/Library/Homebrew/extend/ARGV.rb
-index afb0386..5741b1f 100644
+index afb0386..857e973 100644
 --- a/Library/Homebrew/extend/ARGV.rb
 +++ b/Library/Homebrew/extend/ARGV.rb
-@@ -99,7 +99,15 @@ module HomebrewArgvExtension
-   def build_universal?
+@@ -100,6 +100,14 @@ module HomebrewArgvExtension
      include? '--universal'
    end
--
-+  
+ 
 +  def build_env
 +    ENV['HOMEBREW_GPGTOOLS_BUILD_ENV'] || HOMEBREW_GPGTOOLS_BUILD_ENV 
 +  end
@@ -84,10 +82,10 @@ index 4eeba6b..b25dc84 100644
  
    def prepend key, value, separator = ' '
 diff --git a/Library/Homebrew/formula.rb b/Library/Homebrew/formula.rb
-index c8ef58e..563ef97 100644
+index eb1d7dc..5015c24 100644
 --- a/Library/Homebrew/formula.rb
 +++ b/Library/Homebrew/formula.rb
-@@ -156,6 +156,12 @@ class Formula
+@@ -157,6 +157,12 @@ class Formula
      self.class.keg_only_reason || false
    end
  
@@ -97,12 +95,12 @@ index c8ef58e..563ef97 100644
 +    self.class.keep_install_names || false
 +  end
 +
-   def fails_with_llvm?
-     llvm = self.class.fails_with_llvm_reason
-     if llvm
-@@ -574,6 +580,7 @@ private
-     attr_rw :keg_only_reason, :fails_with_llvm_reason, :skip_clean_all
-     attr_rw :bottle_url, :bottle_sha1
+   def fails_with? cc
+     return false if self.class.cc_failures.nil?
+     cc = Compiler.new(cc) unless cc.is_a? Compiler
+@@ -571,6 +577,7 @@ private
+     attr_rw :keg_only_reason, :skip_clean_all, :bottle_url, :bottle_sha1
+     attr_rw :cc_failures
      attr_rw(*CHECKSUM_TYPES)
 +    attr_rw :keep_install_names
  
@@ -143,7 +141,7 @@ index 266f518..1c8cd59 100644
      require 'cleaner'
      Cleaner.new f
 diff --git a/Library/Homebrew/global.rb b/Library/Homebrew/global.rb
-index b29ab0f..0eebd65 100644
+index 9256085..6260548 100644
 --- a/Library/Homebrew/global.rb
 +++ b/Library/Homebrew/global.rb
 @@ -59,6 +59,9 @@ else
@@ -246,17 +244,18 @@ index e0b9259..cdf5b7e 100644
 +    end
 +  end
  end
+diff --git a/Library/Homebrew/utils.rb b/Library/Homebrew/utils.rb
+index d041194..9607b11 100644
 --- a/Library/Homebrew/utils.rb
 +++ b/Library/Homebrew/utils.rb
-@@ -112,8 +112,10 @@ def curl *args
+@@ -112,7 +112,9 @@ def curl *args
    # See https://github.com/mxcl/homebrew/issues/6103
    args << "--insecure" if MacOS.version < 10.6
    args << "--verbose" if ENV['HOMEBREW_CURL_VERBOSE']
 -  args << "--silent" unless $stdout.tty?
--
 +  if !$stdout.tty? || ARGV.quieter?
 +    args << "--silent"
 +  end
-+  
+ 
    safe_system curl, *args
  end
