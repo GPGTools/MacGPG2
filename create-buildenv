@@ -348,7 +348,7 @@ def main(options, args):
     
     with open(os.path.join(workingDir, BUILDENV_FILE), "w") as f:
         f.write("BUILDENV_DMG=\"%s\"" % (BUILD_IMAGE_PATH))
-    os.chmod(os.path.join(workingDir, BUILDENV_FILE), chmod=0775)
+    os.chmod(os.path.join(workingDir, BUILDENV_FILE), 0775)
     
     cleanup()
     
