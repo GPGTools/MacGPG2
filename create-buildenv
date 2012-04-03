@@ -143,9 +143,9 @@ def get_image_clt(options):
 
 def get_image(name, options):
     if name == CLT_IMAGE_FILE_NAME:
-        get_image_clt(options)
+        return get_image_clt(options)
     elif name == XCODE3_IMAGE_FILE_NAME:
-        get_image_xcode3(options)
+        return get_image_xcode3(options)
     
 
 def parse_options():
