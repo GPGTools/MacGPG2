@@ -36,7 +36,7 @@ def find_sdk_image(file):
     return None
 
 def parse_options():
-    usage = "usage: %prog [-fxt] target_image"
+    usage = "usage: %prog [-f] [-x XCODE3_IMAGE] [-t CLT_IMAGE] target_image"
     parser = OptionParser(usage=usage)
     parser.add_option("-f", "--force", dest="force", action="store_true",
                       default=False,
