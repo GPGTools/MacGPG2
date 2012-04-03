@@ -10,12 +10,23 @@ from clitools import *
 from clitools.color import *
 
 BUILDENV_FILE = ".build-env.local"
+CLT_IMAGE_FILE_NAME = "cltools_lion_latemarch12.dmg"
+CLT_IMAGE_FILE_SIZE = 180040642
+XCODE3_IMAGE_FILE_NAME = "xcode_3.2.6_and_ios_sdk_4.3.dmg"
+XCODE3_IMAGE_FILE_SIZE = 4443150993
 
 def ask_for(message):
     return raw_input("%s==> %s%s: %s" % (TerminalColor.blue(), TerminalColor.white(), message, TerminalColor.reset()))
 
+def c_status(message, end=False):
+    if not end:
+        sys.stdout.write("%s==>%s %s: " % (TerminalColor.blue(), TerminalColor.reset(), message))
+    elif end:
+        sys.stdout.write("%s\n" % (message))
+
 def find_sdk_image(file):
     # Check in ~/Downloads and ~/Downloads/Applications or use spotlight.
+    #return None
     path = ["~", "Downloads"]
     downloads_path = os.path.expanduser(os.path.join(*(path + [file])))
     if os.path.isfile(downloads_path):
@@ -29,11 +40,99 @@ def find_sdk_image(file):
     
     # Find file using spotlight.
     files = check_output(["/usr/bin/mdfind", "-name", file]).split("\n")
+    print "Files: %s" % (file)
     for f in files:
         if f == file:
             return f
     
     return None
+
+def check_image(image_name, path):
+    # Check for non empty and correct size.
+    check = True
+    
+    if path == None:
+        return False
+    
+    if path.strip() == "":
+        error("You have to enter a valid path", noexit=True)
+        return False
+    
+    if not os.path.isfile(path):
+        error("File doesn't exist", noexit=True)
+        return False
+    
+    if not os.path.splitext(os.path.basename(path))[1] == ".dmg":
+        error("Not a valid disk image", noexit=True)
+    
+    filesize = os.path.getsize(path)
+    if image_name == CLT_IMAGE_FILE_NAME:
+        check = filesize == CLT_IMAGE_FILE_SIZE
+    elif image_name == XCODE3_IMAGE_FILE_NAME:
+        check = filesize == XCODE3_IMAGE_FILE_SIZE
+    
+    use_anyway = check
+    yes_answers = ["y", "yes"]
+    no_answers = ["n", "no"]
+    if not check:
+        l = ""
+        while l.lower() not in yes_answers + no_answers:
+            l = raw_input("%sError:%s The size of the image doesn't match - do you want to use it anyway (y|n): " % (TerminalColor.red(), TerminalColor.reset()))
+        if l.lower() in yes_answers:
+            use_anyway = True
+        else:
+            use_anyway = False
+    
+    return use_anyway 
+
+def get_image_xcode3(options):
+    if options.xcode3_image and not os.path.isfile(options.xcode3_image):
+        error("Xcode 3 SDK disk image not found at %s" % (options.xcode3_image), noexit=True)
+        options.xcode3_image = None
+    
+    c_status("Trying to automatically find Xcode 3 SDK disk image")
+    
+    options.xcode3_image = find_sdk_image(XCODE3_IMAGE_FILE_NAME)
+    if options.xcode3_image:
+        c_status("%s%s%s" % (TerminalColor.white(), options.xcode3_image, TerminalColor.reset()), end=True)
+    else:
+        c_status("%sno image found%s" % (TerminalColor.white(), TerminalColor.reset()), end=True)
+    
+    while not check_image(XCODE3_IMAGE_FILE_NAME, options.xcode3_image):
+        options.xcode3_image = ask_for("Xcode 3 SDK disk image path")
+        options.xcode3_image = os.path.realpath(os.path.expanduser(options.xcode3_image))
+    
+    status("Use disk image: %s" % (options.xcode3_image))
+    
+    return options.xcode3_image
+
+def get_image_clt(options):
+    if options.clt_image and not os.path.isfile(options.clt_image):
+        error("Command Line Tools disk image not found at %s" % (options.clt_image), noexit=True)
+        options.clt_image = None
+    
+    c_status("Trying to automatically find Command Line Tools disk image")
+    
+    options.clt_image = find_sdk_image(CLT_IMAGE_FILE_NAME)
+    if options.clt_image:
+        c_status("%s%s%s" % (TerminalColor.white(), options.clt_image, TerminalColor.reset()), end=True)
+    else:
+        c_status("%sno image found%s" % (TerminalColor.white(), TerminalColor.reset()), end=True)
+    
+    while not check_image(CLT_IMAGE_FILE_NAME, options.clt_image):
+        options.clt_image = ask_for("Command Line Tools disk image path")
+        options.clt_image = os.path.realpath(os.path.expanduser(options.clt_image))
+    
+    status("Use disk image: %s" % (options.clt_image))
+    
+    return options.clt_image
+
+def get_image(name, options):
+    if name == CLT_IMAGE_FILE_NAME:
+        get_image_clt(options)
+    elif name == XCODE3_IMAGE_FILE_NAME:
+        get_image_xcode3(options)
+    
 
 def parse_options():
     usage = "usage: %prog [-f] [-x XCODE3_IMAGE] [-t CLT_IMAGE] target_image"
@@ -73,40 +172,16 @@ def parse_options():
     
     # Check if the options for xcode3 image and clt image where set, otherwise
     # ask for them.
-    xcode3_image = os.path.realpath(os.path.expanduser(options.xcode3_image))
-    clt_image = os.path.realpath(os.path.expanduser(options.clt_image))
+    if options.xcode3_image:
+        options.xcode3_image = os.path.realpath(os.path.expanduser(options.xcode3_image))
+    if options.clt_image:
+        options.clt_image = os.path.realpath(os.path.expanduser(options.clt_image))
     
     print main.__doc__
     
-    if options.xcode3_image and not os.path.isfile(xcode3_image):
-        status("Xcode 3 SDK disk image file not found at %s" % (xcode3_image))
-        options.xcode3_image = None
-    
-    if options.clt_image and not os.path.isfile(clt_image):
-        status("Command Line Tools disk image file not found at %s" % (clt_image))
-        options.clt_image = None
-    
-    # Try to automatically find the disk image files.
-    options.clt_image = find_sdk_image("cltools_lion_latemarch12.dmg")
-    options.xcode3_image = find_sdk_image("xcode_3.2.6_and_ios_sdk_4.3.dmg")
-    
-    if not options.xcode3_image:
-        options.xcode3_image = ""
-    while (options.xcode3_image and not os.path.isfile(options.xcode3_image)) or not os.path.basename(options.xcode3_image).strip() == "xcode_3.2.6_and_ios_sdk_4.3.dmg":
-        if options.xcode3_image:
-            error("Invalid disk image path - name must be xcode_3.2.6_and_ios_sdk_4.3.dmg", noexit=True)
-            options.xcode3_image = ""
-        options.xcode3_image = ask_for("Xcode 3 SDK disk image path")
-        options.xcode3_image = os.path.realpath(os.path.expanduser(options.xcode3_image))
-    
-    if not options.clt_image:
-        options.clt_image = ""
-    while (options.clt_image and not os.path.isfile(options.clt_image)) or not os.path.basename(options.clt_image).strip() == "cltools_lion_latemarch12.dmg":
-        if options.clt_image:
-            error("Invalid disk image path - name must be cltools_lion_latemarch12.dmg", noexit=True)
-            options.clt_image = ""
-        options.clt_image = ask_for("Command Line Tools disk image path")
-        options.clt_image = os.path.realpath(os.path.expanduser(options.clt_image))
+    # This will block till we have the images.
+    options.xcode3_image = get_image(XCODE3_IMAGE_FILE_NAME, options)
+    options.clt_image = get_image(CLT_IMAGE_FILE_NAME, options)
     
     return (options, args)
 
