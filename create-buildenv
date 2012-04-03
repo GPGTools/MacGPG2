@@ -244,8 +244,6 @@ def main(options, args):
     """
     workingDir = os.path.realpath(os.curdir)
     
-    raise
-    
     BUILD_IMAGE_PATH = os.path.realpath(os.path.expanduser(args[0]))
     XCODE3_IMAGE_PATH = options.xcode3_image
     CLT_IMAGE_PATH = options.clt_image
