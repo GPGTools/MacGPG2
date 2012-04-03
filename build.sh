@@ -57,6 +57,15 @@ function clean {
     fi
 }
 
+function bail_if_necessary {
+    if [ "$1" == "0" ]; then
+        return
+    fi
+    
+    error "$2"
+    exit 1
+}
+
 if [ "$ACTION" == "clean" ]; then
     title "Cleaning MacGPG2 build"
     clean
@@ -74,6 +83,8 @@ if [ "$NO_BUILDROOT_EXISTS" == "1" ]; then
     mkdir -p "$INSTALLDIR"
     curl -s -L https://github.com/mxcl/homebrew/tarball/master 2> /dev/null | tar xz --strip 1 -C "$INSTALLDIR"
     
+    bail_if_necessary "$?" "Failed to bootstrap homebrew"
+    
     pushd "$INSTALLDIR" > /dev/null
         ./bin/brew update 1>/dev/null 2>/dev/null
         # Patch brew to add the install name patch and the build options
@@ -81,6 +92,7 @@ if [ "$NO_BUILDROOT_EXISTS" == "1" ]; then
         status "Applying GPGTools homebrew patches"
         for file in "$PATCHDIR"/homebrew/*.patch; do
             patch --force -p1 < $file > /dev/null
+            bail_if_necessary "$?" "Failed to apply homebrew patch $file"
         done
     popd > /dev/null
     
@@ -91,10 +103,12 @@ pushd "$INSTALLDIR" > /dev/null
     
     # Copy the MacGPG2 Formulas to homebrew
     cp -R "$SOURCEDIR"/Formula/* ./Library/Formula/
+    bail_if_necessary "$?" "Failed to copy MacGPG2 formulae"
     
     # Link the jail dir which contains all compilers.
     if [ ! -h ./build-env ]; then
         ln -s "${BUILDENV_MOUNT_DIR}" ./build-env
+        bail_if_necessary "$?" "Failed to symlink build-env"
     fi
     
     BUILD_PPC_ARG=""
