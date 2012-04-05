@@ -255,7 +255,7 @@ def main():
         inverted_files(BASE_DIR, os.path.join("share", "locale"), map(lambda x: os.path.join("share", "locale", x), 
             map(lambda x: os.path.join(x, "*", "*"), 
                 # en is not necessary since it's the default language.
-                ["de", "fr", "es", "it"])), pattern="gnupg2\.mo"),
+                ["de", "fr", "es", "it", "uk"])), pattern="gnupg2\.mo"),
     
         # ./share/man files to include.
         inverted_files(BASE_DIR, os.path.join("share", "man"), map(lambda x: os.path.join("share", "man", "*", x), 
