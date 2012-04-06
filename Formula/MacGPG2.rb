@@ -178,3 +178,16 @@ index d3a924c..319e3ed 100644
  @HAVE_DOSISH_SYSTEM_FALSE@               -DGNUPG_LIBDIR="\"$(libdir)/@PACKAGE@\""  \
  @HAVE_DOSISH_SYSTEM_FALSE@               -DGNUPG_DATADIR="\"$(datadir)/@PACKAGE@\"" \
  @HAVE_DOSISH_SYSTEM_FALSE@               -DGNUPG_SYSCONFDIR="\"$(sysconfdir)/@PACKAGE@\""
+
+diff --git a/common/homedir.c b/common/homedir.c
+index e40f18d..f587b62 100644
+--- a/common/homedir.c
++++ b/common/homedir.c
+@@ -282,7 +282,7 @@ gnupg_libexecdir (void)
+ #ifdef HAVE_W32_SYSTEM
+   return w32_rootdir ();
+ #else /*!HAVE_W32_SYSTEM*/
+-  return GNUPG_LIBEXECDIR;
++  return "/usr/local/MacGPG2/libexec";
+ #endif /*!HAVE_W32_SYSTEM*/
+ }
