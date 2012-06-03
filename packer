@@ -249,8 +249,12 @@ def main():
             prepend_path_component("share",  
                 # Two stars denote that tree_files should be used to also exclude
                 # any subfolders.
-                append_path_component("**", ["aclocal", "common-lisp", "doc", "gettext", "gnupg"]))),
-    
+                append_path_component("**", ["aclocal", "common-lisp", "doc", "gettext"]))),
+        
+        # ./share/gnupg files to include
+        inverted_files(BASE_DIR, os.path.join("share", "gnupg"), map(lambda x: os.path.join("share", "gnupg", x),
+            ["*"]), pattern="gpg-conf.skel"),
+        
         # ./share/locale files to include.
         inverted_files(BASE_DIR, os.path.join("share", "locale"), map(lambda x: os.path.join("share", "locale", x), 
             map(lambda x: os.path.join(x, "*", "*"), 
