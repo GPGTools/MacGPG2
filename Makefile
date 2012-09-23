@@ -15,3 +15,4 @@ clean:
 
 dmg:
 	./Dependencies/GPGTools_Core/scripts/create_dmg.sh
+
