@@ -1,5 +1,533 @@
+diff --git a/Library/Formula/gettext.rb b/Library/Formula/gettext.rb
+index a06a12a..c68e762 100644
+--- a/Library/Formula/gettext.rb
++++ b/Library/Formula/gettext.rb
+@@ -1,27 +1,25 @@
+ require 'formula'
+ 
+ class Gettext < Formula
+-  homepage 'http://www.gnu.org/software/gettext/'
+   url 'http://ftpmirror.gnu.org/gettext/gettext-0.18.1.1.tar.gz'
+   mirror 'http://ftp.gnu.org/gnu/gettext/gettext-0.18.1.1.tar.gz'
+-  sha1 '5009deb02f67fc3c59c8ce6b82408d1d35d4e38f'
+-
+-  keg_only "OS X provides the BSD gettext library and some software gets confused if both are in the library path."
+-
+-  bottle do
+-    sha1 'd1ad5ad15bfe8fe813ee37e5d6b514fc79924b9a' => :mountainlion
+-    sha1 'c75fdb192f1b49c9e7e2039c66e24f60f26bc027' => :lion
+-    sha1 'b8958544542fc160b4c74db5d83cb441d12741c7' => :snowleopard
++  md5 '3dd55b952826d2b32f51308f2f91aa89'
++  homepage 'http://www.gnu.org/software/gettext/'
++  keep_install_names true
++  # keg_only "OS X provides the BSD gettext library and some software gets confused if both are in the library path."
++
++  def options
++  [
++    ['--with-examples', 'Keep example files.'],
++    ['--universal', 'Build universal binaries.']
++  ]
+   end
+ 
+-  option :universal
+-  option 'with-examples', 'Keep example files'
+-
+   def patches
+     # Patch to allow building with Xcode 4; safe for any compiler.
+-    p = {:p0 => ['https://trac.macports.org/export/79617/trunk/dports/devel/gettext/files/stpncpy.patch']}
++    p = {:p0 => ['https://trac.macports.org/export/79617/trunk/dports/devel/gettext/files/stpncpy.patch'] }
+ 
+-    unless build.include? 'with-examples'
++    unless ARGV.include? '--with-examples'
+       # Use a MacPorts patch to disable building examples at all,
+       # rather than build them and remove them afterwards.
+       p[:p0] << 'https://trac.macports.org/export/79183/trunk/dports/devel/gettext/files/patch-gettext-tools-Makefile.in'
+@@ -32,18 +30,29 @@ class Gettext < Formula
+ 
+   def install
+     ENV.libxml2
+-    ENV.universal_binary if build.universal?
+-
++    ENV.O3 # Issues with LLVM & O4 on Mac Pro 10.6
++
++    ENV.universal_binary if ARGV.build_universal?
++    # gettext checks for iconv using a test-script. that only executes
++    # if the correct @rpath is set for the binary, this prepend the loader_path.
++    ENV.prepend 'LDFLAGS', "-Wl,-rpath,@loader_path/../lib -Wl,-rpath,#{HOMEBREW_PREFIX}/lib"
++    ENV.prepend 'LDFLAGS', '-headerpad_max_install_names'
++    
+     system "./configure", "--disable-dependency-tracking", "--disable-debug",
+                           "--prefix=#{prefix}",
++                          "--enable-static=no", "--disable-maintainer-mode",
+                           "--without-included-gettext",
+                           "--without-included-glib",
+                           "--without-included-libcroco",
+                           "--without-included-libxml",
+                           "--without-emacs",
++                          "--disable-csharp",
++                          "--disable-native-java",
++                          "--disable-java",
+                           # Don't use VCS systems to create these archives
+                           "--without-git",
+-                          "--without-cvs"
++                          "--without-cvs",
++                          "--with-libiconv-prefix=#{HOMEBREW_PREFIX}"
+     system "make"
+     ENV.deparallelize # install doesn't support multiple make jobs
+     system "make install"
+diff --git a/Library/Formula/libassuan.rb b/Library/Formula/libassuan.rb
+index d95c5c9..7ad17d0 100644
+--- a/Library/Formula/libassuan.rb
++++ b/Library/Formula/libassuan.rb
+@@ -1,14 +1,30 @@
+ require 'formula'
+ 
+ class Libassuan < Formula
+-  homepage 'http://www.gnupg.org/related_software/libassuan/index.en.html'
+   url 'ftp://ftp.gnupg.org/gcrypt/libassuan/libassuan-2.0.3.tar.bz2'
++  homepage 'http://www.gnupg.org/related_software/libassuan/index.en.html'
+   sha1 '2bf4eba3b588758e349976a7eb9e8a509960c3b5'
+ 
+   depends_on 'libgpg-error'
+-
++  
++  keep_install_names true
++  
++  # def patches
++  #     # Patch to allow building with Xcode 4; safe for any compiler.
++  #     p = {:p1 => DATA}
++  # 
++  #     return p
++  #   end
++  
+   def install
+-    system "./configure", "--disable-dependency-tracking", "--prefix=#{prefix}"
++    ENV.universal_binary if ARGV.build_universal?
++    ENV.prepend 'LDFLAGS', '-headerpad_max_install_names'
++    ENV.prepend 'LDFLAGS', "-Wl,-rpath,@loader_path/../lib -Wl,-rpath,#{HOMEBREW_PREFIX}/lib"
++    
++    system "./configure", "--disable-dependency-tracking", "--prefix=#{prefix}",
++           "--with-gpg-error-prefix=#{HOMEBREW_PREFIX}",
++           "--enable-static=no", "--disable-maintainer-mode"
+     system "make install"
+   end
+ end
++
+diff --git a/Library/Formula/libgcrypt.rb b/Library/Formula/libgcrypt.rb
+index 14856e7..2361970 100644
+--- a/Library/Formula/libgcrypt.rb
++++ b/Library/Formula/libgcrypt.rb
+@@ -1,35 +1,44 @@
+ require 'formula'
+ 
+ class Libgcrypt < Formula
+-  homepage 'http://gnupg.org/'
+   url 'ftp://ftp.gnupg.org/gcrypt/libgcrypt/libgcrypt-1.5.0.tar.bz2'
+   sha1 '3e776d44375dc1a710560b98ae8437d5da6e32cf'
++  homepage 'http://directory.fsf.org/project/libgcrypt/'
+ 
++  depends_on 'pth'
+   depends_on 'libgpg-error'
+-
++  
++  keep_install_names true
++  
+   def patches
+     if ENV.compiler == :clang
+-      {:p0 =>
+-      "https://trac.macports.org/export/85232/trunk/dports/devel/libgcrypt/files/clang-asm.patch"}
++      { :p0 => ["https://trac.macports.org/export/85232/trunk/dports/devel/libgcrypt/files/clang-asm.patch",
++                "#{HOMEBREW_PREFIX}/Library/Formula/Patches/IDEA.patch"]}
++    else
++      { :p0 => ["#{HOMEBREW_PREFIX}/Library/Formula/Patches/IDEA.patch"]}
+     end
+   end
+ 
+-  def cflags
+-    cflags = ENV.cflags.to_s
+-    cflags += ' -std=gnu89 -fheinous-gnu-extensions' if ENV.compiler == :clang
+-    cflags
+-  end
+-
+   def install
+-    ENV.universal_binary
+-
++    ENV.universal_binary if ARGV.build_universal?
++    ENV.build_32_bit
++    
++    ENV.prepend 'LDFLAGS', '-headerpad_max_install_names'
++    ENV.prepend 'LDFLAGS', "-Wl,-rpath,@loader_path/../lib -Wl,-rpath,#{HOMEBREW_PREFIX}/lib"
++    
+     system "./configure", "--disable-dependency-tracking",
+                           "--prefix=#{prefix}",
+                           "--disable-asm",
+-                          "--with-gpg-error-prefix=#{HOMEBREW_PREFIX}"
+-    # Parallel builds work, but only when run as separate steps
+-    system "make", "CFLAGS=#{cflags}"
++                          "--enable-m-guard",
++                          "--with-gpg-error-prefix=#{HOMEBREW_PREFIX}",
++                          "--with-pth-prefix=#{HOMEBREW_PREFIX}",
++                          "--enable-static=no", "--disable-maintainer-mode"
++    # Separate steps, or parallel builds fail
++    system "make"
+     system "make check"
+     system "make install"
+   end
+ end
++
++__END__
++
+diff --git a/Library/Formula/libgpg-error.rb b/Library/Formula/libgpg-error.rb
+index a3bc7c2..fe5918a 100644
+--- a/Library/Formula/libgpg-error.rb
++++ b/Library/Formula/libgpg-error.rb
+@@ -1,14 +1,67 @@
+ require 'formula'
+ 
+ class LibgpgError < Formula
+-  homepage 'http://www.gnupg.org/'
+   url 'ftp://ftp.gnupg.org/gcrypt/libgpg-error/libgpg-error-1.10.tar.bz2'
++  homepage 'http://www.gnupg.org/'
+   sha1 '95b324359627fbcb762487ab6091afbe59823b29'
+-
++  
++  keep_install_names true
++  
++  def patches
++    { :p0 => DATA }
++  end
++  
+   def install
+-    ENV.universal_binary
++    ENV.j1
++    ENV.universal_binary if ARGV.build_universal? # build fat so wine can use it
++    # It's necessary to add the -rpath to the LDFLAGS, otherwise
++    # programs can't link to libraries using @rpath.
++    ENV.prepend 'LDFLAGS', '-headerpad_max_install_names'
++    ENV.prepend 'LDFLAGS', "-Wl,-rpath,@loader_path/../lib -Wl,-rpath,#{HOMEBREW_PREFIX}/lib"
++    
+     system "./configure", "--disable-dependency-tracking",
+-                          "--prefix=#{prefix}"
++                          "--prefix=#{prefix}",
++                          "--enable-static=no", "--disable-maintainer-mode"
++    
++    system "make check"
+     system "make install"
+   end
+ end
++
++__END__
++diff -ur src/err-codes.h src/err-codes.h
++--- src/err-codes.h     2010-09-30 17:32:38.000000000 +0200
+++++ src/err-codes.h     2011-12-24 12:33:57.000000000 +0100
++@@ -522,7 +522,7 @@
++     4746
++   };
++ 
++-static inline int
+++static int
++ msgidxof (int code)
++ {
++   return (0 ? 0
++diff -ur src/err-sources.h src/err-sources.h
++--- src/err-sources.h   2010-09-16 15:16:33.000000000 +0200
+++++ src/err-sources.h   2011-12-24 12:34:08.000000000 +0100
++@@ -72,7 +72,7 @@
++     209
++   };
++ 
++-static inline int
+++static int
++ msgidxof (int code)
++ {
++   return (0 ? 0
++diff -ur src/mkstrtable.awk src/mkstrtable.awk
++--- src/mkstrtable.awk  2010-01-21 12:09:02.000000000 +0100
+++++ src/mkstrtable.awk  2011-12-24 12:34:24.000000000 +0100
++@@ -157,7 +157,7 @@
++   print "    " pos[coded_msgs];
++   print "  };";
++   print "";
++-  print "static inline int";
+++  print "static int";
++   print namespace "msgidxof (int code)";
++   print "{";
++   print "  return (0 ? 0";
+diff --git a/Library/Formula/libksba.rb b/Library/Formula/libksba.rb
+index 7c26274..d304496 100644
+--- a/Library/Formula/libksba.rb
++++ b/Library/Formula/libksba.rb
+@@ -6,9 +6,19 @@ class Libksba < Formula
+   sha1 '0c4e593464b9dec6f53c728c375d54a095658230'
+ 
+   depends_on 'libgpg-error'
+-
++  
++  keep_install_names true
++  
+   def install
+-    system "./configure", "--disable-dependency-tracking", "--prefix=#{prefix}"
++    ENV.universal_binary if ARGV.build_universal?
++    ENV.prepend 'LDFLAGS', '-headerpad_max_install_names'
++    ENV.prepend 'LDFLAGS', "-Wl,-rpath,@loader_path/../lib -Wl,-rpath,#{HOMEBREW_PREFIX}/lib"
++    
++    system "./configure", "--disable-dependency-tracking",
++           "--with-gpg-error-prefix=#{HOMEBREW_PREFIX}", 
++           "--enable-static=no", "--disable-maintainer-mode",
++           "--prefix=#{prefix}"
++    system "make check"
+     system "make install"
+   end
+ end
+diff --git a/Library/Formula/libusb-compat.rb b/Library/Formula/libusb-compat.rb
+index 52abd06..e78a624 100644
+--- a/Library/Formula/libusb-compat.rb
++++ b/Library/Formula/libusb-compat.rb
+@@ -1,15 +1,26 @@
+ require 'formula'
+ 
+ class LibusbCompat < Formula
++  url 'http://downloads.sourceforge.net/project/libusb/libusb-compat-0.1/libusb-compat-0.1.3/libusb-compat-0.1.3.tar.bz2'
+   homepage 'http://www.libusb.org/'
+-  url 'http://downloads.sourceforge.net/project/libusb/libusb-compat-0.1/libusb-compat-0.1.4/libusb-compat-0.1.4.tar.bz2'
+-  sha256 'ed5bdd160c7b01ef767fb931a81b454f46226d1e2cf58502ced758d3e5a9fdc4'
+-
++  md5 '570ac2ea085b80d1f74ddc7c6a93c0eb'
++  
+   depends_on 'pkg-config' => :build
+   depends_on 'libusb'
+-
++  
++  keep_install_names true
++  
+   def install
+-    system "./configure", "--prefix=#{prefix}", "--disable-dependency-tracking"
++    ENV.universal_binary if ARGV.build_universal?
++    # Otherwise homebrew fails to find libusb.
++    dep = Formula.factory 'libusb'
++    ENV.prepend 'PKG_CONFIG_PATH', dep.lib+'pkgconfig', ':'
++    ENV.prepend 'LDFLAGS', '-headerpad_max_install_names'
++    
++    system "./configure", "--prefix=#{prefix}", 
++           "--enable-static=no", "--disable-dependency-tracking"
++    system "make check"
+     system "make install"
+   end
+ end
++
+diff --git a/Library/Formula/libusb.rb b/Library/Formula/libusb.rb
+index 48d3abf..3a82c99 100644
+--- a/Library/Formula/libusb.rb
++++ b/Library/Formula/libusb.rb
+@@ -1,23 +1,23 @@
+ require 'formula'
+ 
+ class Libusb < Formula
++  url 'http://downloads.sourceforge.net/project/libusb/libusb-1.0/libusb-1.0.8/libusb-1.0.8.tar.bz2'
+   homepage 'http://www.libusb.org/'
+-  url 'http://downloads.sourceforge.net/project/libusb/libusb-1.0/libusb-1.0.9/libusb-1.0.9.tar.bz2'
+-  sha256 'e920eedc2d06b09606611c99ec7304413c6784cba6e33928e78243d323195f9b'
+-
+-  head 'git://git.libusb.org/libusb.git'
+-
+-  if build.head?
+-    depends_on :automake
+-    depends_on :libtool
++  md5 '37d34e6eaa69a4b645a19ff4ca63ceef'
++  
++  keep_install_names true
++  
++  def options
++    [["--universal", "Build a universal binary."]]
+   end
+-
+-  option :universal
+-
++  
+   def install
+-    ENV.universal_binary if build.universal?
+-    system "./autogen.sh" if build.head?
+-    system "./configure", "--prefix=#{prefix}", "--disable-dependency-tracking"
++    ENV.universal_binary if ARGV.build_universal?
++    ENV.prepend 'LDFLAGS', '-headerpad_max_install_names'
++    
++    system "./configure", "--prefix=#{prefix}", 
++           "--enable-static=no", "--disable-dependency-tracking"
++    system "make check"
+     system "make install"
+   end
+ end
+diff --git a/Library/Formula/pinentry.rb b/Library/Formula/pinentry.rb
+index c74e745..45703b1 100644
+--- a/Library/Formula/pinentry.rb
++++ b/Library/Formula/pinentry.rb
+@@ -1,19 +1,62 @@
+ require 'formula'
+ 
+ class Pinentry < Formula
+-  homepage 'http://www.gnupg.org/related_software/pinentry/index.en.html'
+-  url 'ftp://ftp.gnupg.org/gcrypt/pinentry/pinentry-0.8.1.tar.gz'
+-  sha1 '84a6940175b552a8562b4014f4661dec3ff10165'
+-
+-  depends_on 'pkg-config' => :build
++  homepage 'http://gpgtools.org'
++  url 'https://github.com/GPGTools/pinentry-mac.git'
++  md5 '2095fbe7cf556062427e04c156503f27'
+ 
++  # depends_on 'cmake' => :build
++  
++  def patches
++    { :p0 => DATA }
++  end
++  
+   def install
+-    system "./configure", "--disable-dependency-tracking",
+-                          "--prefix=#{prefix}",
+-                          "--disable-pinentry-qt",
+-                          "--disable-pinentry-qt4",
+-                          "--disable-pinentry-gtk",
+-                          "--disable-pinentry-gtk2"
+-    system "make install"
++    ENV.universal_binary if ARGV.build_universal?
++    
++    target = "compile"
++    build_dir = "Release"
++    xconfig = "homebrew.xconfig"
++    if ARGV.build_ppc?
++      target = "compile_with_ppc"
++      build_dir = "Release with ppc"
++      xconfig = "homebrew-ppc.xconfig"
++      build_env = ARGV.build_env.gsub ' ', '\\\ '
++      inreplace 'homebrew-ppc.xconfig' do |s|
++         s.gsub! '#SDKROOT#', "#{build_env}/SDKs/MacOSX10.5.sdk"
++      end
++    end
++    
++    # Use the homebrew.xconfig file to force using GGC_VERSION specified.
++    inreplace 'Makefile' do |s|
++      s.gsub! /@xcodebuild/, "@xcodebuild -xcconfig #{xconfig}"
++    end
++    
++    system "make #{target}" # if this fails, try separate make/make install steps
++    
++    # Homebrew doesn't like touching libexec for some reason.
++    # That's why we have to manually symlink.
++    # Also uninstalling wouldn't take care of libexec, so I've pachted keg.rb
++    libexec.install "build/#{build_dir}/pinentry-mac.app"
++    Pathname.new("#{HOMEBREW_PREFIX}/libexec/pinentry-mac.app").make_relative_symlink("#{prefix}/libexec/pinentry-mac.app")
+   end
+ end
++
++__END__
++
++diff --git homebrew.xconfig homebrew.xconfig
++new file mode 100644
++index 0000000..fdb4290
++--- /dev/null
+++++ homebrew.xconfig
++@@ -0,0 +1 @@
+++GCC_VERSION = com.apple.compilers.llvmgcc42
++
++diff --git homebrew-ppc.xconfig homebrew-ppc.xconfig
++new file mode 100644
++index 0000000..9515ac6
++--- /dev/null
+++++ homebrew-ppc.xconfig
++@@ -0,0 +1,2 @@
+++GCC_VERSION = com.apple.compilers.llvmgcc42
+++SDKROOT = #SDKROOT#
+diff --git a/Library/Formula/pth.rb b/Library/Formula/pth.rb
+index 55941f7..f83891e 100644
+--- a/Library/Formula/pth.rb
++++ b/Library/Formula/pth.rb
+@@ -4,14 +4,83 @@ class Pth < Formula
+   url 'http://ftpmirror.gnu.org/pth/pth-2.0.7.tar.gz'
+   mirror 'http://ftp.gnu.org/gnu/pth/pth-2.0.7.tar.gz'
+   homepage 'http://www.gnu.org/software/pth/'
+-  sha1 '9a71915c89ff2414de69fe104ae1016d513afeee'
+-
++  md5 '9cb4a25331a4c4db866a31cbe507c793'
++  
++  keep_install_names true
++  
++  def patches
++    { :p0 => DATA }
++  end
++  
+   def install
+     ENV.deparallelize
++    ENV.universal_binary if ARGV.build_universal?
++    
++    ENV.prepend 'LDFLAGS', "-Wl,-rpath,@loader_path/../lib -Wl,-rpath,#{HOMEBREW_PREFIX}/lib"
++    ENV.prepend 'LDFLAGS', '-headerpad_max_install_names'
++    
+     # Note: shared library will not be build with --disable-debug, so don't add that flag
+     system "./configure", "--disable-dependency-tracking",
++                          "--with-mctx-mth=sjlj",
++                          "--with-mctx-dsp=ssjlj",
++                          "--with-mctx-stk=sas",
++                          "--enable-static=no", "--disable-maintainer-mode",
+                           "--prefix=#{prefix}",
+                           "--mandir=#{man}"
++    system "make test"
+     system "make install"
+   end
+ end
++
++__END__
++--- Makefile.in	2006-06-08 19:54:01.000000000 +0200
+++++ Makefile.in	2011-12-22 20:26:32.000000000 +0100
++@@ -168,10 +168,10 @@
++ 
++ #   build the static and possibly shared libraries
++ libpth.la: $(LOBJS)
++-	$(LIBTOOL) --mode=link --quiet $(CC) -o libpth.la $(LOBJS) \
+++	$(LIBTOOL) --mode=link --quiet $(CC) $(CFLAGS) -o libpth.la $(LOBJS) \
++ 	-rpath $(libdir) -version-info `$(SHTOOL) version -lc -dlibtool $(_VERSION_FILE)`
++ libpthread.la: pthread.lo $(LOBJS)
++-	$(LIBTOOL) --mode=link --quiet $(CC) -o libpthread.la pthread.lo $(LOBJS) \
+++	$(LIBTOOL) --mode=link --quiet $(CC) $(CFLAGS) -o libpthread.la pthread.lo $(LOBJS) \
++ 	-rpath $(libdir) -version-info `$(SHTOOL) version -lc -dlibtool $(_VERSION_FILE)`
++ 
++ #   build the manual pages
++@@ -194,25 +194,25 @@
++ 
++ #   build test program
++ test_std: test_std.o test_common.o libpth.la
++-	$(LIBTOOL) --mode=link --quiet $(CC) $(LDFLAGS) -o test_std test_std.o test_common.o libpth.la $(LIBS)
+++	$(LIBTOOL) --mode=link --quiet $(CC) $(CFLAGS) $(LDFLAGS) -o test_std test_std.o test_common.o libpth.la $(LIBS)
++ test_httpd: test_httpd.o test_common.o libpth.la
++-	$(LIBTOOL) --mode=link --quiet $(CC) $(LDFLAGS) -o test_httpd test_httpd.o test_common.o libpth.la $(LIBS)
+++	$(LIBTOOL) --mode=link --quiet $(CC) $(CFLAGS) $(LDFLAGS) -o test_httpd test_httpd.o test_common.o libpth.la $(LIBS)
++ test_misc: test_misc.o test_common.o libpth.la
++-	$(LIBTOOL) --mode=link --quiet $(CC) $(LDFLAGS) -o test_misc test_misc.o test_common.o libpth.la $(LIBS)
+++	$(LIBTOOL) --mode=link --quiet $(CC) $(CFLAGS) $(LDFLAGS) -o test_misc test_misc.o test_common.o libpth.la $(LIBS)
++ test_mp: test_mp.o test_common.o libpth.la
++-	$(LIBTOOL) --mode=link --quiet $(CC) $(LDFLAGS) -o test_mp test_mp.o test_common.o libpth.la $(LIBS)
+++	$(LIBTOOL) --mode=link --quiet $(CC) $(CFLAGS) $(LDFLAGS) -o test_mp test_mp.o test_common.o libpth.la $(LIBS)
++ test_philo: test_philo.o test_common.o libpth.la
++-	$(LIBTOOL) --mode=link --quiet $(CC) $(LDFLAGS) -o test_philo test_philo.o test_common.o libpth.la $(LIBS)
+++	$(LIBTOOL) --mode=link --quiet $(CC) $(CFLAGS) $(LDFLAGS) -o test_philo test_philo.o test_common.o libpth.la $(LIBS)
++ test_sig: test_sig.o test_common.o libpth.la
++-	$(LIBTOOL) --mode=link --quiet $(CC) $(LDFLAGS) -o test_sig test_sig.o test_common.o libpth.la $(LIBS)
+++	$(LIBTOOL) --mode=link --quiet $(CC) $(CFLAGS) $(LDFLAGS) -o test_sig test_sig.o test_common.o libpth.la $(LIBS)
++ test_select: test_select.o test_common.o libpth.la
++-	$(LIBTOOL) --mode=link --quiet $(CC) $(LDFLAGS) -o test_select test_select.o test_common.o libpth.la $(LIBS)
+++	$(LIBTOOL) --mode=link --quiet $(CC) $(CFLAGS) $(LDFLAGS) -o test_select test_select.o test_common.o libpth.la $(LIBS)
++ test_sfio: test_sfio.o test_common.o libpth.la
++-	$(LIBTOOL) --mode=link --quiet $(CC) $(LDFLAGS) -o test_sfio test_sfio.o test_common.o libpth.la $(LIBS)
+++	$(LIBTOOL) --mode=link --quiet $(CC) $(CFLAGS) $(LDFLAGS) -o test_sfio test_sfio.o test_common.o libpth.la $(LIBS)
++ test_uctx: test_uctx.o test_common.o libpth.la
++-	$(LIBTOOL) --mode=link --quiet $(CC) $(LDFLAGS) -o test_uctx test_uctx.o test_common.o libpth.la $(LIBS)
+++	$(LIBTOOL) --mode=link --quiet $(CC) $(CFLAGS) $(LDFLAGS) -o test_uctx test_uctx.o test_common.o libpth.la $(LIBS)
++ test_pthread: test_pthread.o test_common.o libpthread.la
++-	$(LIBTOOL) --mode=link --quiet $(CC) $(LDFLAGS) -o test_pthread test_pthread.o test_common.o libpthread.la $(LIBS)
+++	$(LIBTOOL) --mode=link --quiet $(CC) $(CFLAGS) $(LDFLAGS) -o test_pthread test_pthread.o test_common.o libpthread.la $(LIBS)
++ 
++ #   install the package
++ install: all-for-install
 diff --git a/Library/Homebrew/blacklist.rb b/Library/Homebrew/blacklist.rb
-index 26d16c4..8b0237e 100644
+index e012a07..7f4b7bb 100644
 --- a/Library/Homebrew/blacklist.rb
 +++ b/Library/Homebrew/blacklist.rb
 @@ -6,11 +6,6 @@ def blacklisted? name
@@ -15,13 +543,14 @@ index 26d16c4..8b0237e 100644
      Apple distributes #{name} with OS X, you can find it in /usr/lib.
      However not all build scripts look for these hard enough, so you may need
 diff --git a/Library/Homebrew/extend/ARGV.rb b/Library/Homebrew/extend/ARGV.rb
-index afb0386..857e973 100644
+index 6b4d925..67121b2 100644
 --- a/Library/Homebrew/extend/ARGV.rb
 +++ b/Library/Homebrew/extend/ARGV.rb
-@@ -100,6 +100,14 @@ module HomebrewArgvExtension
+@@ -121,6 +121,14 @@ module HomebrewArgvExtension
+   def build_universal?
      include? '--universal'
    end
- 
++  
 +  def build_env
 +    ENV['HOMEBREW_GPGTOOLS_BUILD_ENV'] || HOMEBREW_GPGTOOLS_BUILD_ENV 
 +  end
@@ -29,15 +558,14 @@ index afb0386..857e973 100644
 +  def build_ppc?
 +    include? '--with-ppc'
 +  end
-+  
+ 
    # Request a 32-bit only build.
    # This is needed for some use-cases though we prefer to build Universal
-   # when a 32-bit version is needed.
 diff --git a/Library/Homebrew/extend/ENV.rb b/Library/Homebrew/extend/ENV.rb
-index 4eeba6b..b25dc84 100644
+index 2c01085..2a3e617 100644
 --- a/Library/Homebrew/extend/ENV.rb
 +++ b/Library/Homebrew/extend/ENV.rb
-@@ -321,6 +321,43 @@ Please take one of the following actions:
+@@ -307,8 +307,45 @@ module HomebrewEnvExtension
        # Can't mix "-march" for a 32-bit CPU  with "-arch x86_64"
        replace_in_cflags(/-march=\S*/, '-Xarch_i386 \0') if Hardware.is_32_bit?
      end
@@ -79,52 +607,59 @@ index 4eeba6b..b25dc84 100644
 +    
 +    replace_in_cflags(/-march=\S*/, '')
    end
- 
-   def prepend key, value, separator = ' '
+-
++  
+   def replace_in_cflags before, after
+     cc_flag_vars.each do |key|
+       self[key] = self[key].sub before, after if self[key]
 diff --git a/Library/Homebrew/formula.rb b/Library/Homebrew/formula.rb
-index eb1d7dc..5015c24 100644
+index bf784d0..a4196b3 100644
 --- a/Library/Homebrew/formula.rb
 +++ b/Library/Homebrew/formula.rb
-@@ -157,6 +157,12 @@ class Formula
-     self.class.keg_only_reason || false
+@@ -191,7 +191,13 @@ class Formula
+   def keg_only_reason
+     self.class.keg_only_reason
    end
- 
+-
++  
 +  # Homebrew fixes the install names per default.
 +  # Use this option to disable it.
 +  def keep_install_names?
 +    self.class.keep_install_names || false
 +  end
-+
++  
    def fails_with? cc
      return false if self.class.cc_failures.nil?
      cc = Compiler.new(cc) unless cc.is_a? Compiler
-@@ -571,6 +577,7 @@ private
-     attr_rw :keg_only_reason, :skip_clean_all, :bottle_url, :bottle_sha1
-     attr_rw :cc_failures
-     attr_rw(*CHECKSUM_TYPES)
-+    attr_rw :keep_install_names
+@@ -633,7 +639,7 @@ private
+       end
+     end
  
-     def head val=nil, specs=nil
-       return @head if val.nil?
+-    attr_rw :homepage, :keg_only_reason, :skip_clean_all, :cc_failures
++    attr_rw :homepage, :keg_only_reason, :skip_clean_all, :cc_failures, :keep_install_names
+ 
+     Checksum::TYPES.each do |cksum|
+       class_eval %Q{
 diff --git a/Library/Homebrew/formula_installer.rb b/Library/Homebrew/formula_installer.rb
-index 266f518..1c8cd59 100644
+index d9cff50..af327f0 100644
 --- a/Library/Homebrew/formula_installer.rb
 +++ b/Library/Homebrew/formula_installer.rb
-@@ -156,7 +156,11 @@ class FormulaInstaller
-       link
-       check_PATH
+@@ -187,14 +187,28 @@ class FormulaInstaller
      end
+ 
+     install_plist
 -    fix_install_names
+-
 +    unless f.keep_install_names?
 +      fix_install_names
 +    else
 +      rpath_install_names
 +    end
- 
++    
      ohai "Summary" if ARGV.verbose? or show_summary_heading
      print "#{f.prefix}: #{f.prefix.abv}"
-@@ -244,6 +248,16 @@ class FormulaInstaller
-     @show_summary_heading = true
+     print ", built in #{pretty_duration build_time}" if build_time
+     puts
    end
  
 +  def rpath_install_names
@@ -137,14 +672,14 @@ index 266f518..1c8cd59 100644
 +    @show_summary_heading = true
 +  end
 +
-   def clean
-     require 'cleaner'
-     Cleaner.new f
+   def build_time
+     @build_time ||= Time.now - @start_time unless install_bottle or ARGV.interactive? or @start_time.nil?
+   end
 diff --git a/Library/Homebrew/global.rb b/Library/Homebrew/global.rb
-index 9256085..6260548 100644
+index 12157b0..f7cdc2d 100644
 --- a/Library/Homebrew/global.rb
 +++ b/Library/Homebrew/global.rb
-@@ -59,6 +59,9 @@ else
+@@ -58,6 +58,9 @@ else
    HOMEBREW_REPOSITORY+"Cellar"
  end
  
@@ -155,34 +690,38 @@ index 9256085..6260548 100644
  
  if RUBY_PLATFORM =~ /darwin/
 diff --git a/Library/Homebrew/keg.rb b/Library/Homebrew/keg.rb
-index e0eba14..3b1fc26 100644
+index 3bae926..5247ef1 100644
 --- a/Library/Homebrew/keg.rb
 +++ b/Library/Homebrew/keg.rb
 @@ -29,7 +29,7 @@ class Keg < Pathname
- 
    def unlink
      n=0
+ 
 -    %w[bin etc lib include sbin share var].map{ |d| self/d }.each do |src|
 +    %w[bin etc lib libexec include sbin share var].map{ |d| self/d }.each do |src|
+       next unless src.exist?
        src.find do |src|
          next if src == self
-         dst=HOMEBREW_PREFIX+src.relative_path_from(self)
 diff --git a/Library/Homebrew/keg_fix_install_names.rb b/Library/Homebrew/keg_fix_install_names.rb
-index e0b9259..cdf5b7e 100644
+index a6d4e68..9f5e319 100644
 --- a/Library/Homebrew/keg_fix_install_names.rb
 +++ b/Library/Homebrew/keg_fix_install_names.rb
-@@ -20,6 +20,33 @@ class Keg
+@@ -29,13 +29,71 @@ class Keg
+       end
      end
    end
- 
+-
++  
 +  def rpath_install_names
 +    ohai "Fixing libs to use @rpath"
-+    dylibs.each do |dylib|
-+      dylib.ensure_writable do
-+        dylib_name = dylib.to_s
-+        dylib_basename = Pathname.new(dylib).relative_path_from(join 'lib')
-+        # Change the absolute path to @rpath/dylib using install_name_tool -id.
-+        system "install_name_tool", "-id", "@rpath/#{dylib_basename}", "#{dylib_name}"
++    mach_o_files.each do |file|
++      file.ensure_writable do
++        if file.dylib?
++          dylib_name = file.to_s
++          dylib_basename = Pathname.new(file).relative_path_from(join 'lib')
++          # Change the absolute path to @rpath/dylib using install_name_tool -id.
++          system MacOS.locate("install_name_tool"), "-id", "@rpath/#{dylib_basename}", "#{dylib_name}"
++        end
 +      end
 +    end
 +    
@@ -201,17 +740,18 @@ index e0b9259..cdf5b7e 100644
 +      end
 +    end
 +  end
-+
++  
++  
++  
    private
  
    OTOOL_RX = /\t(.*) \(compatibility version (\d+\.)*\d+, current version (\d+\.)*\d+\)/
-@@ -44,6 +71,25 @@ class Keg
-     yield id, install_names
-   end
+ 
+   def lib; join 'lib' end
  
 +  def absolute_install_names_for binary
 +    binary = binary.to_s
-+
++  
 +    ENV['HOMEBREW_BINARY'] = binary # solves all shell escaping problems
 +    install_names = `otool -L "$HOMEBREW_BINARY"`.split "\n"
 +    
@@ -228,14 +768,6 @@ index e0b9259..cdf5b7e 100644
 +    yield id, install_names
 +  end
 +  
-   def dylibs
-     if (lib = join 'lib').directory?
-       lib.children.select{ |pn| pn.extname == '.dylib' and not pn.symlink? }
-@@ -51,4 +97,12 @@ class Keg
-       []
-     end
-   end
-+  
 +  def binaries
 +    if(bin = join 'bin').directory?
 +      bin.children.select { |pn| not pn.symlink? }
@@ -243,19 +775,24 @@ index e0b9259..cdf5b7e 100644
 +      []
 +    end
 +  end
- end
++  
+   def bad_install_names_for file
+     ENV['HOMEBREW_MACH_O_FILE'] = file.to_s # solves all shell escaping problems
+     install_names = `#{MacOS.locate("otool")} -L "$HOMEBREW_MACH_O_FILE"`.split "\n"
 diff --git a/Library/Homebrew/utils.rb b/Library/Homebrew/utils.rb
-index d041194..9607b11 100644
+index 0970f99..d9d9694 100644
 --- a/Library/Homebrew/utils.rb
 +++ b/Library/Homebrew/utils.rb
-@@ -112,7 +112,9 @@ def curl *args
-   # See https://github.com/mxcl/homebrew/issues/6103
+@@ -125,7 +125,11 @@ def curl *args
    args << "--insecure" if MacOS.version < 10.6
    args << "--verbose" if ENV['HOMEBREW_CURL_VERBOSE']
--  args << "--silent" unless $stdout.tty?
+   args << "--silent" unless $stdout.tty?
+-
++  
 +  if !$stdout.tty? || ARGV.quieter?
 +    args << "--silent"
 +  end
- 
++  
    safe_system curl, *args
  end
+ 

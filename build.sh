@@ -3,6 +3,7 @@
 export SOURCEDIR="`pwd`"
 export PATCHDIR="$SOURCEDIR/Patches"
 export BUILDDIR="$SOURCEDIR/build"
+export HOMEBREWDIR="$SOURCEDIR/Dependencies/homebrew"
 export LOGPATH="$BUILDDIR"
 export INSTALLDIR="$BUILDDIR/homebrew"
 export DEPLOYDIR="$BUILDDIR/MacGPG2"
@@ -80,13 +81,13 @@ if [ "$NO_BUILDROOT_EXISTS" == "1" ]; then
     status "Bootstrapping Homebrew"
     
     # Download homebrew and install it in BUILDDIR
-    mkdir -p "$INSTALLDIR"
-    curl -s -L https://github.com/mxcl/homebrew/tarball/master 2> /dev/null | tar xz --strip 1 -C "$INSTALLDIR"
+    mkdir -p "$BUILDDIR"
+    # Clone the homebrew from Dependencies into the build dir.
+    git clone --recursive $HOMEBREWDIR $INSTALLDIR > /dev/null
     
     bail_if_necessary "$?" "Failed to bootstrap homebrew"
     
     pushd "$INSTALLDIR" > /dev/null
-        ./bin/brew update 1>/dev/null 2>/dev/null
         # Patch brew to add the install name patch and the build options
         # patch.
         status "Applying GPGTools homebrew patches"
@@ -119,7 +120,6 @@ pushd "$INSTALLDIR" > /dev/null
     fi
     
     # Build MacGPG2
-    echo "./bin/brew install --env=std --universal $BUILD_PPC_ARG --use-llvm --quieter MacGPG2"
     ./bin/brew install --env=std --universal $BUILD_PPC_ARG --use-llvm --quieter MacGPG2
     EXIT="$?"
 
