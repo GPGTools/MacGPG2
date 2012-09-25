@@ -119,8 +119,8 @@ pushd "$INSTALLDIR" > /dev/null
     fi
     
     # Build MacGPG2
-    echo "./bin/brew install --universal $BUILD_PPC_ARG --use-llvm --quieter MacGPG2"
-    ./bin/brew install --universal $BUILD_PPC_ARG --use-llvm --quieter MacGPG2
+    echo "./bin/brew install --env=std --universal $BUILD_PPC_ARG --use-llvm --quieter MacGPG2"
+    ./bin/brew install --env=std --universal $BUILD_PPC_ARG --use-llvm --quieter MacGPG2
     EXIT="$?"
 
 popd > /dev/null
