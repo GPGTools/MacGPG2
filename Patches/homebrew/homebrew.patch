@@ -562,10 +562,25 @@ index 6b4d925..67121b2 100644
    # Request a 32-bit only build.
    # This is needed for some use-cases though we prefer to build Universal
 diff --git a/Library/Homebrew/extend/ENV.rb b/Library/Homebrew/extend/ENV.rb
-index 2c01085..2a3e617 100644
+index 2c01085..57649d9 100644
 --- a/Library/Homebrew/extend/ENV.rb
 +++ b/Library/Homebrew/extend/ENV.rb
-@@ -307,8 +307,45 @@ module HomebrewEnvExtension
+@@ -210,7 +210,13 @@ module HomebrewEnvExtension
+       remove 'CMAKE_FRAMEWORK_PATH', "#{sdk}/System/Library/Frameworks"
+     end
+   end
+-
++  
++  def osx_10_5
++    self['MACOSX_DEPLOYMENT_TARGET']="10.5"
++    remove_from_cflags(/ ?-mmacosx-version-min=10\.\d/)
++    append_to_cflags('-mmacosx-version-min=10.5')
++  end
++  
+   def macosxsdk v=MacOS.version
+     # Sets all needed lib and include dirs to CFLAGS, CPPFLAGS, LDFLAGS.
+     remove_macosxsdk
+@@ -307,8 +313,45 @@ module HomebrewEnvExtension
        # Can't mix "-march" for a 32-bit CPU  with "-arch x86_64"
        replace_in_cflags(/-march=\S*/, '-Xarch_i386 \0') if Hardware.is_32_bit?
      end
@@ -703,7 +718,7 @@ index 3bae926..5247ef1 100644
        src.find do |src|
          next if src == self
 diff --git a/Library/Homebrew/keg_fix_install_names.rb b/Library/Homebrew/keg_fix_install_names.rb
-index a6d4e68..9f5e319 100644
+index a6d4e68..ea9aa43 100644
 --- a/Library/Homebrew/keg_fix_install_names.rb
 +++ b/Library/Homebrew/keg_fix_install_names.rb
 @@ -29,13 +29,71 @@ class Keg
