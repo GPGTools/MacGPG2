@@ -2,9 +2,9 @@ require 'formula'
 
 class Pinentry < Formula
   homepage 'http://gpgtools.org'
-  url 'https://github.com/GPGTools/pinentry-mac.git'
-  md5 '2095fbe7cf556062427e04c156503f27'
-
+  url 'https://github.com/GPGTools/pinentry-mac/zipball/master'
+  sha1 'c36b69af5586ec598c778804edbca4fbd14cf97d'
+  version '0.8.1'
   # depends_on 'cmake' => :build
   
   def patches
@@ -22,7 +22,7 @@ class Pinentry < Formula
       build_dir = "Release with ppc"
       xconfig = "homebrew-ppc.xconfig"
       build_env = ARGV.build_env.gsub ' ', '\\\ '
-      inreplace 'homebrew-ppc.xconfig' do |s|
+      inreplace xconfig do |s|
          s.gsub! '#SDKROOT#', "#{build_env}/SDKs/MacOSX10.5.sdk"
       end
     end
