@@ -62,7 +62,8 @@ new file mode 100644
 index 0000000..9515ac6
 --- /dev/null
 +++ homebrew-ppc.xconfig
-@@ -0,0 +1,3 @@
+@@ -0,0 +1,4 @@
 +GCC_VERSION = com.apple.compilers.llvmgcc42
 +SDKROOT = #SDKROOT#
 +OTHER_LDFLAGS = $OTHER_LDFLAGS -L#HOMEBREW_LIB#
++MACOSX_DEPLOYMENT_TARGET = 10.5
