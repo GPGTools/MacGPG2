@@ -2,8 +2,8 @@ require 'formula'
 
 class Pinentry < Formula
   homepage 'http://gpgtools.org'
-  url 'https://github.com/GPGTools/pinentry-mac/zipball/master'
-  sha1 'c36b69af5586ec598c778804edbca4fbd14cf97d'
+  url 'https://github.com/GPGTools/pinentry-mac.git', :revision => 'f5988aa9bc'
+  sha1 ''
   version '0.8.1'
   # depends_on 'cmake' => :build
   
