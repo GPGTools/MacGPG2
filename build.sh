@@ -24,9 +24,11 @@ ACTION=$1
 
 function tryToMountBuildEnvironment {
     status "Try to mount the MacGPG2 build environment for ppc support"
+    echo "Build env: ${BUILDENV_DMG}"
     if [ -f "$BUILDENV_DMG" ]; then
         STATUS=$(mountBuildEnvironment "$BUILDENV_DMG")
-        if [ "$STATUS" == "0" ]; then
+        echo "STATUS: ${STATUS}"
+		if [ "$STATUS" == "0" ]; then
             BUILD_PPC=1
             stat=$(printf "%s%s%s" $(white) "enabled" $(reset))
             status "PPC support $stat."
