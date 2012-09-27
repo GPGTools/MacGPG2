@@ -43,7 +43,7 @@ function tryToMountBuildEnvironment {
 }
 
 function mountBuildEnvironment {
-    hdiutil attach -mountpoint "$BUILDENV_MOUNT_DIR" -noverify -quiet "$1"
+    hdiutil attach -mountpoint "$BUILDENV_MOUNT_DIR" -noverify "$1"
     echo $?
 }
 
