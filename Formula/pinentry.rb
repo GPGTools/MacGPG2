@@ -14,6 +14,9 @@ class Pinentry < Formula
   def install
     ENV.universal_binary if ARGV.build_universal?
     
+    ENV.prepend 'LDFLAGS', '-headerpad_max_install_names'
+    ENV.prepend 'LDFLAGS', "-Wl,-rpath,@loader_path/../lib -Wl,-rpath,#{HOMEBREW_PREFIX}/lib"
+    
     target = "compile"
     build_dir = "Release"
     xconfig = "homebrew.xconfig"
@@ -55,7 +58,7 @@ index 0000000..fdb4290
 +++ homebrew.xconfig
 @@ -0,0 +1,2 @@
 +GCC_VERSION = com.apple.compilers.llvmgcc42
-+OTHER_LDFLAGS = $OTHER_LDFLAGS -L#HOMEBREW_LIB#
++OTHER_LDFLAGS = -Wl,-rpath,@loader_path/../lib -Wl,-rpath,#HOMEBREW_LIB# -headerpad_max_install_names $OTHER_LDFLAGS -L#HOMEBREW_LIB#
 
 diff --git homebrew-ppc.xconfig homebrew-ppc.xconfig
 new file mode 100644
@@ -65,5 +68,5 @@ index 0000000..9515ac6
 @@ -0,0 +1,4 @@
 +GCC_VERSION = com.apple.compilers.llvmgcc42
 +SDKROOT = #SDKROOT#
-+OTHER_LDFLAGS = $OTHER_LDFLAGS -L#HOMEBREW_LIB#
++OTHER_LDFLAGS = -Wl,-rpath,@loader_path/../lib -Wl,-rpath,#HOMEBREW_LIB# -headerpad_max_install_names $OTHER_LDFLAGS -L#HOMEBREW_LIB#
 +MACOSX_DEPLOYMENT_TARGET = 10.5
