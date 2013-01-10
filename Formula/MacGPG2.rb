@@ -25,7 +25,8 @@ class Macgpg2 < Formula
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/keysize.patch",
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/launchd.patch",
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/MacGPG2VersionString.patch",
-              "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/options.skel.patch"] }
+              "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/options.skel.patch",
+              "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/CVE-2012-6085-vulnerability.patch"] }
   end
 
   def install
