@@ -20,7 +20,7 @@ class Macgpg2 < Formula
   
   def patches
     { :p1 => [DATA],
-      :p0 => ["#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/IDEA.patch",
+      :p0 => ["#{HOMEBREW_PREFIX}/Library/Formula/Patches/IDEA/gnupg2.patch",
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/cacheid.patch",
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/keysize.patch",
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/launchd.patch",

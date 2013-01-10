@@ -1,0 +1,207 @@
+diff --git common/status.h common/status.h
+index 434ff97..b6ac779 100644
+--- common/status.h
++++ common/status.h
+@@ -32,8 +32,6 @@ enum
+ 
+     STATUS_BADARMOR,
+ 
+-    STATUS_RSA_OR_IDEA,
+-
+     STATUS_TRUST_UNDEFINED,
+     STATUS_TRUST_NEVER,
+     STATUS_TRUST_MARGINAL,
+diff --git doc/DETAILS doc/DETAILS
+index ddf7438..955e850 100644
+--- doc/DETAILS
++++ doc/DETAILS
+@@ -381,11 +381,9 @@ more arguments in future versions.
+ 	The ASCII armor is corrupted.  No arguments yet.
+ 
+     RSA_OR_IDEA
+-	The IDEA algorithms has been used in the data.  A
+-	program might want to fallback to another program to handle
+-	the data if GnuPG failed.  This status message used to be emitted
+-        also for RSA but this has been dropped after the RSA patent expired.
+-        However we can't change the name of the message.
++	Obsolete.  This status message used to be emitted for requests
++        to use the IDEA or RSA algorithms.  It has been dropped from
++        GnuPG 2.1 after the respective patents expired.
+ 
+     SHM_INFO
+     SHM_GET
+diff --git g10/gpg.c g10/gpg.c
+index 00ee941..f05fda9 100644
+--- g10/gpg.c
++++ g10/gpg.c
+@@ -3149,7 +3149,6 @@ main (int argc, char **argv)
+ 	      {
+ 		log_info(_("encrypting a message in --pgp2 mode requires "
+ 			   "the IDEA cipher\n"));
+-		idea_cipher_warn(1);
+ 		unusable=1;
+ 	      }
+ 	    else if(cmd==aSym)
+@@ -3208,10 +3207,6 @@ main (int argc, char **argv)
+ 
+     if( def_cipher_string ) {
+ 	opt.def_cipher_algo = string_to_cipher_algo (def_cipher_string);
+-	if(opt.def_cipher_algo==0 &&
+-	   (ascii_strcasecmp(def_cipher_string,"idea")==0
+-	    || ascii_strcasecmp(def_cipher_string,"s1")==0))
+-	  idea_cipher_warn(1);
+ 	xfree(def_cipher_string); def_cipher_string = NULL;
+ 	if ( openpgp_cipher_test_algo (opt.def_cipher_algo) )
+ 	    log_error(_("selected cipher algorithm is invalid\n"));
+diff --git g10/import.c g10/import.c
+index b48f126..c053e21 100644
+--- g10/import.c
++++ g10/import.c
+@@ -1434,12 +1434,6 @@ transfer_secret_keys (ctrl_t ctrl, struct stats_s *stats, kbnode_t sec_keyblock)
+           log_error (_("key %s: error sending to agent: %s\n"),
+                      keystr_from_pk_with_sub (main_pk, pk),
+                      gpg_strerror (err));
+-          if (ski->algo == GCRY_CIPHER_IDEA
+-              && gpg_err_code (err) == GPG_ERR_CIPHER_ALGO)
+-            {
+-              write_status (STATUS_RSA_OR_IDEA);
+-              idea_cipher_warn (0);
+-            }
+           if (gpg_err_code (err) == GPG_ERR_CANCELED
+               || gpg_err_code (err) == GPG_ERR_FULLY_CANCELED)
+             break; /* Don't try the other subkeys.  */
+diff --git g10/keygen.c g10/keygen.c
+index 55048b1..2dae3fe 100644
+--- g10/keygen.c
++++ g10/keygen.c
+@@ -349,7 +349,7 @@ keygen_set_std_prefs (const char *string,int personal)
+ 	       break PGP2, but that is difficult with the current
+ 	       code, and not really worth checking as a non-RSA <=2048
+ 	       bit key wouldn't be usable by PGP2 anyway. -dms */
+-	    if ( !openpgp_cipher_test_algo (CIPHER_ALGO_IDEA) )
++	    if (PGP2 && !openpgp_cipher_test_algo (CIPHER_ALGO_IDEA) )
+ 	      strcat(dummy_string,"S1 ");
+ 
+ 
+@@ -442,12 +442,6 @@ keygen_set_std_prefs (const char *string,int personal)
+ 	    else
+ 	      {
+ 		log_info (_("invalid item `%s' in preference string\n"),tok);
+-
+-		/* Complain if IDEA is not available. */
+-		if(ascii_strcasecmp(tok,"s1")==0
+-		   || ascii_strcasecmp(tok,"idea")==0)
+-		  idea_cipher_warn(1);
+-
+ 		rc=-1;
+ 	      }
+ 	  }
+diff --git g10/main.h g10/main.h
+index 7088abe..d25265a 100644
+--- g10/main.h
++++ g10/main.h
+@@ -105,12 +105,6 @@ int openpgp_md_test_algo( int algo );
+ const char *openpgp_pk_algo_name (int algo);
+ const char *openpgp_md_algo_name (int algo);
+ 
+-#ifdef USE_IDEA
+-void idea_cipher_warn( int show );
+-#else
+-#define idea_cipher_warn(a)  do { } while (0)
+-#endif
+-
+ struct expando_args
+ {
+   PKT_public_key *pk;
+diff --git g10/mainproc.c g10/mainproc.c
+index 62b530b..33855e1 100644
+--- g10/mainproc.c
++++ g10/mainproc.c
+@@ -250,12 +250,6 @@ symkey_decrypt_seskey( DEK *dek, byte *seskey, size_t slen )
+   if(dek->keylen > DIM(dek->key))
+     BUG ();
+ 
+-  /* This is not completely accurate, since a bad passphrase may have
+-     resulted in a garbage algorithm byte, but it's close enough since
+-     a bogus byte here will fail later. */
+-  if(dek->algo==CIPHER_ALGO_IDEA)
+-    idea_cipher_warn(0);
+-
+   memcpy(dek->key, seskey + 1, dek->keylen);
+ 
+   /*log_hexdump( "thekey", dek->key, dek->keylen );*/
+@@ -541,7 +535,6 @@ proc_encrypted( CTX c, PACKET *pkt )
+ 		algo = opt.def_cipher_algo;
+ 		if (!algo)
+ 		  algo = opt.s2k_cipher_algo;
+-		idea_cipher_warn(1);
+ 		log_info (_("IDEA cipher unavailable, "
+ 			    "optimistically attempting to use %s instead\n"),
+ 			  openpgp_cipher_algo_name (algo));
+diff --git g10/misc.c g10/misc.c
+index c49945a..3bf550c 100644
+--- g10/misc.c
++++ g10/misc.c
+@@ -546,24 +546,6 @@ openpgp_md_algo_name (int algo)
+ }
+ 
+ 
+-#ifdef USE_IDEA
+-/* Special warning for the IDEA cipher */
+-void
+-idea_cipher_warn(int show)
+-{
+-  static int warned=0;
+-
+-  if(!warned || show)
+-    {
+-      log_info(_("the IDEA cipher plugin is not present\n"));
+-      log_info(_("please see %s for more information\n"),
+-               "http://www.gnupg.org/faq/why-not-idea.html");
+-      warned=1;
+-    }
+-}
+-#endif
+-
+-
+ static unsigned long
+ get_signature_count (PKT_public_key *pk)
+ {
+diff --git g10/pubkey-enc.c g10/pubkey-enc.c
+index a0fe685..254e810 100644
+--- g10/pubkey-enc.c
++++ g10/pubkey-enc.c
+@@ -292,8 +292,6 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
+ 
+   dek->keylen = nframe - (n + 1) - 2;
+   dek->algo = frame[n++];
+-  if (dek->algo == CIPHER_ALGO_IDEA)
+-    write_status (STATUS_RSA_OR_IDEA);
+   err = openpgp_cipher_test_algo (dek->algo);
+   if (err)
+     {
+@@ -302,8 +300,6 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
+           log_info (_("cipher algorithm %d%s is unknown or disabled\n"),
+                     dek->algo,
+                     dek->algo == CIPHER_ALGO_IDEA ? " (IDEA)" : "");
+-          if (dek->algo == CIPHER_ALGO_IDEA)
+-            idea_cipher_warn (0);
+         }
+       dek->algo = 0;
+       goto leave;
+diff --git g10/seckey-cert.c g10/seckey-cert.c
+index ec866b3..1dde6f9 100644
+--- g10/seckey-cert.c
++++ g10/seckey-cert.c
+@@ -62,11 +62,6 @@ xxxx_do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
+ 	if( openpgp_cipher_test_algo( sk->protect.algo ) ) {
+ 	    log_info(_("protection algorithm %d%s is not supported\n"),
+ 			sk->protect.algo,sk->protect.algo==1?" (IDEA)":"" );
+-	    if (sk->protect.algo==CIPHER_ALGO_IDEA)
+-              {
+-                write_status (STATUS_RSA_OR_IDEA);
+-                idea_cipher_warn (0);
+-              }
+ 	    return G10ERR_CIPHER_ALGO;
+ 	}
+ 	if(gcry_md_test_algo (sk->protect.s2k.hash_algo))

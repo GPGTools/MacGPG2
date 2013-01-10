@@ -1,0 +1,522 @@
+diff -ru configure configure 
+--- configure	2013-01-10 21:38:20.000000000 +0100
++++ configure	2013-01-10 21:41:28.000000000 +0100
+@@ -15258,6 +15258,24 @@
+ fi
+ 
+ 
++name=idea
++list=$enabled_ciphers
++found=0
++
++for n in $list; do
++  if test "x$name" = "x$n"; then
++    found=1
++  fi
++done
++
++if test "$found" = "1" ; then
++   GCRYPT_CIPHERS="$GCRYPT_CIPHERS idea.lo"
++
++$as_echo "#define USE_IDEA 1" >>confdefs.h
++
++fi
++
++
+ name=dsa
+ list=$enabled_pubkey_ciphers
+ found=0
+
+diff -ru configure configure 
+--- configure	2013-01-10 21:46:30.000000000 +0100
++++ configure	2013-01-10 21:46:46.000000000 +0100
+@@ -11834,7 +11834,7 @@
+
+ # Definitions for symmetric ciphers.
+ available_ciphers="arcfour blowfish cast5 des aes twofish serpent rfc2268 seed"
+-available_ciphers="$available_ciphers camellia"
++available_ciphers="$available_ciphers camellia idea"
+ enabled_ciphers=""
+
+ # Definitions for public-key ciphers.
+
+diff --git cipher/Makefile.am cipher/Makefile.am
+index dcb4a47..473e3c8 100644
+--- cipher/Makefile.am
++++ cipher/Makefile.am
+@@ -53,6 +53,7 @@ des.c \
+ dsa.c \
+ elgamal.c \
+ ecc.c \
++idea.c \
+ md4.c \
+ md5.c \
+ rijndael.c rijndael-tables.h \
+diff --git cipher/cipher.c cipher/cipher.c
+index 589c262..389bf7a 100644
+--- cipher/cipher.c
++++ cipher/cipher.c
+@@ -100,6 +100,10 @@ static struct cipher_table_entry
+     { &_gcry_cipher_spec_camellia256,
+       &dummy_extra_spec,                  GCRY_CIPHER_CAMELLIA256 },
+ #endif
++#ifdef USE_IDEA
++    { &_gcry_cipher_spec_idea,
++      &dummy_extra_spec,                  GCRY_CIPHER_IDEA },
++#endif
+     { NULL                    }
+   };
+
+diff --git cipher/idea.c cipher/idea.c
+index 65a8ec3..fe14b21 100644
+--- cipher/idea.c
++++ cipher/idea.c
+@@ -22,10 +22,10 @@
+  * used in advertising or otherwise to promote the sale, use or other dealings
+  * in this Software without prior written authorization from Werner Koch.
+  *
+- * DUE TO PATENT CLAIMS THE DISTRIBUTION OF THE SOFTWARE IS NOT ALLOWED IN
+- * THESE COUNTRIES:
+- *     AUSTRIA, FRANCE, GERMANY, ITALY, JAPAN, THE NETHERLANDS,
+- *     SPAIN, SWEDEN, SWITZERLAND, THE UK AND THE US.
++ * Patents on IDEA have expired:
++ *   Europe: EP0482154 on 2011-05-16,
++ *   Japan:  JP3225440 on 2011-05-16,
++ *   U.S.:   5,214,703 on 2012-01-07.
+  */
+
+ /*
+@@ -34,60 +34,22 @@
+  *
+  * The code herein is based on the one from:
+  *   Bruce Schneier: Applied Cryptography. John Wiley & Sons, 1996.
+- *    ISBN 0-471-11709-9. .
+- *
+- * How to compile:
+-       gcc -Wall -O2 -shared -fPIC -o idea idea.c
+- *
+- * 2001-06-08 wk  Changed distribution conditions
+- * 2001-06-11 wk  Fixed invert_key (which is not used in CFB mode)
+- *                Thanks to Mark A. Borgerding.  Added defintion for
+- *                the PowerPC.
++ *   ISBN 0-471-11709-9.
+  */
+
+
++#include <config.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
+ #include <assert.h>
+
+-/* configuration stuff */
+-#ifdef __alpha__
+-  #define SIZEOF_UNSIGNED_LONG 8
+-#else
+-  #define SIZEOF_UNSIGNED_LONG 4
+-#endif
+-
+-#if defined(__mc68000__) || defined (__sparc__) || defined (__PPC__) \
+-    || (defined(__mips__) && (defined(MIPSEB) || defined (__MIPSEB__)) ) \
+-    || defined(__powerpc__) \
+-    || defined(__hpux__) /* should be replaced by the Macro for the PA */
+-  #define BIG_ENDIAN_HOST 1
+-#else
+-  #define LITTLE_ENDIAN_HOST 1
+-#endif
+-
+-typedef unsigned long  ulong;
+-typedef unsigned short ushort;
+-typedef unsigned char  byte;
+-
+-typedef unsigned short u16;
+-typedef unsigned long  u32;
+-
+-/* end configurable stuff */
+-
+-#ifndef DIM
+-  #define DIM(v) (sizeof(v)/sizeof((v)[0]))
+-  #define DIMof(type,member)   DIM(((type *)0)->member)
+-#endif
+-
+-/* imports */
+-void g10_log_fatal( const char *fmt, ... );
+-
++#include "types.h"  /* for byte and u32 typedefs */
++#include "g10lib.h"
++#include "cipher.h"
+
+-/* local stuff */
+
+-#define FNCCAST_SETKEY(f)  ((int(*)(void*, byte*, unsigned))(f))
++#define FNCCAST_SETKEY(f)  ((int(*)(void*, byte*, unsigned int))(f))
+ #define FNCCAST_CRYPT(f)   ((void(*)(void*, byte*, byte*))(f))
+
+ #define IDEA_KEYSIZE 16
+@@ -102,13 +64,6 @@ typedef struct {
+ } IDEA_context;
+
+
+-static int do_setkey( IDEA_context *c, byte *key, unsigned keylen );
+-static void encrypt_block( IDEA_context *bc, byte *outbuf, byte *inbuf );
+-static void decrypt_block( IDEA_context *bc, byte *outbuf, byte *inbuf );
+-static void selftest(int);
+-
+-
+-
+ static u16
+ mul_inv( u16 x )
+ {
+@@ -139,7 +94,7 @@ mul_inv( u16 x )
+
+
+ static void
+-expand_key( byte *userkey, u16 *ek )
++expand_key( const byte *userkey, u16 *ek )
+ {
+     int i,j;
+
+@@ -202,7 +157,7 @@ invert_key( u16 *ek, u16 dk[IDEA_KEYLEN] )
+
+
+ static void
+-cipher( byte *outbuf, byte *inbuf, u16 *key )
++cipher( byte *outbuf, const byte *inbuf, u16 *key )
+ {
+     u16 x1, x2, x3,x4, s2, s3;
+     u16 *in, *out;
+@@ -230,7 +185,7 @@ cipher( byte *outbuf, byte *inbuf, u16 *key )
+     x2 = *in++;
+     x3 = *in++;
+     x4 = *in;
+-  #ifdef LITTLE_ENDIAN_HOST
++  #ifndef WORDS_BIGENDIAN
+     x1 = (x1>>8) | (x1<<8);
+     x2 = (x2>>8) | (x2<<8);
+     x3 = (x3>>8) | (x3<<8);
+@@ -263,7 +218,7 @@ cipher( byte *outbuf, byte *inbuf, u16 *key )
+     MUL(x4, *key);
+
+     out = (u16*)outbuf;
+-  #ifdef LITTLE_ENDIAN_HOST
++  #ifndef WORDS_BIGENDIAN
+     *out++ = (x1>>8) | (x1<<8);
+     *out++ = (x3>>8) | (x3<<8);
+     *out++ = (x2>>8) | (x2<<8);
+@@ -279,14 +234,16 @@ cipher( byte *outbuf, byte *inbuf, u16 *key )
+
+
+ static int
+-do_setkey( IDEA_context *c, byte *key, unsigned keylen )
++do_setkey( IDEA_context *c, const byte *key, unsigned int keylen )
+ {
++#if 0
+     static int initialized = 0;
+
+     if( !initialized ) {
+ 	initialized = 1;
+ 	selftest(0);
+     }
++#endif
+     assert(keylen == 16);
+     c->have_dk = 0;
+     expand_key( key, c->ek );
+@@ -294,21 +251,40 @@ do_setkey( IDEA_context *c, byte *key, unsigned keylen )
+     return 0;
+ }
+
++static gcry_err_code_t
++idea_setkey (void *context, const byte *key, unsigned int keylen)
++{
++    IDEA_context *ctx = context;
++    int rc = do_setkey (ctx, key, keylen);
++    _gcry_burn_stack (23+6*sizeof(void*));
++    return rc;
++}
++
+ static void
+-encrypt_block( IDEA_context *c, byte *outbuf, byte *inbuf )
++encrypt_block( IDEA_context *c, byte *outbuf, const byte *inbuf )
+ {
+     cipher( outbuf, inbuf, c->ek );
+ }
+
+ static void
+-decrypt_block( IDEA_context *c, byte *outbuf, byte *inbuf )
++idea_encrypt (void *context, byte *out, const byte *in)
++{
++    IDEA_context *ctx = context;
++    encrypt_block (ctx, out, in);
++    _gcry_burn_stack (24+3*sizeof (void*));
++}
++
++static void
++decrypt_block( IDEA_context *c, byte *outbuf, const byte *inbuf )
+ {
++#if 0
+     static int initialized;
+
+     if( !initialized ) {
+ 	initialized = 1;
+ 	selftest(1);
+     }
++#endif
+     if( !c->have_dk ) {
+        c->have_dk = 1;
+        invert_key( c->ek, c->dk );
+@@ -316,7 +292,16 @@ decrypt_block( IDEA_context *c, byte *outbuf, byte *inbuf )
+     cipher( outbuf, inbuf, c->dk );
+ }
+
++static void
++idea_decrypt (void *context, byte *out, const byte *in)
++{
++    IDEA_context *ctx = context;
++    decrypt_block (ctx, out, in);
++    _gcry_burn_stack (24+3*sizeof (void*));
++}
+
++
++#if 0
+ static void
+ selftest( int check_decrypt )
+ {
+@@ -388,89 +373,12 @@ static struct {
+ 	}
+     }
+ }
++#endif
+
+
+-/****************
+- * Return some information about the algorithm.  We need algo here to
+- * distinguish different flavors of the algorithm.
+- * Returns: A pointer to string describing the algorithm or NULL if
+- *	    the ALGO is invalid.
+- */
+-const char *
+-idea_get_info( int algo, size_t *keylen,
+-		   size_t *blocksize, size_t *contextsize,
+-		   int	(**r_setkey)( void *c, byte *key, unsigned keylen ),
+-		   void (**r_encrypt)( void *c, byte *outbuf, byte *inbuf ),
+-		   void (**r_decrypt)( void *c, byte *outbuf, byte *inbuf )
+-		 )
++gcry_cipher_spec_t _gcry_cipher_spec_idea =
+ {
+-    *keylen = 128;
+-    *blocksize = 8;
+-    *contextsize = sizeof(IDEA_context);
+-    *r_setkey = FNCCAST_SETKEY(do_setkey);
+-    *r_encrypt= FNCCAST_CRYPT(encrypt_block);
+-    *r_decrypt= FNCCAST_CRYPT(decrypt_block);
+-    if( algo == 1 )
+-	return "IDEA";
+-    return NULL;
+-}
+-
+-
+-
+-const char * const gnupgext_version = "IDEA ($Revision: 1.11 $)";
+-
+-static struct {
+-    int class;
+-    int version;
+-    int  value;
+-    void (*func)(void);
+-} func_table[] = {
+-    { 20, 1, 0, (void(*)(void))idea_get_info },
+-    { 21, 1, 1 },
++    "IDEA", NULL, NULL, IDEA_BLOCKSIZE, 128,
++    sizeof (IDEA_context),
++    idea_setkey, idea_encrypt, idea_decrypt
+ };
+-
+-
+-
+-/****************
+- * Enumerate the names of the functions together with informations about
+- * this function. Set sequence to an integer with a initial value of 0 and
+- * do not change it.
+- * If what is 0 all kind of functions are returned.
+- * Return values: class := class of function:
+- *			   10 = message digest algorithm info function
+- *			   11 = integer with available md algorithms
+- *			   20 = cipher algorithm info function
+- *			   21 = integer with available cipher algorithms
+- *			   30 = public key algorithm info function
+- *			   31 = integer with available pubkey algorithms
+- *		  version = interface version of the function/pointer
+- *			    (currently this is 1 for all functions)
+- */
+-void *
+-gnupgext_enum_func( int what, int *sequence, int *class, int *vers )
+-{
+-    void *ret;
+-    int i = *sequence;
+-
+-    do {
+-	if( i >= DIM(func_table) || i < 0 ) {
+-	    return NULL;
+-	}
+-	*class = func_table[i].class;
+-	*vers  = func_table[i].version;
+-	switch( *class ) {
+-	  case 11:
+-	  case 21:
+-	  case 31:
+-	    ret = &func_table[i].value;
+-	    break;
+-	  default:
+-	    ret = func_table[i].func;
+-	    break;
+-	}
+-	i++;
+-    } while( what && what != *class );
+-
+-    *sequence = i;
+-    return ret;
+-}
+diff --git configure.ac configure.ac
+index c354836..cf4a082 100644
+--- configure.ac
++++ configure.ac
+@@ -174,7 +174,7 @@ LIBGCRYPT_CONFIG_HOST="$host"
+
+ # Definitions for symmetric ciphers.
+ available_ciphers="arcfour blowfish cast5 des aes twofish serpent rfc2268 seed"
+-available_ciphers="$available_ciphers camellia"
++available_ciphers="$available_ciphers camellia idea"
+ enabled_ciphers=""
+
+ # Definitions for public-key ciphers.
+@@ -1080,6 +1080,12 @@ if test "$found" = "1" ; then
+    AC_DEFINE(USE_CAMELLIA, 1, [Defined if this module should be included])
+ fi
+
++LIST_MEMBER(idea, $enabled_ciphers)
++if test "$found" = "1" ; then
++   GCRYPT_CIPHERS="$GCRYPT_CIPHERS idea.lo"
++   AC_DEFINE(USE_IDEA, 1, [Defined if this module should be included])
++fi
++
+ LIST_MEMBER(dsa, $enabled_pubkey_ciphers)
+ if test "$found" = "1" ; then
+    GCRYPT_PUBKEY_CIPHERS="$GCRYPT_PUBKEY_CIPHERS dsa.lo"
+diff --git src/cipher.h src/cipher.h
+index 0f923d7..48eeeda 100644
+--- src/cipher.h
++++ src/cipher.h
+@@ -135,6 +135,7 @@ extern gcry_cipher_spec_t _gcry_cipher_spec_seed;
+ extern gcry_cipher_spec_t _gcry_cipher_spec_camellia128;
+ extern gcry_cipher_spec_t _gcry_cipher_spec_camellia192;
+ extern gcry_cipher_spec_t _gcry_cipher_spec_camellia256;
++extern gcry_cipher_spec_t _gcry_cipher_spec_idea;
+
+ extern cipher_extra_spec_t _gcry_cipher_extraspec_tripledes;
+ extern cipher_extra_spec_t _gcry_cipher_extraspec_aes;
+diff --git tests/basic.c tests/basic.c
+index 4d5196f..8001e86 100644
+--- tests/basic.c
++++ tests/basic.c
+@@ -1568,6 +1568,9 @@ check_ciphers (void)
+     GCRY_CIPHER_CAMELLIA192,
+     GCRY_CIPHER_CAMELLIA256,
+ #endif
++#if USE_IDEA
++    GCRY_CIPHER_IDEA,
++#endif
+     0
+   };
+   static int algos2[] = {
+
+diff --git cipher/idea.c cipher/idea.c
+index fe14b21..39c9720 100644
+--- cipher/idea.c
++++ cipher/idea.c
+@@ -63,6 +63,8 @@ typedef struct {
+     int have_dk;
+ } IDEA_context;
+ 
++static const char *selftest(void);
++
+ 
+ static u16
+ mul_inv( u16 x )
+@@ -236,14 +238,18 @@ cipher( byte *outbuf, const byte *inbuf, u16 *key )
+ static int
+ do_setkey( IDEA_context *c, const byte *key, unsigned int keylen )
+ {
+-#if 0
+     static int initialized = 0;
++    static const char *selftest_failed = 0;
+ 
+     if( !initialized ) {
+ 	initialized = 1;
+-	selftest(0);
++	selftest_failed = selftest();
++	if( selftest_failed )
++	    log_error( "%s\n", selftest_failed );
+     }
+-#endif
++    if( selftest_failed )
++	return GPG_ERR_SELFTEST_FAILED;
++
+     assert(keylen == 16);
+     c->have_dk = 0;
+     expand_key( key, c->ek );
+@@ -277,14 +283,6 @@ idea_encrypt (void *context, byte *out, const byte *in)
+ static void
+ decrypt_block( IDEA_context *c, byte *outbuf, const byte *inbuf )
+ {
+-#if 0
+-    static int initialized;
+-
+-    if( !initialized ) {
+-	initialized = 1;
+-	selftest(1);
+-    }
+-#endif
+     if( !c->have_dk ) {
+        c->have_dk = 1;
+        invert_key( c->ek, c->dk );
+@@ -301,9 +299,8 @@ idea_decrypt (void *context, byte *out, const byte *in)
+ }
+ 
+ 
+-#if 0
+-static void
+-selftest( int check_decrypt )
++static const char *
++selftest( void )
+ {
+ static struct {
+     byte key[16];
+@@ -361,19 +358,16 @@ static struct {
+ 
+     for(i=0; i < DIM(test_vectors); i++ ) {
+ 	do_setkey( &c, test_vectors[i].key, 16 );
+-	if( !check_decrypt ) {
+-	    encrypt_block( &c, buffer, test_vectors[i].plain );
+-	    if( memcmp( buffer, test_vectors[i].cipher, 8 ) )
+-		g10_log_fatal("idea encryption (%d) failed\n", i);
+-	}
+-	else {
+-	    decrypt_block( &c, buffer, test_vectors[i].cipher );
+-	    if( memcmp( buffer, test_vectors[i].plain, 8 ) )
+-		g10_log_fatal("idea decryption (%d) failed\n", i);
+-	}
++	encrypt_block( &c, buffer, test_vectors[i].plain );
++	if( memcmp( buffer, test_vectors[i].cipher, 8 ) )
++	    return "IDEA test encryption failed.";
++	decrypt_block( &c, buffer, test_vectors[i].cipher );
++	if( memcmp( buffer, test_vectors[i].plain, 8 ) )
++	    return "IDEA test decryption failed.";
+     }
++
++    return NULL;
+ }
+-#endif
+ 
+ 
+ gcry_cipher_spec_t _gcry_cipher_spec_idea =
+

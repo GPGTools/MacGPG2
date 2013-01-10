@@ -13,9 +13,14 @@ class Libgcrypt < Formula
   def patches
     if ENV.compiler == :clang
       { :p0 => ["https://trac.macports.org/export/85232/trunk/dports/devel/libgcrypt/files/clang-asm.patch",
-                "#{HOMEBREW_PREFIX}/Library/Formula/Patches/IDEA.patch"]}
+                "#{HOMEBREW_PREFIX}/Library/Formula/Patches/IDEA/idea.patch",
+                "#{HOMEBREW_PREFIX}/Library/Formula/Patches/IDEA/libgcrypt.patch"
+               ]}
     else
-      { :p0 => ["#{HOMEBREW_PREFIX}/Library/Formula/Patches/IDEA.patch"]}
+      { :p0 => [
+                "#{HOMEBREW_PREFIX}/Library/Formula/Patches/IDEA/idea.patch",
+                "#{HOMEBREW_PREFIX}/Library/Formula/Patches/IDEA/libgcrypt.patch"
+               ]}
     end
   end
 
