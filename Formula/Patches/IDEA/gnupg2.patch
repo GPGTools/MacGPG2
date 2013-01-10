@@ -53,23 +53,6 @@ index 00ee941..f05fda9 100644
  	xfree(def_cipher_string); def_cipher_string = NULL;
  	if ( openpgp_cipher_test_algo (opt.def_cipher_algo) )
  	    log_error(_("selected cipher algorithm is invalid\n"));
-diff --git g10/import.c g10/import.c
-index b48f126..c053e21 100644
---- g10/import.c
-+++ g10/import.c
-@@ -1434,12 +1434,6 @@ transfer_secret_keys (ctrl_t ctrl, struct stats_s *stats, kbnode_t sec_keyblock)
-           log_error (_("key %s: error sending to agent: %s\n"),
-                      keystr_from_pk_with_sub (main_pk, pk),
-                      gpg_strerror (err));
--          if (ski->algo == GCRY_CIPHER_IDEA
--              && gpg_err_code (err) == GPG_ERR_CIPHER_ALGO)
--            {
--              write_status (STATUS_RSA_OR_IDEA);
--              idea_cipher_warn (0);
--            }
-           if (gpg_err_code (err) == GPG_ERR_CANCELED
-               || gpg_err_code (err) == GPG_ERR_FULLY_CANCELED)
-             break; /* Don't try the other subkeys.  */
 diff --git g10/keygen.c g10/keygen.c
 index 55048b1..2dae3fe 100644
 --- g10/keygen.c
@@ -142,9 +125,9 @@ diff --git g10/misc.c g10/misc.c
 index c49945a..3bf550c 100644
 --- g10/misc.c
 +++ g10/misc.c
-@@ -546,24 +546,6 @@ openpgp_md_algo_name (int algo)
+@@ -491,24 +491,6 @@
+   return gcry_md_test_algo (algo);
  }
- 
  
 -#ifdef USE_IDEA
 -/* Special warning for the IDEA cipher */
@@ -164,31 +147,29 @@ index c49945a..3bf550c 100644
 -#endif
 -
 -
- static unsigned long
- get_signature_count (PKT_public_key *pk)
+ static unsigned long 
+ get_signature_count (PKT_secret_key *sk)
  {
 diff --git g10/pubkey-enc.c g10/pubkey-enc.c
 index a0fe685..254e810 100644
 --- g10/pubkey-enc.c
 +++ g10/pubkey-enc.c
-@@ -292,8 +292,6 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
+@@ -238,15 +238,11 @@
  
-   dek->keylen = nframe - (n + 1) - 2;
-   dek->algo = frame[n++];
--  if (dek->algo == CIPHER_ALGO_IDEA)
--    write_status (STATUS_RSA_OR_IDEA);
-   err = openpgp_cipher_test_algo (dek->algo);
-   if (err)
-     {
-@@ -302,8 +300,6 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
-           log_info (_("cipher algorithm %d%s is unknown or disabled\n"),
-                     dek->algo,
-                     dek->algo == CIPHER_ALGO_IDEA ? " (IDEA)" : "");
--          if (dek->algo == CIPHER_ALGO_IDEA)
--            idea_cipher_warn (0);
-         }
-       dek->algo = 0;
-       goto leave;
+     dek->keylen = nframe - (n+1) - 2;
+     dek->algo = frame[n++];
+-    if( dek->algo ==  CIPHER_ALGO_IDEA )
+-	write_status(STATUS_RSA_OR_IDEA);
+     rc = openpgp_cipher_test_algo (dek->algo);
+     if( rc ) {
+ 	if( !opt.quiet && gpg_err_code (rc) == GPG_ERR_CIPHER_ALGO ) {
+ 	    log_info(_("cipher algorithm %d%s is unknown or disabled\n"),
+                      dek->algo, dek->algo == CIPHER_ALGO_IDEA? " (IDEA)":"");
+-	    if(dek->algo==CIPHER_ALGO_IDEA)
+-	      idea_cipher_warn (0);
+ 	}
+ 	dek->algo = 0;
+ 	goto leave;
 diff --git g10/seckey-cert.c g10/seckey-cert.c
 index ec866b3..1dde6f9 100644
 --- g10/seckey-cert.c
