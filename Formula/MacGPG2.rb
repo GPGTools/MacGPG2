@@ -31,6 +31,10 @@ class Macgpg2 < Formula
   def install
     (var+'run').mkpath
     ENV.universal_binary if ARGV.build_universal?
+    # Make sure that deployment target is 10.6+ so the lib works
+    # on 10.6 and up not only on host system os x version.
+    ENV.macosxsdk("10.6")
+    
     ENV.build_32_bit
     
     # so we don't use Clang's internal stdint.h

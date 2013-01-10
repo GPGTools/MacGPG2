@@ -12,6 +12,10 @@ class LibusbCompat < Formula
   
   def install
     ENV.universal_binary if ARGV.build_universal?
+    # Make sure that deployment target is 10.6+ so the lib works
+    # on 10.6 and up not only on host system os x version.
+    ENV.macosxsdk("10.6")
+    
     # Otherwise homebrew fails to find libusb.
     dep = Formula.factory 'libusb'
     ENV.prepend 'PKG_CONFIG_PATH', dep.lib+'pkgconfig', ':'

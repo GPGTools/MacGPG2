@@ -31,8 +31,11 @@ class Gettext < Formula
   def install
     ENV.libxml2
     ENV.O3 # Issues with LLVM & O4 on Mac Pro 10.6
-
+    
     ENV.universal_binary if ARGV.build_universal?
+    # Make sure that deployment target is 10.6+ so the lib works
+    # on 10.6 and up not only on host system os x version.
+    ENV.macosxsdk("10.6")
     # gettext checks for iconv using a test-script. that only executes
     # if the correct @rpath is set for the binary, this prepend the loader_path.
     ENV.prepend 'LDFLAGS', "-Wl,-rpath,@loader_path/../lib -Wl,-rpath,#{HOMEBREW_PREFIX}/lib"

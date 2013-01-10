@@ -13,6 +13,10 @@ class Libusb < Formula
   
   def install
     ENV.universal_binary if ARGV.build_universal?
+    # Make sure that deployment target is 10.6+ so the lib works
+    # on 10.6 and up not only on host system os x version.
+    ENV.macosxsdk("10.6")
+    
     ENV.prepend 'LDFLAGS', '-headerpad_max_install_names'
     
     system "./configure", "--prefix=#{prefix}", 
