@@ -40,6 +40,21 @@ diff -ru configure configure
 
  # Definitions for public-key ciphers.
 
+diff --git a/config.h.in b/config.h.in
+index 54b6679..7a243c9 100644
+--- config.h.in
++++ config.h.in
+@@ -319,6 +319,9 @@
+ #undef USE_GNU_PTH
+
+ /* Defined if this module should be included */
++#undef USE_IDEA
++
++/* Defined if this module should be included */
+ #undef USE_MD4
+
+ /* Defined if this module should be included */
+
 diff --git cipher/Makefile.am cipher/Makefile.am
 index dcb4a47..473e3c8 100644
 --- cipher/Makefile.am
