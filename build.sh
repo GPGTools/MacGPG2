@@ -21,6 +21,10 @@ test -f ".build-env.local" && source ".build-env.local"
 . status.sh
 
 ACTION=$1
+FORCE=0
+if [ "$ACTION" == "force" ]; then
+    FORCE=1
+fi
 
 function tryToMountBuildEnvironment {
     status "Try to mount the MacGPG2 build environment for ppc support"
@@ -121,9 +125,18 @@ pushd "$INSTALLDIR" > /dev/null
         BUILD_PPC_ARG="--with-ppc"
     fi
     
-    # Build MacGPG2
-    ./bin/brew install --env=std --universal $BUILD_PPC_ARG --use-llvm --quieter MacGPG2
+    # Check if MacGPG2 is already built. If so, don't do it again,
+    # unless force is set.
     EXIT="$?"
+    MACGPG2_ALREADY_BUILT=$(./bin/brew list | grep macgpg2 >/dev/null; echo $?)
+    
+    if [ "$MACGPG2_ALREADY_BUILT" != "0" ] || [ "$FORCE" == "1" ]; then
+        # Build MacGPG2
+        ./bin/brew install --env=std --universal $BUILD_PPC_ARG --use-llvm --quieter MacGPG2
+        EXIT="$?"
+    else
+        success "MacGPG2 is already built. No need to do it again."
+    fi
 
 popd > /dev/null
 
