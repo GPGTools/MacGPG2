@@ -1,17 +1,9 @@
-include Dependencies/GPGTools_Core/make/default
+PROJECT = MacGPG2
+TARGET = MacGPG2
+PRODUCT = MacGPG2
 
-all: compile
+include Dependencies/GPGTools_Core/newBuildSystem/Makefile.default
 
-update:
-	@git submodule foreach git pull origin master
-	@git pull
-
-compile:
+$(PRODUCT):
 	@./build.sh
-
-clean:
-	@./build.sh clean
-
-dmg: compile
-	./Dependencies/GPGTools_Core/scripts/create_dmg.sh
 

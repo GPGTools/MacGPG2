@@ -76,18 +76,26 @@ def error(msg):
 
 def version_from_config(config_file):
     fh = open(config_file, "r")
-    version = None
+    major = None
+    minor = None
+    revision = None
     for x in fh.readlines():
-        (key, value) = x.split("=")
-        if key == "version":
-            version = value
-            break
+        if x.find("=") == -1:
+            continue
+        
+        (key,value) = x.split("=")
+        
+        key = key.lower()
+        
+        if key == "major":
+            major = value
+        if key == "minor":
+            minor = value
+        if key == "revision":
+            revision = value
     
-    if not version:
-        return None
-    
-    version = version.replace("\"", "").strip()
-    
+    version = "%s.%s.%s" % (major.replace("\"", "").strip(), minor.replace("\"", "").strip(), revision.replace("\"", "").strip())
+
     return version
 
 def xcopy(src, dst, makedirs=False):
