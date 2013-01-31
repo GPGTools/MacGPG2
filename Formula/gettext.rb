@@ -1,13 +1,15 @@
 require 'formula'
 
 class Gettext < Formula
-  url 'http://ftpmirror.gnu.org/gettext/gettext-0.18.1.1.tar.gz'
-  mirror 'http://ftp.gnu.org/gnu/gettext/gettext-0.18.1.1.tar.gz'
-  md5 '3dd55b952826d2b32f51308f2f91aa89'
+  url 'http://ftpmirror.gnu.org/gettext/gettext-0.18.2.tar.gz'
+  mirror 'http://ftp.gnu.org/gnu/gettext/gettext-0.18.2.tar.gz'
+  sha256 '516a6370b3b3f46e2fc5a5e222ff5ecd76f3089bc956a7587a6e4f89de17714c'
   homepage 'http://www.gnu.org/software/gettext/'
   keep_install_names true
   # keg_only "OS X provides the BSD gettext library and some software gets confused if both are in the library path."
 
+  depends_on 'libiconv'
+  
   def options
   [
     ['--with-examples', 'Keep example files.'],
@@ -16,16 +18,11 @@ class Gettext < Formula
   end
 
   def patches
-    # Patch to allow building with Xcode 4; safe for any compiler.
-    p = {:p0 => ['https://trac.macports.org/export/79617/trunk/dports/devel/gettext/files/stpncpy.patch'] }
-
     unless ARGV.include? '--with-examples'
       # Use a MacPorts patch to disable building examples at all,
       # rather than build them and remove them afterwards.
-      p[:p0] << 'https://trac.macports.org/export/79183/trunk/dports/devel/gettext/files/patch-gettext-tools-Makefile.in'
+      {:p0 => [ 'https://trac.macports.org/export/102008/trunk/dports/devel/gettext/files/patch-gettext-tools-Makefile.in']}
     end
-
-    return p
   end
 
   def install
@@ -44,10 +41,12 @@ class Gettext < Formula
     system "./configure", "--disable-dependency-tracking", "--disable-debug",
                           "--prefix=#{prefix}",
                           "--enable-static=no", "--disable-maintainer-mode",
-                          "--without-included-gettext",
-                          "--without-included-glib",
-                          "--without-included-libcroco",
-                          "--without-included-libxml",
+                          "--enable-threads",
+                          "--with-included-gettext",
+                          "--with-included-glib",
+                          "--with-included-libcroco",
+                          "--with-included-libunistring",
+                          "--with-included-libxml",
                           "--without-emacs",
                           "--disable-csharp",
                           "--disable-native-java",
@@ -56,6 +55,12 @@ class Gettext < Formula
                           "--without-git",
                           "--without-cvs",
                           "--with-libiconv-prefix=#{HOMEBREW_PREFIX}"
+    
+    # Disable HAVE_PTHREAD_MUTEX_RECURSIVE to force the use of glthread,
+    # otherwise gettext will crash on 10.6
+    inreplace "gettext-runtime/config.h", "HAVE_PTHREAD_MUTEX_RECURSIVE 1", "HAVE_PTHREAD_MUTEX_RECURSIVE 0"
+    inreplace "gettext-tools/config.h", "HAVE_PTHREAD_MUTEX_RECURSIVE 1", "HAVE_PTHREAD_MUTEX_RECURSIVE 0"
+    
     system "make"
     ENV.deparallelize # install doesn't support multiple make jobs
     system "make install"
