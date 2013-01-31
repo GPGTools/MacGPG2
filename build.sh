@@ -11,6 +11,7 @@ export BUILDENV_DMG=""
 export BUILDENV_MOUNT_DIR="$SOURCEDIR/build-env"
 export BUILD_PPC=0
 export NO_BUILDROOT_EXISTS=$(test -d $INSTALLDIR -a -w $INSTALLDIR; echo $?)
+export HOMEBREW_CACHE="$INSTALLDIR/Caches"
 
 # Include the build-env file.
 test -f ".build-env" && source ".build-env"
