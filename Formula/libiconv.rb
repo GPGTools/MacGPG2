@@ -41,6 +41,7 @@ class Libiconv < Formula
                           "--enable-extra-encodings"
     
     system "make"
+    system "make check"
     system "make install"
   end
 end
