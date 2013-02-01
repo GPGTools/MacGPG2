@@ -1,6 +1,6 @@
 diff -ru g10/options.skel g10/options.skel
---- g10/options.skel	2011-01-09 23:06:16.000000000 +0100
-+++ g10/options.skel	2011-12-22 12:45:02.000000000 +0100
+--- g10/options.skel
++++ g10/options.skel
 @@ -166,7 +166,7 @@
  # no-include-attributes = do not include attribute IDs (aka "photo IDs")
  #                         when sending keys to the keyserver.
@@ -10,7 +10,7 @@ diff -ru g10/options.skel g10/options.skel
  
  # Uncomment this line to display photo user IDs in key listings and
  # when a signature from a key with a photo is verified.
-@@ -204,3 +204,32 @@
+@@ -204,3 +204,36 @@
  # Use your MIME handler to view photos:
  # photo-viewer "metamail -q -d -b -c %T -s 'KeyID 0x%k' -f GnuPG"
  
@@ -43,3 +43,7 @@ diff -ru g10/options.skel g10/options.skel
 +auto-key-locate cert pka ldap hkp://keys.gnupg.net
 +
 +comment GPGTools - http://gpgtools.org
++cert-digest-algo SHA512
++default-preference-list SHA512 SHA384 SHA256 SHA224 AES256 AES192 AES CAST5 ZLIB BZIP2 ZIP Uncompressed
++personal-digest-preferences SHA512 SHA384 SHA256 SHA224
++
