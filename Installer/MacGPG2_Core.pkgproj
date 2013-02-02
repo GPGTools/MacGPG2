@@ -7,7 +7,7 @@
 		<key>PACKAGE_FILES</key>
 		<dict>
 			<key>DEFAULT_INSTALL_LOCATION</key>
-			<string>/usr/local</string>
+			<string>/</string>
 			<key>HIERARCHY</key>
 			<dict>
 				<key>CHILDREN</key>
@@ -355,6 +355,39 @@
 						<array>
 							<dict>
 								<key>CHILDREN</key>
+								<array/>
+								<key>GID</key>
+								<integer>0</integer>
+								<key>PATH</key>
+								<string>../Payload/etc</string>
+								<key>PATH_TYPE</key>
+								<integer>1</integer>
+								<key>PERMISSIONS</key>
+								<integer>493</integer>
+								<key>TYPE</key>
+								<integer>3</integer>
+								<key>UID</key>
+								<integer>0</integer>
+							</dict>
+						</array>
+						<key>GID</key>
+						<integer>0</integer>
+						<key>PATH</key>
+						<string>private</string>
+						<key>PATH_TYPE</key>
+						<integer>0</integer>
+						<key>PERMISSIONS</key>
+						<integer>493</integer>
+						<key>TYPE</key>
+						<integer>2</integer>
+						<key>UID</key>
+						<integer>0</integer>
+					</dict>
+					<dict>
+						<key>CHILDREN</key>
+						<array>
+							<dict>
+								<key>CHILDREN</key>
 								<array>
 									<dict>
 										<key>CHILDREN</key>
@@ -507,7 +540,7 @@
 			<key>POSTINSTALL_PATH</key>
 			<dict>
 				<key>PATH</key>
-				<string>../Dependencies/GPGTools_Core/scripts/gpg2-postinstall.sh</string>
+				<string>../Installer/macgpg2-postinstall.sh</string>
 				<key>PATH_TYPE</key>
 				<integer>1</integer>
 			</dict>
@@ -554,13 +587,6 @@
 				<string>../build</string>
 				<key>PATH_TYPE</key>
 				<integer>1</integer>
-			</dict>
-			<key>CERTIFICATE</key>
-			<dict>
-				<key>NAME</key>
-				<string>Developer ID Installer: Lukas Pitschl</string>
-				<key>PATH</key>
-				<string>login.keychain</string>
 			</dict>
 			<key>EXCLUDED_FILES</key>
 			<array>
