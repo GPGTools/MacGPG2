@@ -119,6 +119,12 @@ pushd "$INSTALLDIR" > /dev/null
         bail_if_necessary "$?" "Failed to symlink build-env"
     fi
     
+    # Link 10.6 curl into hombrew dir.
+    if [ ! -h ./curl-10.6 ]; then
+        ln -s "${SOURCEDIR}/curl-10.6" ./curl-10.6
+        bail_if_necessary "$?" "Failed to symlink 10.6 curl"
+    fi
+    
     BUILD_PPC_ARG=""
     if [ "$BUILD_PPC" == "1" ]; then
         # Set the Build Environment for Homebrew to use.

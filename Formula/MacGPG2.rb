@@ -47,6 +47,11 @@ class Macgpg2 < Formula
     # For some reason configure fails to include the link to libresolve
     # which is necessary for pka and cert options for the keyserver to work.
     ENV.prepend 'LDFLAGS', '-lresolv'
+    # Set the flags so the build uses our 10.6 libcurl instead of the OS X one,
+    # otherwise MacGPG2 won't work properly on 10.6
+    ENV.prepend 'LDFLAGS', "-L#{HOMEBREW_PREFIX}/curl-10.6/lib -lcurl"
+    ENV['_libcurl_config'] = "#{HOMEBREW_PREFIX}/curl-10.6/bin/curl-config"
+    
     final_install_directory = "/usr/local/MacGPG2"
     
     inreplace 'g10/keygen.c', 'max=4096', 'max=8192'
@@ -66,7 +71,8 @@ class Macgpg2 < Formula
                           "--with-pth-prefix=#{HOMEBREW_PREFIX}",
                           "--with-zlib=#{HOMEBREW_PREFIX}",
                           "--with-libiconv-prefix=#{HOMEBREW_PREFIX}",
-                          "--with-libintl-prefix=#{HOMEBREW_PREFIX}"
+                          "--with-libintl-prefix=#{HOMEBREW_PREFIX}",
+                          "--with-libcurl=#{HOMEBREW_PREFIX}/curl-10.6"
     
     system "make"
     system "make check"
