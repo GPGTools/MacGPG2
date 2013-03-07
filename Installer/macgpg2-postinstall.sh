@@ -71,6 +71,8 @@ function userFixes {
 		[[ -n "$uid" && "$uid" -ge 500 && -d "$homedir" ]] || continue # Only proceed with regular accounts, which also have a homedir.
 		[[ "$gid" -lt 500 ]] || continue # I think a gid >= 500 indicates a special user. (e.g. like macports)
 
+		[[ "$homedir" == "${homedir#/Network}" ]] || continue # Ignore home-dirs starting with "/Network".
+
 		GNUPGHOME=$homedir/.gnupg
 		fixGpgHome
 		fixGPGAgent
