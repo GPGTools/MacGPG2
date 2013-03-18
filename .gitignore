@@ -4,3 +4,4 @@
 *.perspectivev3
 build/
 *.pyc
+*xcuserdata/
