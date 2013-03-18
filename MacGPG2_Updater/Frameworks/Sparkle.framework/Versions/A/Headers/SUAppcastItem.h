@@ -37,23 +37,16 @@
 - initWithDictionary:(NSDictionary *)dict;
 - initWithDictionary:(NSDictionary *)dict failureReason:(NSString**)error;
 
-- (NSString *)title;
-- (NSString *)versionString;
-- (NSString *)displayVersionString;
-- (NSDate *)date;
-- (NSString *)itemDescription;
-- (NSURL *)releaseNotesURL;
-- (NSURL *)fileURL;
-- (NSString *)DSASignature;
-- (NSString *)minimumSystemVersion;
-- (NSString *)maximumSystemVersion;
-- (NSDictionary *)deltaUpdates;
-- (BOOL)isDeltaUpdate;
+@property (retain) NSString *title, *itemDescription, *DSASignature, *versionString, *displayVersionString, *minimumSystemVersion, *maximumSystemVersion;
+@property (retain) NSDate *date;
+@property (retain) NSURL *releaseNotesURL, *fileURL, *infoURL;
+@property (retain) NSDictionary *deltaUpdates;
 
+@property (readonly) BOOL isDeltaUpdate;
 // Returns the dictionary provided in initWithDictionary; this might be useful later for extensions.
-- (NSDictionary *)propertiesDictionary;
+@property (readonly) NSDictionary *propertiesDictionary;
 
-- (NSURL *)infoURL;						// UK 2007-08-31
+
 
 @end
 
