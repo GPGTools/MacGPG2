@@ -15,6 +15,7 @@ class Macgpg2 < Formula
   depends_on 'libksba'
   depends_on 'zlib'
   depends_on 'pinentry'
+  depends_on 'MacGPG2Updater'
   
   keep_install_names true
   

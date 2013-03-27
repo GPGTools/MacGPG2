@@ -12,6 +12,7 @@ export BUILDENV_MOUNT_DIR="$SOURCEDIR/build-env"
 export BUILD_PPC=0
 export NO_BUILDROOT_EXISTS=$(test -d $INSTALLDIR -a -w $INSTALLDIR; echo $?)
 export HOMEBREW_CACHE="$INSTALLDIR/Caches"
+export UPDATER_PLIST="org.gpgtools.macgpg2.updater.plist"
 
 # Include the build-env file.
 test -f ".build-env" && source ".build-env"
@@ -158,6 +159,11 @@ if [ "$EXIT" != "0" ]; then
 fi
 
 /usr/bin/python packer --prune "$INSTALLDIR" "$DEPLOYDIR"
+# Move the MacGPG2_Updater plist file from $DEPLOYDIR/share/ into build,
+# so the packager can find it.
+if [ -f "$DEPLOYDIR/share/$UPDATER_PLIST" ]; then
+    mv "$DEPLOYDIR/share/$UPDATER_PLIST" "$BUILDDIR/$UPDATER_PLIST" || (error "Failed to copy updater plist." && exit 1)
+fi
 
 if [ "$?" != "0" ]; then
     error "Preparing files for the installer failed."
