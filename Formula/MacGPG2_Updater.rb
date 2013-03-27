@@ -36,7 +36,6 @@ class Macgpg2Updater < Formula
     # That's why we have to manually symlink.
     # Also uninstalling wouldn't take care of libexec, so I've pachted keg.rb
     libexec.install "build/Release/MacGPG2_Updater.app"
-    share.install "MacGPG2_Updater/org.gpgtools.macgpg2.updater.plist"
     Pathname.new("#{HOMEBREW_PREFIX}/libexec/MacGPG2_Updater.app").make_relative_symlink("#{libexec}/MacGPG2_Updater.app")
   end
 end

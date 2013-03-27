@@ -161,14 +161,8 @@ fi
 /usr/bin/python packer --prune "$INSTALLDIR" "$DEPLOYDIR"
 # Move the MacGPG2_Updater plist file from $DEPLOYDIR/share/ into build,
 # so the packager can find it.
-if [ -f "$DEPLOYDIR/share/$UPDATER_PLIST" ]; then
-    mv "$DEPLOYDIR/share/$UPDATER_PLIST" "$BUILDDIR/$UPDATER_PLIST" || (error "Failed to copy updater plist." && exit 1)
-fi
+cp -f "$SOURCEDIR/MacGPG2_Updater/$UPDATER_PLIST" "$BUILDDIR/" || (error "Failed to copy updater plist." && exit 1)
 
-if [ "$?" != "0" ]; then
-    error "Preparing files for the installer failed."
-    exit 1
-fi
 
 success "Build succeeded!"
 exit 0
