@@ -283,3 +283,54 @@ index 0970f99..d9d9694 100644
    safe_system curl, *args
  end
  
+diff --git a/Library/Homebrew/download_strategy.rb b/Library/Homebrew/download_strategy.rb
+index 68a91d0..e737cde 100644
+--- a/Library/Homebrew/download_strategy.rb
++++ b/Library/Homebrew/download_strategy.rb
+@@ -399,6 +399,37 @@ class GitDownloadStrategy < AbstractDownloadStrategy
+   end
+ end
+ 
++class FileDownloadStrategy < AbstractDownloadStrategy
++  def initialize name, package
++    super
++    @unique_token="#{name}-#{package.version}--directory" unless name.to_s.empty? or name == '__UNKNOWN__'
++    @clone=HOMEBREW_CACHE+@unique_token
++  end
++
++  def cached_location
++    @clone
++  end
++
++  def fetch
++    @url=@url.sub! "file://", ""
++    raise "#{@url}´is not a directory" unless File.directory?(@url)
++
++    ohai "Cloning #{@url}"
++    
++    # Copy directory to clone location if it doesn't
++    # exist yet.
++    FileUtils.cp_r @url, @clone unless @clone.exist?
++  end
++
++  def stage
++    dst = Dir.getwd
++    Dir.chdir @clone do
++      FileUtils.cp_r ".", dst
++    end
++  end
++end
++
++
+ class CVSDownloadStrategy < AbstractDownloadStrategy
+   def initialize name, package
+     super
+@@ -599,6 +630,8 @@ class DownloadStrategyDetector
+     when %r[^http://www.apache.org/dyn/closer.cgi] then CurlApacheMirrorDownloadStrategy
+       # Common URL patterns
+     when %r[^https?://svn\.] then SubversionDownloadStrategy
++      # Local directory
++    when %r[^file://] then FileDownloadStrategy
+     when bottle_native_regex, bottle_regex, old_bottle_regex
+       CurlBottleDownloadStrategy
+       # Otherwise just try to download
