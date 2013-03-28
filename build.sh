@@ -13,7 +13,6 @@ export BUILD_PPC=0
 export NO_BUILDROOT_EXISTS=$(test -d $INSTALLDIR -a -w $INSTALLDIR; echo $?)
 export HOMEBREW_CACHE=${HOMEBREW_CACHE:-"$INSTALLDIR/Caches"}
 export UPDATER_PLIST="org.gpgtools.macgpg2.updater.plist"
-export UPDATER_FORMULA="MacGPG2_Updater.rb"
 
 # Include the build-env file.
 test -f ".build-env" && source ".build-env"
@@ -75,35 +74,6 @@ function bail_if_necessary {
     exit 1
 }
 
-function current_branch {
-    branch="$(git rev-parse --abbrev-ref HEAD)"
-    # Only allow dev or master, since we know one of those always work.
-    # Prefer dev if anything else.
-    if [[ "$branch" != "dev" ]] && [[ "$branch" != "master" ]]; then
-        branch="dev"
-    fi
-    echo "$branch"
-}
-
-function remote_revision_for_branch {
-    revision="$(git rev-parse --short=10 remotes/origin/$1)"
-    echo $revision
-}
-
-function update_repos_info_for_macgpg2_updater {
-    branch="$1"
-    revision="$2"
-    path="$3"
-    
-    sed -E -i "" \
-        -e "s/:branch[^,]+/:branch => \'$branch\'/g" \
-        -e "s/:revision[^,]+/:revision => \'$revision\'/g" \
-        "$path"
-}
-
-export UPDATER_BRANCH="$(current_branch)"
-export UPDATER_REVISION=$(remote_revision_for_branch "$UPDATER_BRANCH")
-
 if [ "$ACTION" == "clean" ]; then
     title "Cleaning MacGPG2 build"
     clean
@@ -143,9 +113,6 @@ pushd "$INSTALLDIR" > /dev/null
     cp -R "$SOURCEDIR"/Formula/* ./Library/Formula/
     bail_if_necessary "$?" "Failed to copy MacGPG2 formulae"
     
-    # Update the MacGPG2_Updater Formula so it always fetches the current
-    # revision from the current branch.
-    update_repos_info_for_macgpg2_updater "$UPDATER_BRANCH" "$UPDATER_REVISION" "./Library/Formula/$UPDATER_FORMULA"
     # Link the jail dir which contains all compilers.
     if [ ! -h ./build-env ]; then
         ln -s "${BUILDENV_MOUNT_DIR}" ./build-env
