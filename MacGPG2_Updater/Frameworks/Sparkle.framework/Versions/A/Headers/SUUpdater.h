@@ -12,7 +12,7 @@
 #import "SUVersionComparisonProtocol.h"
 #import "SUVersionDisplayProtocol.h"
 
-@class SUUpdateDriver, SUAppcastItem, SUHost, SUAppcast;
+@class SUUpdateDriver, SUAppcastItem, SUHost, SUAppcast, SUUpdateAlert;
 
 @interface SUUpdater : NSObject
 {
@@ -137,6 +137,9 @@
 //	the opportunity to hide attached windows etc. that may get in the way:
 -(void)	updaterWillShowModalAlert:(SUUpdater *)updater;
 -(void)	updaterDidShowModalAlert:(SUUpdater *)updater;
+
+// To resize the release notes view.
+- (void)updateAlert:(SUUpdateAlert *)updateAlert willShowReleaseNotesWithSize:(NSSize*)size;
 
 @end
 
