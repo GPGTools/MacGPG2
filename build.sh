@@ -158,7 +158,7 @@ if [ "$EXIT" != "0" ]; then
     exit 1
 fi
 
-/usr/bin/python packer --prune "$INSTALLDIR" "$DEPLOYDIR"
+/usr/bin/python packer --prune "$INSTALLDIR" "$DEPLOYDIR" || (error "Preparing files for the installer failed." && exit 1)
 # Move the MacGPG2_Updater plist file from $DEPLOYDIR/share/ into build,
 # so the packager can find it.
 cp -f "$SOURCEDIR/MacGPG2_Updater/$UPDATER_PLIST" "$BUILDDIR/" || (error "Failed to copy updater plist." && exit 1)
