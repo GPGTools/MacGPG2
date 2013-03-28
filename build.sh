@@ -146,7 +146,6 @@ pushd "$INSTALLDIR" > /dev/null
     # Update the MacGPG2_Updater Formula so it always fetches the current
     # revision from the current branch.
     update_repos_info_for_macgpg2_updater "$UPDATER_BRANCH" "$UPDATER_REVISION" "./Library/Formula/$UPDATER_FORMULA"
-    bail_if_necessary "1" "Failed to replace repos info"
     # Link the jail dir which contains all compilers.
     if [ ! -h ./build-env ]; then
         ln -s "${BUILDENV_MOUNT_DIR}" ./build-env
