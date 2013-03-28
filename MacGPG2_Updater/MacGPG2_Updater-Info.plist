@@ -41,6 +41,6 @@
 	<key>CFBundleDisplayName</key>
 	<string>MacGPG2</string>
 	<key>SUFeedURL</key>
-	<string>https://gpgtools.org/releases/gpgservices/appcast.xml</string>
+	<string>https://gpgtools.org/releases/macgpg2/appcast.xml</string>
 </dict>
 </plist>
