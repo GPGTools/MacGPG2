@@ -95,7 +95,7 @@ function update_repos_info_for_macgpg2_updater {
     revision="$2"
     path="$3"
     
-    sed -E -i ".bak" \
+    sed -E -i "" \
         -e "s/:branch[^,]+/:branch => \'$branch\'/g" \
         -e "s/:revision[^,]+/:revision => \'$revision\'/g" \
         "$path"
