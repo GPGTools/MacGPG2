@@ -39,6 +39,6 @@
 	<key>SUEnableAutomaticChecks</key>
 	<true/>
 	<key>SUFeedURL</key>
-	<string>https://gpgtools.org/macgpg2/appcast</string>
+	<string>https://gpgtools.org/releases/gpgservices/appcast.xml</string>
 </dict>
 </plist>
