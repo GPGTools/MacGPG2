@@ -10,7 +10,7 @@ export DEPLOYDIR="$BUILDDIR/MacGPG2"
 export BUILDENV_DMG=""
 export BUILDENV_MOUNT_DIR="$SOURCEDIR/build-env"
 export BUILD_PPC=0
-export NO_BUILDROOT_EXISTS=$(test -d $INSTALLDIR -a -w $INSTALLDIR; echo $?)
+export NO_BUILDROOT_EXISTS=$(test -d "$INSTALLDIR" -a -w "$INSTALLDIR"; echo $?)
 export HOMEBREW_CACHE=${HOMEBREW_CACHE:-"$INSTALLDIR/Caches"}
 export UPDATER_PLIST="org.gpgtools.macgpg2.updater.plist"
 
@@ -32,8 +32,7 @@ function tryToMountBuildEnvironment {
     status "Try to mount the MacGPG2 build environment for ppc support"
     if [ -f "$BUILDENV_DMG" ]; then
         STATUS=$(mountBuildEnvironment "$BUILDENV_DMG")
-        echo "STATUS: ${STATUS}"
-		if [ "$STATUS" == "0" ]; then
+        if [ "$STATUS" == "0" ]; then
             BUILD_PPC=1
             stat=$(printf "%s%s%s" $(white) "enabled" $(reset))
             status "PPC support $stat."
