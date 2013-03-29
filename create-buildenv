@@ -1,0 +1,363 @@
+#!/usr/bin/python
+
+import os, sys
+from optparse import OptionParser
+from subprocess import check_output
+
+import traceback
+
+sys.path.insert(1, './Dependencies/GPGTools_Core/python')
+
+from clitools import *
+from clitools.color import *
+
+BUILDENV_FILE = ".build-env.local"
+CLT_IMAGE_FILE_NAME = "cltools_lion_latemarch12.dmg"
+CLT_IMAGE_FILE_SIZE = 180040642
+XCODE3_IMAGE_FILE_NAME = "xcode_3.2.6_and_ios_sdk_4.3.dmg"
+XCODE3_IMAGE_FILE_SIZE = 4443150993
+
+def ask_for(message):
+    return raw_input("%s==> %s%s: %s" % (TerminalColor.blue(), TerminalColor.white(), message, TerminalColor.reset()))
+
+def c_status(message, end=False):
+    if not end:
+        sys.stdout.write("%s==>%s %s: " % (TerminalColor.blue(), TerminalColor.reset(), message))
+    elif end:
+        sys.stdout.write("%s\n" % (message))
+
+def find_sdk_image(file):
+    # Check in ~/Downloads and ~/Downloads/Applications or use spotlight.
+    #return None
+    path = ["~", "Downloads"]
+    downloads_path = os.path.expanduser(os.path.join(*(path + [file])))
+    if os.path.isfile(downloads_path):
+        return downloads_path
+    
+    path.append("Applications")
+    path.append(file)
+    downloads_path = os.path.expanduser(os.path.join(*path))
+    if os.path.isfile(downloads_path):
+        return downloads_path
+    
+    # Find file using spotlight.
+    files = check_output(["/usr/bin/mdfind", "-name", file]).split("\n")
+    for f in files:
+        if f == file:
+            return f
+    
+    return None
+
+def check_image_file_size(image_name, path):
+    filesize = os.path.getsize(path)
+    if image_name == CLT_IMAGE_FILE_NAME:
+        return filesize == CLT_IMAGE_FILE_SIZE
+    elif image_name == XCODE3_IMAGE_FILE_NAME:
+        return filesize == XCODE3_IMAGE_FILE_SIZE
+    
+    return False
+    
+def check_image(image_name, path):
+    # Check for non empty and correct size.
+    check = True
+    
+    if path == None:
+        return False
+    
+    if path.strip() == "":
+        error("You have to enter a valid path", noexit=True)
+        return False
+    
+    if not os.path.isfile(path):
+        error("File doesn't exist", noexit=True)
+        return False
+    
+    if not os.path.splitext(os.path.basename(path))[1] == ".dmg":
+        error("Not a valid disk image", noexit=True)
+    
+    check = check_image_file_size(image_name, path)
+    
+    use_anyway = check
+    yes_answers = ["y", "yes"]
+    no_answers = ["n", "no"]
+    if not check:
+        l = ""
+        while l.lower() not in yes_answers + no_answers:
+            l = raw_input("%sError:%s The size of the image doesn't match - do you want to use it anyway (y|n): " % (TerminalColor.red(), TerminalColor.reset()))
+        if l.lower() in yes_answers:
+            use_anyway = True
+        else:
+            use_anyway = False
+    
+    return use_anyway 
+
+def get_image_xcode3(options):
+    if options.xcode3_image and os.path.isfile(options.xcode3_image) and check_image_file_size(XCODE3_IMAGE_FILE_NAME, options.xcode3_image):
+        status("Using Xcode 3 disk image: %s" % (options.xcode3_image))
+        return options.xcode3_image
+    
+    if options.xcode3_image and not os.path.isfile(options.xcode3_image):
+        error("Xcode 3 SDK disk image not found at %s" % (options.xcode3_image), noexit=True)
+        options.xcode3_image = None
+    
+    c_status("Trying to automatically find Xcode 3 SDK disk image")
+    
+    options.xcode3_image = find_sdk_image(XCODE3_IMAGE_FILE_NAME)
+    if options.xcode3_image:
+        c_status("%s%s%s" % (TerminalColor.white(), options.xcode3_image, TerminalColor.reset()), end=True)
+    else:
+        c_status("%sno image found%s" % (TerminalColor.white(), TerminalColor.reset()), end=True)
+    
+    while not check_image(XCODE3_IMAGE_FILE_NAME, options.xcode3_image):
+        options.xcode3_image = ask_for("Xcode 3 SDK disk image path")
+        options.xcode3_image = os.path.realpath(os.path.expanduser(options.xcode3_image))
+    
+    status("Using disk image: %s" % (options.xcode3_image))
+    
+    return options.xcode3_image
+
+def get_image_clt(options):
+    if options.clt_image and os.path.isfile(options.clt_image) and check_image_file_size(CLT_IMAGE_FILE_NAME, options.clt_image):
+        status("Using Command Line Tools disk image: %s" % (options.clt_image))
+        return options.clt_image
+    
+    if options.clt_image and not os.path.isfile(options.clt_image):
+        error("Command Line Tools disk image not found at %s" % (options.clt_image), noexit=True)
+        options.clt_image = None
+    
+    c_status("Trying to automatically find Command Line Tools disk image")
+    
+    options.clt_image = find_sdk_image(CLT_IMAGE_FILE_NAME)
+    if options.clt_image:
+        c_status("%s%s%s" % (TerminalColor.white(), options.clt_image, TerminalColor.reset()), end=True)
+    else:
+        c_status("%sno image found%s" % (TerminalColor.white(), TerminalColor.reset()), end=True)
+    
+    while not check_image(CLT_IMAGE_FILE_NAME, options.clt_image):
+        options.clt_image = ask_for("Command Line Tools disk image path")
+        options.clt_image = os.path.realpath(os.path.expanduser(options.clt_image))
+    
+    status("Using disk image: %s" % (options.clt_image))
+    
+    return options.clt_image
+
+def get_image(name, options):
+    if name == CLT_IMAGE_FILE_NAME:
+        return get_image_clt(options)
+    elif name == XCODE3_IMAGE_FILE_NAME:
+        return get_image_xcode3(options)
+    
+
+def parse_options():
+    usage = "usage: %prog [-f] [-x XCODE3_IMAGE] [-t CLT_IMAGE] target_image"
+    parser = OptionParser(usage=usage)
+    parser.add_option("-f", "--force", dest="force", action="store_true",
+                      default=False,
+                      help="Re-create the image even if it already exists.")
+    parser.add_option("-x", "--xcode3-image", dest="xcode3_image", help="Path to the Xcode 3 SDK disk image",
+                      default="")
+    parser.add_option("-t", "--clt-image", dest="clt_image", help="Path to the Command Line Tools disk image",
+                      default="")
+    parser.add_option("-v", "--verbose", dest="verbose", default=True, action="store_true", 
+                      help="Print status messages")
+    parser.add_option("-d", "--debug", dest="debug", default=False, action="store_true",
+                      help="Print all terminal commands")
+    parser.add_option("-q", "--quiet", dest="quiet", default=False, action="store_true",
+                      help="Very quiet")
+    
+    (options, args) = parser.parse_args()
+    
+    if len(args) != 1:
+        print main.__doc__
+        parser.print_usage()
+        sys.exit(1)
+    
+    if not os.geteuid() == 0:
+        print main.__doc__
+        error("Only runs as root - Apple's installer needs sudo :(")
+    
+    target_image = os.path.realpath(os.path.expanduser(args[0]))
+    # Check if the image already exists. Warn the user, if force is not set.
+    if os.path.isfile(target_image) and not options.force:
+        error("Target image: %s already exists.\n\nUse --force to remove it first." % (args[0]))
+    
+    if options.verbose and options.quiet:
+        error("Conflicting options: --verbose and --quiet. Choose one")
+    
+    # Check if the options for xcode3 image and clt image where set, otherwise
+    # ask for them.
+    if options.xcode3_image:
+        options.xcode3_image = os.path.realpath(os.path.expanduser(options.xcode3_image))
+    if options.clt_image:
+        options.clt_image = os.path.realpath(os.path.expanduser(options.clt_image))
+    
+    print main.__doc__
+    
+    # This will block till we have the images.
+    options.xcode3_image = get_image(XCODE3_IMAGE_FILE_NAME, options)
+    options.clt_image = get_image(CLT_IMAGE_FILE_NAME, options)
+    
+    return (options, args)
+
+def cleanup(error_=False, error_message=None, verbose=False):
+    ppcExtras = globals().get("ppcExtras")
+    if ppcExtras:
+        ppcExtras.unmount()
+        if os.path.isfile(ppcExtras.path()):
+            ppcExtras.remove()
+    
+    buildEnv = globals().get("buildEnv")
+    if buildEnv:
+        buildEnv.unmount()
+    
+    clt = globals().get("clt")
+    if clt:
+        clt.unmount()
+    
+    xcode3 = globals().get("xcode3")
+    if xcode3:
+        xcode3.unmount()
+    
+    if error_:
+        msg = []
+        msg.append("Failed to create the MacGPG2 build environment")
+        if verbose and error_message:
+            msg.append(error_message)
+        error("\n".join(msg))
+        return
+    
+    success("Successfully created the MacGPG2 build environment")
+
+def main(options, args):
+    """
+    Creates a MacGPG2 build environment which includes all llvm compiler tools with PPC support.
+    
+    In order for this script to run, you'll have to download the Xcode 3 SDK disk image
+    and the Command Line Tools disk image which you can find on http://developer.apple.com.
+    
+    Disk Image URLS:
+    
+    - Command Line Tools - http://adcdownload.apple.com/Developer_Tools/command_line_tools_for_xcode_4.4__late_march_2012/cltools_lion_latemarch12.dmg
+    - Xcode 3 SDK - http://adcdownload.apple.com/Developer_Tools/xcode_3.2.6_and_ios_sdk_4.3__final/xcode_3.2.6_and_ios_sdk_4.3.dmg
+    
+    The two disk images will be auto detected if available.
+    """
+    workingDir = os.path.realpath(os.curdir)
+    
+    BUILD_IMAGE_PATH = os.path.realpath(os.path.expanduser(args[0]))
+    XCODE3_IMAGE_PATH = options.xcode3_image
+    CLT_IMAGE_PATH = options.clt_image
+    
+    title("Create the MacGPG2 build environment")
+    
+    buildEnv = Diskimage(BUILD_IMAGE_PATH, size="1.5g", verbose=options.debug)
+    globals()['buildEnv'] = buildEnv
+    # Remove build env if force is set.
+    if options.force and os.path.isfile(BUILD_IMAGE_PATH):
+        if options.verbose or options.debug:
+            status("Remove old build environment: %s" % (BUILD_IMAGE_PATH))
+        os.unlink(BUILD_IMAGE_PATH)
+    
+    # Create the PPCExtras dmg.
+    # Set the mount root, otherwise it will be mounted into /Volumes.
+    status("Initialize the the build environment disk image")
+    ppcExtras = Diskimage("%s/PPCExtras.dmg" % (buildEnv.mountpath()), size="300m",
+                          mountroot=buildEnv.mountpath(), verbose=options.debug)
+    globals()['ppcExtras'] = ppcExtras
+    
+    xcode3 = Diskimage(XCODE3_IMAGE_PATH, readonly=True, verbose=options.debug)
+    globals()['xcode3'] = xcode3
+    
+    # Install the dmgs related to the PPC Extras from the Xcode3 SDK.
+    if options.verbose or options.debug:
+        status("Install Developer Tools CLI")
+    xcode3.package("DeveloperToolsCLI").install(ppcExtras)
+    if options.verbose or options.debug:
+        status("Install LLVM GCC 4.2")
+    xcode3.package("llvm-gcc4.2").install(ppcExtras)
+    
+    # Load the Command Line Tools.
+    clt = Diskimage(CLT_IMAGE_PATH, readonly=True, verbose=options.debug)
+    globals()['clt'] = clt
+    
+    # Install all dmgs necessary to complete the build environment
+    if options.verbose or options.debug:
+        status("Install Mac OS X 10.5 SDK")
+    xcode3.package("MacOSX10.5").install(buildEnv)
+    
+    if options.verbose or options.debug:
+        status("Install LLVM GCC 4.2 PPC libs")
+    clt.package("llvm-gcc4.2").install(buildEnv)
+    clt.package("DevSDK").install(buildEnv)
+    clt.package("DeveloperToolsCLI").install(buildEnv)
+
+    xcode3.unmount()
+    clt.unmount()
+
+    # Install PPC llvm-gcc-4.2 binaries.
+    if options.verbose or options.debug:
+        status("Copy and link the PPC libs and binaries")
+    buildEnv.cp(ppcExtras.find("/usr/llvm-gcc-4.2/bin/powerpc-apple-darwin10-llvm-g*"), "/usr/llvm-gcc-4.2/bin")
+    # If the destination name does not include a full path, a relative symlink is created.
+    buildEnv.ln("/usr/llvm-gcc-4.2/bin/powerpc-apple-darwin10-llvm-g++-4.2", "powerpc-apple-darwin11-llvm-g++-4.2")
+    buildEnv.ln("/usr/llvm-gcc-4.2/bin/powerpc-apple-darwin10-llvm-gcc-4.2", "powerpc-apple-darwin11-llvm-gcc-4.2")
+ 
+    # Install the PPC llvm-gcc-4.2 libraries.
+    buildEnv.cp(ppcExtras.find("/usr/llvm-gcc-4.2/lib/gcc/powerpc-apple-darwin10"), "/usr/llvm-gcc-4.2/lib/gcc/")
+ 
+    # Install the PPC llvm-gcc-4.2 libexecs.
+    buildEnv.cp(ppcExtras.find("/usr/llvm-gcc-4.2/libexec/gcc/powerpc-apple-darwin10"), "/usr/llvm-gcc-4.2/libexec/gcc")
+    buildEnv.cp(ppcExtras.find("/usr/llvm-gcc-4.2/libexec/gcc/libllvmgcc.dylib"), 
+                "/usr/llvm-gcc-4.2/libexec/gcc/powerpc-apple-darwin10/4.2.1")
+
+    # Link the llvm-gcc-4.2 bins into /usr/bin
+    with buildEnv.cd("/usr/bin"):
+        buildEnv.ln("../llvm-gcc-4.2/bin/powerpc-apple-darwin10-llvm-g*")
+
+    # Copy the ppc assembler (as).
+    with buildEnv.cd("/usr/libexec/as"):
+        buildEnv.mkdir("ppc")
+        buildEnv.cp(ppcExtras.find("/usr/libexec/gcc/darwin/ppc/as"), "ppc")
+
+    with buildEnv.cd("/usr/bin"):
+        buildEnv.cp(ppcExtras.find("/usr/bin/ld"))
+    
+    if options.verbose or options.debug:
+        status("Remove unnecessary files")
+    USELESS_FILES = ["/usr/share", "/usr/libexec/git-core", "/usr/libexec/gdb", 
+                     "/usr/lib/postgresql", "/usr/include/subversion-1", 
+                     "/usr/include/postgresql", "/usr/include/php", "/System/Library/Perl",
+                     "/System/Library/Frameworks/Tk.framework", "/System/Library/Frameworks/Ruby*",
+                     "/System/Library/Frameworks/Python.framework", "/SDKs/MacOSX10.5.sdk/usr/include/wx-2.8",
+                     "/SDKs/MacOSX10.5.sdk/usr/include/php", "/SDKs/MacOSX10.5.sdk/System/Library/Frameworks/Tcl.framework",
+                     "/SDKs/MacOSX10.5.sdk/System/Library/Frameworks/Tk.framework", 
+                     "/SDKs/MacOSX10.5.sdk/System/Library/Frameworks/TWAIN.framework",
+                     "/SDKs/MacOSX10.5.sdk/System/Library/Frameworks/Python.framework",
+                     "/SDKs/MacOSX10.5.sdk/System/Library/Frameworks/Java*",
+                     "/SDKs/MacOSX10.5.sdk/System/Library/Frameworks/Ruby*",
+                     "/System/Library/Frameworks/JavaVM.framework", 
+                     "/System/Library/Frameworks/TWAIN.framework"]
+    
+    for path in USELESS_FILES:
+        buildEnv.remove(buildEnv.find(path))
+    
+    ppcExtras.remove()
+    buildEnv.unmount()
+    status("Compact build environment")
+    buildEnv.convert(format="UDBZ", replace=True)
+    
+    with open(os.path.join(workingDir, BUILDENV_FILE), "w") as f:
+        f.write("BUILDENV_DMG=\"%s\"" % (BUILD_IMAGE_PATH))
+    os.chmod(os.path.join(workingDir, BUILDENV_FILE), 0775)
+    
+    cleanup()
+    
+if __name__ == '__main__':
+    (options, args) = parse_options()
+    try:
+        main(options, args)
+    except SystemExit:
+        pass
+    except:
+        cleanup(True, error_message=traceback.format_exc(), verbose=options.debug)
+        print "%s" % (TerminalColor.reset())

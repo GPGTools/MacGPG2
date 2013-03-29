@@ -1,0 +1,7 @@
+//
+// Prefix header for all source files of the 'MacGPG2_Updater' target in the 'MacGPG2_Updater' project
+//
+
+#ifdef __OBJC__
+	#import <Cocoa/Cocoa.h>
+#endif
