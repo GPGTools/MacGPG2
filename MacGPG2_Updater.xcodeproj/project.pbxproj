@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1BDEF4AC170509AA005D1FE2 /* MacGPG2.iconset in Resources */ = {isa = PBXBuildFile; fileRef = 1BDEF4AB170509AA005D1FE2 /* MacGPG2.iconset */; };
 		306B66CC16E8A6A600E976FD /* Sparkle.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 306B66CB16E8A6A600E976FD /* Sparkle.framework */; };
 		306B66CE16E8A6C500E976FD /* Sparkle.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 306B66CB16E8A6A600E976FD /* Sparkle.framework */; };
 		30EE569D16E8A6550075330E /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 30EE569C16E8A6550075330E /* Cocoa.framework */; };
@@ -30,6 +31,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		1BDEF4AB170509AA005D1FE2 /* MacGPG2.iconset */ = {isa = PBXFileReference; lastKnownFileType = folder.iconset; name = MacGPG2.iconset; path = MacGPG2_Updater/MacGPG2.iconset; sourceTree = "<group>"; };
 		306B66CB16E8A6A600E976FD /* Sparkle.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Sparkle.framework; path = MacGPG2_Updater/Frameworks/Sparkle.framework; sourceTree = "<group>"; };
 		30EE569916E8A6550075330E /* MacGPG2_Updater.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MacGPG2_Updater.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		30EE569C16E8A6550075330E /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
@@ -60,6 +62,7 @@
 		30EE569016E8A6550075330E = {
 			isa = PBXGroup;
 			children = (
+				1BDEF4AB170509AA005D1FE2 /* MacGPG2.iconset */,
 				30EE56A216E8A6550075330E /* MacGPG2_Updater */,
 				30EE569B16E8A6550075330E /* Frameworks */,
 				30EE569A16E8A6550075330E /* Products */,
@@ -169,6 +172,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				30EE56B316E8A6550075330E /* MainMenu.xib in Resources */,
+				1BDEF4AC170509AA005D1FE2 /* MacGPG2.iconset in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
