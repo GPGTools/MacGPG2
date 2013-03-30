@@ -5,7 +5,7 @@
 	<key>KeepAlive</key>
 	<false/>
 	<key>StartInterval</key>
-	<integer>86400</integer>
+	<integer>10800</integer>
 	<key>Label</key>
 	<string>org.gpgtools.macgpg2.updater</string>
 	<key>ProgramArguments</key>
