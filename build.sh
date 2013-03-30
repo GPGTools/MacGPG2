@@ -89,7 +89,7 @@ if [ "$NO_BUILDROOT_EXISTS" == "1" ]; then
     # Download homebrew and install it in BUILDDIR
     mkdir -p "$BUILDDIR"
     # Clone the homebrew from Dependencies into the build dir.
-    git clone --recursive $HOMEBREWDIR $INSTALLDIR > /dev/null
+    git clone --recursive "$HOMEBREWDIR" "$INSTALLDIR" > /dev/null
     
     bail_if_necessary "$?" "Failed to bootstrap homebrew"
     
@@ -98,7 +98,7 @@ if [ "$NO_BUILDROOT_EXISTS" == "1" ]; then
         # patch.
         status "Applying GPGTools homebrew patches"
         for file in "$PATCHDIR"/homebrew/*.patch; do
-            patch --force -p1 < $file > /dev/null
+            patch --force -p1 < "$file" > /dev/null
             bail_if_necessary "$?" "Failed to apply homebrew patch $file"
         done
     popd > /dev/null
