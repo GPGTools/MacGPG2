@@ -295,10 +295,10 @@ index 62b530b..33855e1 100644
  			    "optimistically attempting to use %s instead\n"),
  			  openpgp_cipher_algo_name (algo));
 diff --git g10/misc.c g10/misc.c
-index c49945a..3bf550c 100644
+index 6e9b31e..fee985d 100644
 --- g10/misc.c
 +++ g10/misc.c
-@@ -491,24 +491,6 @@
+@@ -509,24 +509,6 @@ openpgp_md_test_algo( int algo )
    return gcry_md_test_algo (algo);
  }
  
@@ -320,7 +320,7 @@ index c49945a..3bf550c 100644
 -#endif
 -
 -
- static unsigned long 
+ static unsigned long
  get_signature_count (PKT_secret_key *sk)
  {
 diff --git g10/pubkey-enc.c g10/pubkey-enc.c

@@ -1,9 +1,9 @@
 require 'formula'
 
 class Macgpg2 < Formula
-  url 'ftp://ftp.gnupg.org/gcrypt/gnupg/gnupg-2.0.19.tar.bz2'
+  url 'ftp://ftp.gnupg.org/gcrypt/gnupg/gnupg-2.0.20.tar.bz2'
   homepage 'http://www.gnupg.org/'
-  sha1 '190c09e6688f688fb0a5cf884d01e240d957ac1f'
+  sha1 '7ddfefa37ee9da89a8aaa8f9059d251b4cd02562'
   
   depends_on 'libiconv'
   depends_on 'gettext'
@@ -25,8 +25,7 @@ class Macgpg2 < Formula
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/keysize.patch",
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/launchd.patch",
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/MacGPG2VersionString.patch",
-              "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/options.skel.patch",
-              "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/CVE-2012-6085-vulnerability.patch"] }
+              "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/options.skel.patch"] }
   end
 
   def install
@@ -205,3 +204,17 @@ index e40f18d..f587b62 100644
 +  return "/usr/local/MacGPG2/libexec";
  #endif /*!HAVE_W32_SYSTEM*/
  }
+
+diff --git a/scd/pcsc-wrapper.c b/scd/pcsc-wrapper.c
+index 1c45a4b..3767b38 100644
+--- a/scd/pcsc-wrapper.c
++++ b/scd/pcsc-wrapper.c
+@@ -66,7 +66,7 @@
+ static int verbose;
+ 
+ #if defined(__APPLE__) || defined(_WIN32) || defined(__CYGWIN__)
+-typedef unsinged int pcsc_dword_t;
++typedef unsigned int pcsc_dword_t;
+ #else
+ typedef unsigned long pcsc_dword_t;
+ #endif
