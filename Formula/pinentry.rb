@@ -30,13 +30,14 @@ class Pinentry < Formula
 				 "MACOSX_DEPLOYMENT_TARGET=10.5 "
     end
     
+	puts "CODE_SIGN=" + ENV['CODE_SIGN']
 	
     # Use xconfig to force using GGC_VERSION specified.
     inreplace 'Makefile' do |s|
       s.gsub! "@xcodebuild", "@xcodebuild #{xconfig}"
     end
     
-    system "make #{target}" # if this fails, try separate make/make install steps
+    system "export CODE_SIGN=" + ENV['CODE_SIGN'] + "; make #{target}" # if this fails, try separate make/make install steps
     
     # Homebrew doesn't like touching libexec for some reason.
     # That's why we have to manually symlink.
