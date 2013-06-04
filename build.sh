@@ -139,8 +139,7 @@ pushd "$INSTALLDIR" > /dev/null
     if [ "$MACGPG2_ALREADY_BUILT" != "0" ] || [ "$FORCE" == "1" ]; then
         # Build MacGPG2 with make -j4
 	export HOMEBREW_MAKE_JOBS=4
-		echo "CODE_SIGN: '$CODE_SIGN'"
-        CODE_SIGN=$CODE_SIGN ./bin/brew install --env=std --universal $BUILD_PPC_ARG --use-llvm --quieter MacGPG2
+        ./bin/brew install --env=std --universal $BUILD_PPC_ARG --use-llvm --quieter MacGPG2
         EXIT="$?"
     else
         success "MacGPG2 is already built. No need to do it again."

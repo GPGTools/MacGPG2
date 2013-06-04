@@ -2,7 +2,7 @@ require 'formula'
 
 class Pinentry < Formula
   homepage 'http://gpgtools.org'
-  url 'https://github.com/GPGTools/pinentry-mac.git', :revision => 'HEAD'
+  url 'https://github.com/GPGTools/pinentry-mac.git', :revision => 'origin/master'
   sha1 ''
   version '0.8.1'
   # depends_on 'cmake' => :build
@@ -30,14 +30,12 @@ class Pinentry < Formula
 				 "MACOSX_DEPLOYMENT_TARGET=10.5 "
     end
     
-	puts "CODE_SIGN=" + ENV['CODE_SIGN']
-	
     # Use xconfig to force using GGC_VERSION specified.
     inreplace 'Makefile' do |s|
       s.gsub! "@xcodebuild", "@xcodebuild #{xconfig}"
     end
     
-    system "export CODE_SIGN=" + ENV['CODE_SIGN'] + "; make #{target}" # if this fails, try separate make/make install steps
+    system "make #{target}" # if this fails, try separate make/make install steps
     
     # Homebrew doesn't like touching libexec for some reason.
     # That's why we have to manually symlink.
