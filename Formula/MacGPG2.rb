@@ -247,3 +247,17 @@ index efb45a6..f0c1508 100644
 +  return "/usr/local/MacGPG2/share/gnupg";
  #endif /*!HAVE_W32_SYSTEM*/
  }
+
+diff --git a/scd/Makefile.in b/scd/Makefile.in
+index d065933..07d922d 100644
+--- a/scd/Makefile.in
++++ b/scd/Makefile.in
+@@ -92,7 +92,7 @@ host_triplet = @host@
+ DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
+ 	$(top_srcdir)/am/cmacros.am
+ @HAVE_DOSISH_SYSTEM_FALSE@am__append_1 = -DGNUPG_BINDIR="\"$(bindir)\""            \
+-@HAVE_DOSISH_SYSTEM_FALSE@               -DGNUPG_LIBEXECDIR="\"$(libexecdir)\""    \
++@HAVE_DOSISH_SYSTEM_FALSE@               -DGNUPG_LIBEXECDIR="\"/usr/local/MacGPG2/libexec\""    \
+ @HAVE_DOSISH_SYSTEM_FALSE@               -DGNUPG_LIBDIR="\"$(libdir)/@PACKAGE@\""  \
+ @HAVE_DOSISH_SYSTEM_FALSE@               -DGNUPG_DATADIR="\"$(datadir)/@PACKAGE@\"" \
+ @HAVE_DOSISH_SYSTEM_FALSE@               -DGNUPG_SYSCONFDIR="\"$(sysconfdir)/@PACKAGE@\""
