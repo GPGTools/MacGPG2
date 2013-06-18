@@ -62,7 +62,9 @@ class Macgpg2 < Formula
                           "--enable-standard-socket",
                           "--with-pinentry-pgm=#{final_install_directory}/libexec/pinentry-mac.app/Contents/MacOS/pinentry-mac",
                           "--with-agent-pgm=#{final_install_directory}/bin/gpg-agent",
-                          "--with-scdaemon-pgm=#{final_install_directory}/bin/scdaemon",
+                          "--with-scdaemon-pgm=#{final_install_directory}/libexec/scdaemon",
+                          "--disable-gpgsm", # We don't include it in the installation, no need to build it.
+                          "--with-dirmngr-pgm=#{final_install_directory}/bin/dirmngr", # It's not possible to disable it, so at least have the right path. 
                           "--with-gpg-error-prefix=#{HOMEBREW_PREFIX}",
                           "--with-libgcrypt-prefix=#{HOMEBREW_PREFIX}",
                           "--with-libassuan-prefix=#{HOMEBREW_PREFIX}",
@@ -179,20 +181,6 @@ index db5ddf5..c34fcc7 100644
  # endif
  #endif
 
-diff --git a/scd/Makefile.in b/scd/Makefile.in
-index d3a924c..319e3ed 100644
---- a/scd/Makefile.in
-+++ b/scd/Makefile.in
-@@ -74,7 +74,7 @@ bin_PROGRAMS = scdaemon$(EXEEXT)
- DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
- 	$(top_srcdir)/am/cmacros.am
- @HAVE_DOSISH_SYSTEM_FALSE@am__append_1 = -DGNUPG_BINDIR="\"$(bindir)\""            \
--@HAVE_DOSISH_SYSTEM_FALSE@               -DGNUPG_LIBEXECDIR="\"$(libexecdir)\""    \
-+@HAVE_DOSISH_SYSTEM_FALSE@               -DGNUPG_LIBEXECDIR="\"/usr/local/MacGPG2/libexec\""    \
- @HAVE_DOSISH_SYSTEM_FALSE@               -DGNUPG_LIBDIR="\"$(libdir)/@PACKAGE@\""  \
- @HAVE_DOSISH_SYSTEM_FALSE@               -DGNUPG_DATADIR="\"$(datadir)/@PACKAGE@\"" \
- @HAVE_DOSISH_SYSTEM_FALSE@               -DGNUPG_SYSCONFDIR="\"$(sysconfdir)/@PACKAGE@\""
-
 diff --git a/common/homedir.c b/common/homedir.c
 index e40f18d..f587b62 100644
 --- a/common/homedir.c
@@ -219,3 +207,43 @@ index 1c45a4b..3767b38 100644
  #else
  typedef unsigned long pcsc_dword_t;
  #endif
+
+diff --git a/common/homedir.c b/common/homedir.c
+index efb45a6..f0c1508 100644
+--- a/common/homedir.c
++++ b/common/homedir.c
+@@ -261,7 +261,7 @@ gnupg_sysconfdir (void)
+     }
+   return name;
+ #else /*!HAVE_W32_SYSTEM*/
+-  return GNUPG_SYSCONFDIR;
++  return "/usr/local/MacGPG2/etc/gnupg";
+ #endif /*!HAVE_W32_SYSTEM*/
+ }
+ 
+@@ -272,7 +272,7 @@ gnupg_bindir (void)
+ #ifdef HAVE_W32_SYSTEM
+   return w32_rootdir ();
+ #else /*!HAVE_W32_SYSTEM*/
+-  return GNUPG_BINDIR;
++  return "/usr/local/MacGPG2/bin";
+ #endif /*!HAVE_W32_SYSTEM*/
+ }
+ 
+@@ -305,7 +305,7 @@ gnupg_libdir (void)
+     }
+   return name;
+ #else /*!HAVE_W32_SYSTEM*/
+-  return GNUPG_LIBDIR;
++  return "/usr/local/MacGPG2/lib";
+ #endif /*!HAVE_W32_SYSTEM*/
+ }
+ 
+@@ -325,7 +325,7 @@ gnupg_datadir (void)
+     }
+   return name;
+ #else /*!HAVE_W32_SYSTEM*/
+-  return GNUPG_DATADIR;
++  return "/usr/local/MacGPG2/share/gnupg";
+ #endif /*!HAVE_W32_SYSTEM*/
+ }
