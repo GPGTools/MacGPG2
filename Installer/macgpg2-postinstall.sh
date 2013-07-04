@@ -76,6 +76,7 @@ function userFixes {
 		GNUPGHOME=$homedir/.gnupg
 		fixGpgHome
 		fixGPGAgent
+		installShutdownAgentHelper "$homedir"
 	done
 
 }
@@ -201,14 +202,31 @@ function cleanOldGpg {
 	rm -rf $e/doc/gnupg $e/gnupg
 }
 
+function installShutdownAgentHelper {
+    LAUNCH_AGENTS_DIR="$1/Library/LaunchAgents"
+    if [ ! -d "$LAUNCH_AGENTS_DIR" ]; then
+        mkdir -p "$LAUNCH_AGENTS_DIR";
+    fi
+    if [ -L "$LAUNCH_AGENTS_DIR/$PLIST_NAME" ]; then
+        rm "$LAUNCH_AGENTS_DIR/$PLIST_NAME"
+    fi
+    ln -s "/usr/local/MacGPG2/share/$PLIST_NAME" "$LAUNCH_AGENTS_DIR/$PLIST_NAME"
+}
+
+function registerShutdownAgentHelper {
+    launchctl unload "$HOME/Library/LaunchAgents/$PLIST_NAME" &> /dev/null
+    launchctl load "$HOME/Library/LaunchAgents/$PLIST_NAME"
+}
+
 ################################################################################
 
 SCRIPT_NAME=macgpg2
+PLIST_NAME="org.gpgtools.macgpg2.shutdown-gpg-agent.plist"
 [[ $EUID -eq 0 ]] || errExit "This script must be run as root"
 
 cleanOldGpg
 globalFixes
 userFixes
-
+registerShutdownAgentHelper
 
 

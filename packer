@@ -221,6 +221,7 @@ def main():
     DIRS = ("bin", "sbin", "lib", "libexec", "share")
     BASE_DIR = os.path.realpath(args[0])
     DEST_DIR = os.path.realpath(args[1])
+    CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
     
     BASE_DIR_ORIGINAL = args[0]
     DEST_DIR_ORIGINAL = args[1]
@@ -320,7 +321,10 @@ def main():
         import traceback
         traceback.print_exc()
         error("Failed to copy files from %s - %s" % (BASE_DIR_ORIGINAL, e))
-        
+    
+    # Copy the shutdown-gpg-agent file from Installer/shutdown-gpg-agent.
+    xcopy(os.path.join(CURRENT_DIR, "Installer", "shutdown-gpg-agent"), os.path.join(DEST_DIR, "libexec"))
+    
     # Change back to the original directory
     os.chdir(working_dir)
     

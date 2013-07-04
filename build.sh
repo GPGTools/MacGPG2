@@ -160,7 +160,8 @@ fi
 # Move the MacGPG2_Updater plist file from $DEPLOYDIR/share/ into build,
 # so the packager can find it.
 cp -f "$SOURCEDIR/MacGPG2_Updater/$UPDATER_PLIST" "$BUILDDIR/" || (error "Failed to copy updater plist." && exit 1)
-
+# Copy the shutdown-gpg-agent plist into share.
+cp -f "$SOURCEDIR/Installer/org.gpgtools.macgpg2.shutdown-gpg-agent.plist" "$DEPLOYDIR/share" || (error "Failed to copy shutdown-gpg-agent plist." && exit 1)
 
 success "Build succeeded!"
 exit 0
