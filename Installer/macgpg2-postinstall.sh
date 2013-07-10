@@ -218,6 +218,7 @@ function registerShutdownAgentHelper {
     
     launchctl unload "$LAUNCH_AGENTS_PATH/$PLIST_NAME" &> /dev/null
     uid="$(id -u $USER)"
+    nudo launchctl unload "$LAUNCH_AGENTS_PATH/$PLIST_NAME" &> /dev/null
     nudo launchctl load "$PLIST_DESTINATION_PATH" || errExit "Couldn't start gpg-agent kill on logout script."
 }
 
