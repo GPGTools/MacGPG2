@@ -3,7 +3,7 @@
 <plist version="1.0">
   <dict>
     <key>Label</key>
-    <string>org.gpgtools.shutdown-gpg-agent</string>
+    <string>org.gpgtools.macgpg2.shutdown-gpg-agent</string>
     
     <key>Program</key>
     <string>/usr/local/MacGPG2/libexec/shutdown-gpg-agent</string>

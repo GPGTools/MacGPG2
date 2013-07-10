@@ -76,7 +76,6 @@ function userFixes {
 		GNUPGHOME=$homedir/.gnupg
 		fixGpgHome
 		fixGPGAgent
-		installShutdownAgentHelper "$homedir"
 	done
 
 }
@@ -202,26 +201,29 @@ function cleanOldGpg {
 	rm -rf $e/doc/gnupg $e/gnupg
 }
 
-function installShutdownAgentHelper {
-    LAUNCH_AGENTS_DIR="$1/Library/LaunchAgents"
-    if [ ! -d "$LAUNCH_AGENTS_DIR" ]; then
-        mkdir -p "$LAUNCH_AGENTS_DIR";
-    fi
-    if [ -L "$LAUNCH_AGENTS_DIR/$PLIST_NAME" ]; then
-        rm "$LAUNCH_AGENTS_DIR/$PLIST_NAME"
-    fi
-    ln -s "/usr/local/MacGPG2/share/$PLIST_NAME" "$LAUNCH_AGENTS_DIR/$PLIST_NAME"
-}
-
 function registerShutdownAgentHelper {
-    launchctl unload "$HOME/Library/LaunchAgents/$PLIST_NAME" &> /dev/null
-    launchctl load "$HOME/Library/LaunchAgents/$PLIST_NAME"
+    # Create LaunchAgents dir if it doesn't already exist.
+    PLIST_NAME="org.gpgtools.macgpg2.shutdown-gpg-agent.plist"
+    LAUNCH_AGENTS_PATH="/Library/LaunchAgents"
+    PLIST_DESTINATION_PATH="$LAUNCH_AGENTS_PATH/$PLIST_NAME"
+    PLIST_SOURCE_PATH="/usr/local/MacGPG2/share/$PLIST_NAME"
+    if [ ! -d "$LAUNCH_AGENTS_PATH" ]; then
+        mkdir -p "$LAUNCH_AGENTS_PATH"
+    fi
+    if [ -L "$PLIST_DESTINATION_PATH" ]; then
+        rm "$PLIST_DESTINATION_PATH"
+    fi
+    
+    ln -s "$PLIST_SOURCE_PATH" "$PLIST_DESTINATION_PATH"
+    
+    launchctl unload "$LAUNCH_AGENTS_PATH/$PLIST_NAME" &> /dev/null
+    uid="$(id -u $USER)"
+    nudo launchctl load "$PLIST_DESTINATION_PATH" || errExit "Couldn't start gpg-agent kill on logout script."
 }
 
 ################################################################################
 
 SCRIPT_NAME=macgpg2
-PLIST_NAME="org.gpgtools.macgpg2.shutdown-gpg-agent.plist"
 [[ $EUID -eq 0 ]] || errExit "This script must be run as root"
 
 cleanOldGpg
