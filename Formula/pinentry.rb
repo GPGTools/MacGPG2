@@ -16,24 +16,9 @@ class Pinentry < Formula
     ENV.prepend 'LDFLAGS', ldflags
     
 	
-	xconfig = "GCC_VERSION=com.apple.compilers.llvmgcc42 " +
-			  "OTHER_LDFLAGS=\"#{ldflags} \"'$$'OTHER_LDFLAGS\" -L#{HOMEBREW_PREFIX}/lib\" "
 
     target = "compile"
     build_dir = "Release"
-    if ARGV.build_ppc?
-      target = "compile_with_ppc"
-      build_dir = "Release with ppc"
-      build_env = ARGV.build_env
-	  
-      xconfig += "SDKROOT=\"#{build_env}/SDKs/MacOSX10.5.sdk\" " +
-				 "MACOSX_DEPLOYMENT_TARGET=10.5 "
-    end
-    
-    # Use xconfig to force using GGC_VERSION specified.
-    inreplace 'Makefile' do |s|
-      s.gsub! "@xcodebuild", "@xcodebuild #{xconfig}"
-    end
     
     system "make #{target}" # if this fails, try separate make/make install steps
     

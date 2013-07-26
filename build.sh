@@ -9,7 +9,6 @@ export INSTALLDIR="$BUILDDIR/homebrew"
 export DEPLOYDIR="$BUILDDIR/MacGPG2"
 export BUILDENV_DMG=""
 export BUILDENV_MOUNT_DIR="$SOURCEDIR/build-env"
-export BUILD_PPC=0
 export NO_BUILDROOT_EXISTS=$(test -d "$INSTALLDIR" -a -w "$INSTALLDIR"; echo $?)
 export HOMEBREW_CACHE=${HOMEBREW_CACHE:-"$INSTALLDIR/Caches"}
 export UPDATER_PLIST="org.gpgtools.macgpg2.updater.plist"
@@ -27,26 +26,6 @@ FORCE=0
 if [ "$ACTION" == "force" ]; then
     FORCE=1
 fi
-
-function tryToMountBuildEnvironment {
-    status "Try to mount the MacGPG2 build environment for ppc support"
-    if [ -f "$BUILDENV_DMG" ]; then
-        STATUS=$(mountBuildEnvironment "$BUILDENV_DMG")
-        if [ "$STATUS" == "0" ]; then
-            BUILD_PPC=1
-            stat=$(printf "%s%s%s" $(white) "enabled" $(reset))
-            status "PPC support $stat."
-        else
-            BUILD_PPC=0
-            stat=$(printf "%s%s%s" $(white) "disabled" $(reset))
-            status "PPC support $stat."
-        fi
-    else
-        BUILD_PPC=0
-        stat=$(printf "%s%s%s" $(white) "disabled" $(reset))
-        status "PPC support $stat."
-    fi
-}
 
 function mountBuildEnvironment {
     echo hdiutil attach -mountpoint "$BUILDENV_MOUNT_DIR" -noverify "$1"
@@ -81,7 +60,6 @@ if [ "$ACTION" == "clean" ]; then
 fi
 
 title "Building MacGPG2"
-tryToMountBuildEnvironment
 
 if [ "$NO_BUILDROOT_EXISTS" == "1" ]; then
     status "Bootstrapping Homebrew"
@@ -124,13 +102,7 @@ pushd "$INSTALLDIR" > /dev/null
         bail_if_necessary "$?" "Failed to symlink 10.6 curl"
     fi
     
-    BUILD_PPC_ARG=""
-    if [ "$BUILD_PPC" == "1" ]; then
-        # Set the Build Environment for Homebrew to use.
-        export HOMEBREW_GPGTOOLS_BUILD_ENV="${INSTALLDIR}/build-env"
-        BUILD_PPC_ARG="--with-ppc"
-    fi
-    
+
     # Check if MacGPG2 is already built. If so, don't do it again,
     # unless force is set.
     EXIT="$?"
@@ -139,8 +111,8 @@ pushd "$INSTALLDIR" > /dev/null
     if [ "$MACGPG2_ALREADY_BUILT" != "0" ] || [ "$FORCE" == "1" ]; then
         # Build MacGPG2 with make -j4
 	export HOMEBREW_MAKE_JOBS=4
-		./bin/brew install --universal $BUILD_PPC_ARG --use-llvm --quieter pinentry
-        ./bin/brew install --env=std --universal $BUILD_PPC_ARG --use-llvm --quieter MacGPG2
+		./bin/brew install --universal --use-llvm --quieter pinentry
+        ./bin/brew install --env=std --universal --use-llvm --quieter MacGPG2
         EXIT="$?"
     else
         success "MacGPG2 is already built. No need to do it again."
@@ -148,9 +120,6 @@ pushd "$INSTALLDIR" > /dev/null
 
 popd > /dev/null
 
-if [ "$BUILD_PPC" == "1" ]; then
-    tryToUnmountBuildEnvironment
-fi
 
 if [ "$EXIT" != "0" ]; then
     error "Build failed!"
