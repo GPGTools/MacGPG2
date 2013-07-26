@@ -42,7 +42,7 @@ diff -ru g10/options.skel g10/options.skel
 +# Try CERT, then PKA, then LDAP, then hkp://keys.gnupg.net:
 +auto-key-locate cert pka ldap hkp://keys.gnupg.net
 +
-+comment GPGTools - http://gpgtools.org
++comment GPGTools - https://gpgtools.org
 +cert-digest-algo SHA512
 +default-preference-list SHA512 SHA384 SHA256 SHA224 AES256 AES192 AES CAST5 ZLIB BZIP2 ZIP Uncompressed
 +personal-digest-preferences SHA512 SHA384 SHA256 SHA224

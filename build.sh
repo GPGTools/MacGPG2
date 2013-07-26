@@ -139,6 +139,7 @@ pushd "$INSTALLDIR" > /dev/null
     if [ "$MACGPG2_ALREADY_BUILT" != "0" ] || [ "$FORCE" == "1" ]; then
         # Build MacGPG2 with make -j4
 	export HOMEBREW_MAKE_JOBS=4
+		./bin/brew install --universal $BUILD_PPC_ARG --use-llvm --quieter pinentry
         ./bin/brew install --env=std --universal $BUILD_PPC_ARG --use-llvm --quieter MacGPG2
         EXIT="$?"
     else
@@ -160,7 +161,8 @@ fi
 # Move the MacGPG2_Updater plist file from $DEPLOYDIR/share/ into build,
 # so the packager can find it.
 cp -f "$SOURCEDIR/MacGPG2_Updater/$UPDATER_PLIST" "$BUILDDIR/" || (error "Failed to copy updater plist." && exit 1)
-
+# Copy the shutdown-gpg-agent plist into share.
+cp -f "$SOURCEDIR/Installer/org.gpgtools.macgpg2.shutdown-gpg-agent.plist" "$DEPLOYDIR/share" || (error "Failed to copy shutdown-gpg-agent plist." && exit 1)
 
 success "Build succeeded!"
 exit 0

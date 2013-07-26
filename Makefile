@@ -35,3 +35,17 @@ $(INSTALLED_UPDATER): $(PRODUCT) $(UPDATER_PRODUCT)
 	cp -R build/Release/$(UPDATER_PRODUCT) $(INSTALLED_UPDATER)
 
 pkg-core: $(INSTALLED_UPDATER)
+
+install: $(PRODUCT)
+	@echo Installing MacGPG2...
+	@[[ $$UID -eq 0 ]] || ( echo "This command needs to be run as root!"; exit 1 )
+	@rsync -rltDE build/MacGPG2 /usr/local/
+	@[[ ! -h /usr/local/bin/gpg2 ]] || ln -sfh /usr/local/MacGPG2/bin/gpg2 /usr/local/bin/gpg2
+	@[[ ! -h /usr/local/bin/gpg-agent ]] || ln -sfh /usr/local/MacGPG2/bin/gpg-agent /usr/local/bin/gpg-agent
+	@[[ -f /usr/local/bin/gpg && -x /usr/local/bin/gpg ]] || ln -sfh /usr/local/MacGPG2/bin/gpg2 /usr/local/bin/gpg
+	@rsync -rltDE installer/Payload/etc/ /private/etc/
+	@mkdir -p /Library/LaunchAgents
+	@cp build/org.gpgtools.macgpg2.updater.plist /Library/LaunchAgents/
+	@echo Done
+	
+
