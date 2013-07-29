@@ -171,7 +171,6 @@ function globalFixes {
 
 	# Remove old plist files.
 	rm -f "$HOME/Library/LaunchAgents/org.gpgtools.macgpg2.gpg-agent.plist" \
-		"/Library/LaunchAgents/org.gpgtools.macgpg2.gpg-agent.plist" \
 		"/Library/LaunchAgents/com.sourceforge.macgpg2.gpg-agent.plist"
 
 	# Remove old pinentry-mac.
@@ -201,25 +200,9 @@ function cleanOldGpg {
 	rm -rf $e/doc/gnupg $e/gnupg
 }
 
-function registerShutdownAgentHelper {
-    # Create LaunchAgents dir if it doesn't already exist.
-    PLIST_NAME="org.gpgtools.macgpg2.shutdown-gpg-agent.plist"
-    LAUNCH_AGENTS_PATH="/Library/LaunchAgents"
-    PLIST_DESTINATION_PATH="$LAUNCH_AGENTS_PATH/$PLIST_NAME"
-    PLIST_SOURCE_PATH="/usr/local/MacGPG2/share/$PLIST_NAME"
-    if [ ! -d "$LAUNCH_AGENTS_PATH" ]; then
-        mkdir -p "$LAUNCH_AGENTS_PATH"
-    fi
-    if [ -L "$PLIST_DESTINATION_PATH" ]; then
-        rm "$PLIST_DESTINATION_PATH"
-    fi
-    
-    ln -s "$PLIST_SOURCE_PATH" "$PLIST_DESTINATION_PATH"
-    
-    launchctl unload "$LAUNCH_AGENTS_PATH/$PLIST_NAME" &> /dev/null
-    uid="$(id -u $USER)"
-    nudo launchctl unload "$LAUNCH_AGENTS_PATH/$PLIST_NAME" &> /dev/null
-    nudo launchctl load "$PLIST_DESTINATION_PATH" || errExit "Couldn't start gpg-agent kill on logout script."
+function loadGpgAgent {
+	nudo launchctl load /Library/LaunchAgents/org.gpgtools.macgpg2.gpg-agent.plist &>/dev/null
+	return 0
 }
 
 ################################################################################
@@ -230,6 +213,6 @@ SCRIPT_NAME=macgpg2
 cleanOldGpg
 globalFixes
 userFixes
-registerShutdownAgentHelper
+loadGpgAgent
 
-
+exit 0
