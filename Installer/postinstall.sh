@@ -201,6 +201,7 @@ function cleanOldGpg {
 }
 
 function loadGpgAgent {
+	nudo launchctl unload /Library/LaunchAgents/org.gpgtools.macgpg2.gpg-agent.plist &>/dev/null
 	nudo launchctl load /Library/LaunchAgents/org.gpgtools.macgpg2.gpg-agent.plist &>/dev/null
 	return 0
 }
