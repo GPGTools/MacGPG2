@@ -1,8 +1,8 @@
 require 'formula'
 
 class Libgcrypt < Formula
-  url 'ftp://ftp.gnupg.org/gcrypt/libgcrypt/libgcrypt-1.5.0.tar.bz2'
-  sha1 '3e776d44375dc1a710560b98ae8437d5da6e32cf'
+  url 'ftp://ftp.gnupg.org/gcrypt/libgcrypt/libgcrypt-1.5.3.tar.bz2'
+  sha1 '2c6553cc17f2a1616d512d6870fe95edf6b0e26e'
   homepage 'http://directory.fsf.org/project/libgcrypt/'
 
   depends_on 'pth'
@@ -12,15 +12,9 @@ class Libgcrypt < Formula
   
   def patches
     if ENV.compiler == :clang
-      { :p0 => ["https://trac.macports.org/export/85232/trunk/dports/devel/libgcrypt/files/clang-asm.patch",
-                "#{HOMEBREW_PREFIX}/Library/Formula/Patches/IDEA/idea.patch",
-                "#{HOMEBREW_PREFIX}/Library/Formula/Patches/IDEA/libgcrypt.patch"
-               ]}
+      { :p0 => ["https://trac.macports.org/export/85232/trunk/dports/devel/libgcrypt/files/clang-asm.patch"]}
     else
-      { :p0 => [
-                "#{HOMEBREW_PREFIX}/Library/Formula/Patches/IDEA/idea.patch",
-                "#{HOMEBREW_PREFIX}/Library/Formula/Patches/IDEA/libgcrypt.patch"
-               ]}
+      { :p0 => []}
     end
   end
 
@@ -47,6 +41,4 @@ class Libgcrypt < Formula
     system "make install"
   end
 end
-
-__END__
 
