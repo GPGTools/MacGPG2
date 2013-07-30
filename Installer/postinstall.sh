@@ -25,7 +25,12 @@ function myEcho {
 
 
 function nudo { # Execute command as a normal user.
-	sudo -u "#$uid" "${@}"
+	if [[ -z "$uid" ]] ;then
+		nudoUser=$USER
+	else
+		nudoUser="#$uid"
+	fi
+	sudo -u "$nudoUser" "${@}"
 }
 function isBinaryWorking {
 	# Check if the binary, passed to this function, is working.
@@ -171,7 +176,9 @@ function globalFixes {
 
 	# Remove old plist files.
 	rm -f "$HOME/Library/LaunchAgents/org.gpgtools.macgpg2.gpg-agent.plist" \
-		"/Library/LaunchAgents/com.sourceforge.macgpg2.gpg-agent.plist"
+			"/Library/LaunchAgents/com.sourceforge.macgpg2.gpg-agent.plist" \
+			"/Library/LaunchAgents/org.gpgtools.macgpg2.shutdown-gpg-agent.plist"
+			
 
 	# Remove old pinentry-mac.
 	rm -fr /usr/local/libexec/pinentry-mac.app
@@ -207,6 +214,7 @@ function loadGpgAgent {
 }
 
 ################################################################################
+
 
 SCRIPT_NAME=macgpg2
 [[ $EUID -eq 0 ]] || errExit "This script must be run as root"
