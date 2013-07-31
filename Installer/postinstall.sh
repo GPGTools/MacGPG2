@@ -153,6 +153,8 @@ function fixGPGAgent {
 	killall -u "$username" gpg-agent 2>/dev/null
 
     rm -f "$GNUPGHOME/S.gpg-agent" "$GNUPGHOME/S.gpg-agent.ssh"
+	
+	nudo launchctl remove org.gpgtools.macgpg2.shutdown-gpg-agent
 }
 
 
@@ -179,6 +181,7 @@ function globalFixes {
 			"/Library/LaunchAgents/com.sourceforge.macgpg2.gpg-agent.plist" \
 			"/Library/LaunchAgents/org.gpgtools.macgpg2.shutdown-gpg-agent.plist"
 			
+	rm -f /usr/local/MacGPG2/libexec/shutdown-gpg-agent
 
 	# Remove old pinentry-mac.
 	rm -fr /usr/local/libexec/pinentry-mac.app
