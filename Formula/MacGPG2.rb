@@ -15,6 +15,7 @@ class Macgpg2 < Formula
   depends_on 'libksba'
   depends_on 'zlib'
   depends_on 'pinentry'
+  depends_on 'adns'
   
   keep_install_names true
   
@@ -43,9 +44,6 @@ class Macgpg2 < Formula
     # programs can't link to libraries using @rpath.
     ENV.prepend 'LDFLAGS', '-headerpad_max_install_names'
     ENV.prepend 'LDFLAGS', "-Wl,-rpath,@loader_path/../lib -Wl,-rpath,#{HOMEBREW_PREFIX}/lib"
-    # For some reason configure fails to include the link to libresolve
-    # which is necessary for pka and cert options for the keyserver to work.
-    ENV.prepend 'LDFLAGS', '-lresolv'
     # Set the flags so the build uses our 10.6 libcurl instead of the OS X one,
     # otherwise MacGPG2 won't work properly on 10.6
     ENV.prepend 'LDFLAGS', "-L#{HOMEBREW_PREFIX}/curl-10.6/lib -lcurl"
@@ -73,7 +71,8 @@ class Macgpg2 < Formula
                           "--with-zlib=#{HOMEBREW_PREFIX}",
                           "--with-libiconv-prefix=#{HOMEBREW_PREFIX}",
                           "--with-libintl-prefix=#{HOMEBREW_PREFIX}",
-                          "--with-libcurl=#{HOMEBREW_PREFIX}/curl-10.6"
+                          "--with-libcurl=#{HOMEBREW_PREFIX}/curl-10.6",
+                          "--with-adns=#{HOMEBREW_PREFIX}"
     
     system "make"
     system "make check"
