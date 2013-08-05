@@ -128,7 +128,6 @@ SCRIPT_NAME=macgpg2
 
 cleanOldGpg
 globalFixes
-userFixes
 loadLaunchAgents
 
 exit 0
