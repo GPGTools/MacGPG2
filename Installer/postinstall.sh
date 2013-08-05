@@ -59,104 +59,6 @@ function findWorkingPinentry {
 
 ################################################################################
 
-function userFixes {
-	# Diese Methode um die Benutzerkonten zu durchlaufen, ist etwa 50 mal schneller als die alte mit einzelnen dscl Aufrufen.
-	a=$'\6'
-	b=$'\7'
-	p1=".*?${b}name: ([^$a]*)"
-	p2=".*?${a}uid: ([^$a]*)"
-	p3=".*?${a}gid: ([^$a]*)"
-	p4=".*?${a}dir: ([^$a]*)"
-	pend="[^$b]*"
-
-	temptext=$b$(dscacheutil -q user | perl -0 -pe "s/\n\n/$b/g;s/\n/$a/g") # Get all users and replace all newlines, so the next RE can work correctly.
-	perl -pe "s/$p1$p2$p3$p4$pend/\1 \2 \3 \4\n/g" <<<"$temptext" | # This RE create one line per user.
-	while read username uid gid homedir # Iterate through each user.
-	do
-		[[ -n "$uid" && "$uid" -ge 500 && -d "$homedir" ]] || continue # Only proceed with regular accounts, which also have a homedir.
-		[[ "$gid" -lt 500 ]] || continue # I think a gid >= 500 indicates a special user. (e.g. like macports)
-
-		[[ "$homedir" == "${homedir#/Network}" ]] || continue # Ignore home-dirs starting with "/Network".
-
-		GNUPGHOME=$homedir/.gnupg
-		fixGpgHome
-		fixGPGAgent
-	done
-
-}
-function fixGpgHome {
-	myEcho "Fixing '$GNUPGHOME'..."
-	# Only call this functions from userFixes.
-
-	# Permissions
-	[[ -e "$GNUPGHOME" ]] || mkdir -m 0700 "$GNUPGHOME"
-	chown -R "$uid:$gid" "$GNUPGHOME"
-	chmod -R -N "$GNUPGHOME" 2>/dev/null
-	chmod -R u+rwX,go= "$GNUPGHOME"
-
-	# Create gpg.conf if needed.
-	if [[ ! -e "$GNUPGHOME/gpg.conf" ]] ;then
-		nudo cp "/usr/local/MacGPG2/share/gnupg/gpg-conf.skel" "$GNUPGHOME/gpg.conf"
-		myEcho "Created gpg.conf"
-	elif ! nudo /usr/local/MacGPG2/bin/gpg2 --gpgconf-test ;then
-		myEcho "Fixing gpg.conf"
-		nudo mv "$GNUPGHOME/gpg.conf" "$GNUPGHOME/gpg.conf.moved-by-gpgtools-installer"
-		nudo cp /usr/local/MacGPG2/share/gnupg/gpg-conf.skel "$GNUPGHOME/gpg.conf"
-		myEcho "Replaced gpg.conf"
-	fi
-
-	# Add a keyserver if none exits
-	if ! grep -q '^[ 	]*keyserver ' "$GNUPGHOME/gpg.conf" ;then
-        echo "keyserver hkp://pool.sks-keyservers.net" >> "$GNUPGHOME/gpg.conf"
-    fi
-
-
-	rm -f "$GNUPGHOME/S.gpg-agent" "$GNUPGHOME/S.gpg-agent.ssh"
-}
-
-function fixGPGAgent {
-	gpgAgentConf="$GNUPGHOME/gpg-agent.conf"
-	myEcho "Fixing '$gpgAgentConf'..."
-	nudo touch "$gpgAgentConf"
-
-	# Fix pinentry.
-	currentPinetry=$(sed -En '/^[ 	]*pinentry-program "?([^"]*)"?/{s//\1/p;q;}' "$gpgAgentConf")
-	if ! isBinaryWorking "$currentPinetry" ;then
-		# Let's find a working pinentry.
-		myEcho "Found working pinentry at: $working_pinentry"
-		if ! working_pinentry=$(findWorkingPinentry) ;then
-			myEcho "No working pinentry found. Abort!"
-			return 1
-		fi
-
-		if [[ -n "$currentPinetry" ]] ;then
-			myEcho "Replacing existing pinentry"
-			sed -Ei '' '/^([ 	]*pinentry-program ).*/s@@\1'"$working_pinentry@" "$gpgAgentConf"
-		else
-			myEcho "Add new pinentry"
-			echo "pinentry-program $working_pinentry" >> "$gpgAgentConf"
-		fi
-	fi
-
-
-	# "$GNUPGHOME" on NFS volumes
-    # http://gpgtools.lighthouseapp.com/projects/66001-macgpg2/tickets/55
-    if ! grep -Eq '^[       ]*no-use-standard-socket' "$gpgAgentConf" ;then
-		tempFile="$GNUPGHOME/test.tmp"
-		rm -f "$tempFile"
-		if ! mkfifo "$tempFile" >&/dev/null ;then
-			echo "no-use-standard-socket" >> "$gpgAgentConf"
-		fi
-		rm -f "$tempFile"
-    fi
-
-	killall -u "$username" gpg-agent 2>/dev/null
-
-    rm -f "$GNUPGHOME/S.gpg-agent" "$GNUPGHOME/S.gpg-agent.ssh"
-	
-	nudo launchctl remove org.gpgtools.macgpg2.shutdown-gpg-agent
-}
-
 
 function globalFixes {
 	myEcho "Checking symlinks..."
@@ -210,8 +112,10 @@ function cleanOldGpg {
 	rm -rf $e/doc/gnupg $e/gnupg
 }
 
-function loadGpgAgent {
+function loadLaunchAgents {
 	nudo launchctl unload /Library/LaunchAgents/org.gpgtools.macgpg2.gpg-agent.plist &>/dev/null
+	nudo launchctl unload /Library/LaunchAgents/org.gpgtools.macgpg2.fix.plist &>/dev/null
+	nudo launchctl load /Library/LaunchAgents/org.gpgtools.macgpg2.fix.plist &>/dev/null
 	nudo launchctl load /Library/LaunchAgents/org.gpgtools.macgpg2.gpg-agent.plist &>/dev/null
 	return 0
 }
@@ -225,6 +129,6 @@ SCRIPT_NAME=macgpg2
 cleanOldGpg
 globalFixes
 userFixes
-loadGpgAgent
+loadLaunchAgents
 
 exit 0

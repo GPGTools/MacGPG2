@@ -1,16 +1,1 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-	<key>KeepAlive</key>
-	<false/>
-	<key>StartInterval</key>
-	<integer>10800</integer>
-	<key>Label</key>
-	<string>org.gpgtools.macgpg2.updater</string>
-	<key>ProgramArguments</key>
-	<array>
-		<string>/usr/local/MacGPG2/libexec/MacGPG2_Updater.app/Contents/MacOS/MacGPG2_Updater</string>
-	</array>
-</dict>
-</plist>
+../installer/Payload/LaunchAgents/org.gpgtools.macgpg2.updater.plist
