@@ -7,7 +7,15 @@
 # @thanks	Alex (alex@gpgtools.org) and Benjamin Donnachie. I adopted their script.
 ################################################################################
 
+LOGFILE="$HOME/Library/Logs/gpg-home-fixer.log"
 
+function log {
+    current_date=$(date "+%Y-%m-%d %H:%M:%S")
+    echo "$current_date: $1"
+    if [[ "$2" != "" ]]; then
+        echo ""
+    fi
+}
 
 # Helper functions #############################################################
 function errExit {
@@ -20,7 +28,7 @@ function errExit {
 	exit 1
 }
 function myEcho {
-	echo "${SCRIPT_NAME:+[$SCRIPT_NAME] }$*"
+	log "${SCRIPT_NAME:+[$SCRIPT_NAME] }$*"
 }
 
 
@@ -56,7 +64,7 @@ function fixGpgHome {
 
 	# Permissions
 	[[ -e "$GNUPGHOME" ]] || mkdir -m 0700 "$GNUPGHOME"
-	chown -R "$UID:staff" "$GNUPGHOME"
+	chown -R "$ACTUAL_UID:staff" "$GNUPGHOME"
 	chmod -R -N "$GNUPGHOME" 2>/dev/null
 	chmod -R u+rwX,go= "$GNUPGHOME"
 
@@ -127,11 +135,24 @@ function fixGPGAgent {
 
 ################################################################################
 
+# Setting up the logfile.
+exec >> $LOGFILE 2>&1
 
 SCRIPT_NAME=${0##*/}
 
 GNUPGHOME=${GNUPGHOME:-$HOME/.gnupg}
 
+# Argument 1 contains a potentional USER ID to user and argument 2
+# contains a potentional USER HOME to use.
+ACTUAL_UID=$UID
+if [ "$1" != "" ]; then
+    ACTUAL_UID="$1"
+    log "Overwrite UID: $ACTUAL_UID"
+fi
+if [ "$2" != "" ]; then
+    GNUPGHOME=$2
+    log "Overwrite GNUPGHOME: $GNUPGHOME"
+fi
 
 fixGpgHome
 fixGPGAgent
