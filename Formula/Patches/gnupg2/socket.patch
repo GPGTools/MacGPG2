@@ -1,0 +1,181 @@
+diff --git a/agent/gpg-agent.c b/agent/gpg-agent.c
+index ba25875..a0b6542 100644
+--- agent/gpg-agent.c
++++ agent/gpg-agent.c
+@@ -1454,18 +1454,13 @@ create_socket_name (char *standard_name, char *template)
+     name = make_filename (opt.homedir, standard_name, NULL);
+   else
+     {
+-      name = xstrdup (template);
+-      p = strrchr (name, '/');
+-      if (!p)
+-	BUG ();
+-      *p = 0;
+-      if (!mkdtemp (name))
+-	{
+-	  log_error (_("can't create directory `%s': %s\n"),
+-		     name, strerror (errno));
+-	  agent_exit (2);
+-	}
+-      *p = '/';
++		name = "/tmp/gpg-agent";
++		mode_t _umask = umask(0);
++		mkdir(name, 0777);
++		name = make_filename (name, getenv("USER"), NULL);
++		mkdir(name, 0700);
++		name = make_filename (name, standard_name, NULL);
++		umask(_umask);
+     }
+ 
+   if (strchr (name, PATHSEP_C))
+@@ -2190,13 +2185,15 @@ check_own_socket (void)
+   char *sockname;
+   pth_attr_t tattr;
+ 
+-  if (!opt.use_standard_socket)
+-    return; /* This check makes only sense in standard socket mode.  */
+-
+   if (check_own_socket_running || shutdown_pending)
+     return;  /* Still running or already shutting down.  */
+ 
+-  sockname = make_filename (opt.homedir, "S.gpg-agent", NULL);
++	if (opt.use_standard_socket) {
++		sockname = make_filename (opt.homedir, "S.gpg-agent", NULL);
++	} else {
++		sockname = make_filename ("/tmp/gpg-agent", getenv("USER"), "S.gpg-agent", NULL);
++	}
++
+   if (!sockname)
+     return; /* Out of memory.  */
+ 
+@@ -2262,16 +2259,28 @@ check_for_running_agent (int silent, int mode)
+             return 0; /* Okay, its running on the standard socket. */
+           return -1;
+         }
++		
++		rc = assuan_new (&ctx);
++		if (! rc)
++			rc = assuan_socket_connect (ctx, infostr, pid, 0);
+     }
+   else /* MODE != 0 */
+     {
+       infostr = make_filename (opt.homedir, "S.gpg-agent", NULL);
+       pid = (pid_t)(-1);
++		
++	  rc = assuan_new (&ctx);
++	  if (!rc) {
++        rc = assuan_socket_connect (ctx, infostr, pid, 0);
++		  if (rc) {
++			  xfree (infostr);
++			  infostr = make_filename ("/tmp/gpg-agent", getenv("USER"), "S.gpg-agent", NULL);
++			  rc = assuan_socket_connect (ctx, infostr, pid, 0);
++		  }
++		  
++	  }
+     }
+ 
+-  rc = assuan_new (&ctx);
+-  if (! rc)
+-    rc = assuan_socket_connect (ctx, infostr, pid, 0);
+   xfree (infostr);
+   if (rc)
+     {
+diff --git a/Makefile.in b/Makefile.in
+index ebf3daf..0863fd1 100644
+--- Makefile.in
++++ Makefile.in
+@@ -830,7 +830,7 @@ distcleancheck: distclean
+ 	       $(distcleancheck_listfiles) ; \
+ 	       exit 1; } >&2
+ check-am: all-am
+-check: check-recursive
++check:
+ all-am: Makefile $(DATA) config.h
+ installdirs: installdirs-recursive
+ installdirs-am:
+diff --git a/common/asshelp.c b/common/asshelp.c
+index 3dc4b22..f3c3304 100644
+--- common/asshelp.c
++++ common/asshelp.c
+@@ -286,6 +286,12 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
+       sockname = make_filename (homedir, "S.gpg-agent", NULL);
+       err = assuan_socket_connect (ctx, sockname, 0, 0);
+ 
++      if (err) {
++          sockname = make_filename ("/tmp/gpg-agent", getenv("USER"), "S.gpg-agent", NULL);
++          err = assuan_socket_connect (ctx, sockname, 0, 0);
++      }
++
++		
+       if (err)
+         {
+           /* With no success start a new server.  */
+@@ -309,21 +315,6 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
+           if (!agent_program || !*agent_program)
+             agent_program = gnupg_module_name (GNUPG_MODULE_NAME_AGENT);
+ 
+-          argv[0] = "--use-standard-socket-p"; 
+-          argv[1] = NULL;  
+-          err = gnupg_spawn_process_fd (agent_program, argv, -1, -1, -1, &pid);
+-          if (err)
+-            log_debug ("starting `%s' for testing failed: %s\n",
+-                       agent_program, gpg_strerror (err));
+-          else if ((err = gnupg_wait_process (agent_program, pid, &excode)))
+-            {
+-              if (excode == -1)
+-                log_debug ("running `%s' for testing failed: %s\n",
+-                           agent_program, gpg_strerror (err));
+-            }          
+-
+-          if (!err && !excode)
+-            {
+               /* If the agent has been configured for use with a
+                  standard socket, an environment variable is not
+                  required and thus we we can savely start the agent
+@@ -331,8 +322,7 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
+               lock_agent_t lock;
+ 
+               argv[0] = "--daemon";
+-              argv[1] = "--use-standard-socket"; 
+-              argv[2] = NULL;  
++              argv[1] = NULL;
+ 
+               if (!(err = lock_agent_spawning (&lock, homedir))
+                   && assuan_socket_connect (ctx, sockname, 0, 0))
+@@ -359,36 +349,6 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
+                 }
+ 
+               unlock_agent_spawning (&lock);
+-            }
+-          else
+-            {
+-              /* If using the standard socket is not the default we
+-                 start the agent as a pipe server which gives us most
+-                 of the required features except for passphrase
+-                 caching etc.  */
+-              const char *pgmname;
+-              int no_close_list[3];
+-              int i;
+-              
+-              if ( !(pgmname = strrchr (agent_program, '/')))
+-                pgmname = agent_program;
+-              else
+-                pgmname++;
+-              
+-              argv[0] = pgmname;
+-              argv[1] = "--server";
+-              argv[2] = NULL;
+-              
+-              i=0;
+-              if (log_get_fd () != -1)
+-                no_close_list[i++] = assuan_fd_from_posix_fd (log_get_fd ());
+-              no_close_list[i++] = assuan_fd_from_posix_fd (fileno (stderr));
+-              no_close_list[i] = -1;
+-              
+-              /* Connect to the agent and perform initial handshaking. */
+-              err = assuan_pipe_connect (ctx, agent_program, argv,
+-                                         no_close_list, NULL, NULL, 0);
+-            }
+         }
+       xfree (sockname);
+     }
