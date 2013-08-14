@@ -114,6 +114,7 @@ function cleanOldGpg {
 
 function loadLaunchAgents {
 	nudo launchctl unload /Library/LaunchAgents/org.gpgtools.macgpg2.gpg-agent.plist &>/dev/null
+	killall -KILL gpg-agent
 	nudo launchctl unload /Library/LaunchAgents/org.gpgtools.macgpg2.fix.plist &>/dev/null
 	nudo launchctl load /Library/LaunchAgents/org.gpgtools.macgpg2.fix.plist &>/dev/null
 	# Run the fixer once as root, to fix potential permission problems.
