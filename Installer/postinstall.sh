@@ -80,8 +80,8 @@ function globalFixes {
 
 	# Remove old plist files.
 	rm -f "$HOME/Library/LaunchAgents/org.gpgtools.macgpg2.gpg-agent.plist" \
-			"/Library/LaunchAgents/com.sourceforge.macgpg2.gpg-agent.plist" \
-			"/Library/LaunchAgents/org.gpgtools.macgpg2.shutdown-gpg-agent.plist"
+		"/Library/LaunchAgents/com.gpgtools.macgpg2.gpg-agent.plist" \
+		"/Library/LaunchAgents/com.sourceforge.macgpg2.gpg-agent.plist"
 			
 	rm -f /usr/local/MacGPG2/libexec/shutdown-gpg-agent
 
