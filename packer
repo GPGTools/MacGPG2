@@ -321,6 +321,9 @@ def main():
         import traceback
         traceback.print_exc()
         error("Failed to copy files from %s - %s" % (BASE_DIR_ORIGINAL, e))
+          
+    # Copy the shutdown-gpg-agent file from Installer/shutdown-gpg-agent.
+    xcopy(os.path.join(CURRENT_DIR, "Installer/Payload/shutdown-gpg-agent"), os.path.join(DEST_DIR, "libexec"))      
         
     # Change back to the original directory
     os.chdir(working_dir)
