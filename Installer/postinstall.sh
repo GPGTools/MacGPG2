@@ -63,7 +63,7 @@ function findWorkingPinentry {
 function globalFixes {
 	myEcho "Checking symlinks..."
     mkdir -p /usr/local/bin
-    chmod +rX /usr /usr/local /usr/local/bin /usr/local/MacGPG2 >&/dev/null
+    chmod +rX /usr /usr/local /usr/local/bin /usr/local/MacGPG2
 
 	[[ -h /usr/local/bin/gpg2 ]] && ln -sfh /usr/local/MacGPG2/bin/gpg2 /usr/local/bin/gpg2 # Make a symlink to our gpg2, if gpg2 is a symlink. 
 	[[ -h /usr/local/bin/gpg-agent ]] && ln -sfh /usr/local/MacGPG2/bin/gpg-agent /usr/local/bin/gpg-agent # Same for gpg-agent. 
@@ -76,14 +76,15 @@ function globalFixes {
 	rm -rf /Applications/start-gpg-agent.app
 
 	# Remove the gpg-agent helper AppleScript from login items.
-    osascript -e 'tell application "System Events" to delete login item "start-gpg-agent"' 2> /dev/null
+    osascript -e 'tell application "System Events" to delete login item "start-gpg-agent"' &>/dev/null
 
 	# Remove old plist files.
 	rm -f "$HOME/Library/LaunchAgents/org.gpgtools.macgpg2.gpg-agent.plist" \
 		"/Library/LaunchAgents/com.gpgtools.macgpg2.gpg-agent.plist" \
 		"/Library/LaunchAgents/com.sourceforge.macgpg2.gpg-agent.plist"
 			
-	rm -f /usr/local/MacGPG2/libexec/shutdown-gpg-agent
+	# Remove old pinentry-mac.
+	rm -f /Library/LaunchAgents/com.gpgtools.macgpg2.gpg-agent.plist
 
 	# Remove old pinentry-mac.
 	rm -fr /usr/local/libexec/pinentry-mac.app
@@ -113,13 +114,15 @@ function cleanOldGpg {
 }
 
 function loadLaunchAgents {
-	nudo launchctl unload /Library/LaunchAgents/org.gpgtools.macgpg2.gpg-agent.plist &>/dev/null
+	nudo launchctl remove org.gpgtools.macgpg2.gpg-agent
+	
+	nudo launchctl unload /Library/LaunchAgents/org.gpgtools.macgpg2.shutdown-gpg-agent.plist
 	killall -KILL gpg-agent
-	nudo launchctl unload /Library/LaunchAgents/org.gpgtools.macgpg2.fix.plist &>/dev/null
-	nudo launchctl load /Library/LaunchAgents/org.gpgtools.macgpg2.fix.plist &>/dev/null
+	nudo launchctl unload /Library/LaunchAgents/org.gpgtools.macgpg2.fix.plist
+	nudo launchctl load /Library/LaunchAgents/org.gpgtools.macgpg2.fix.plist
 	# Run the fixer once as root, to fix potential permission problems.
 	sudo /usr/local/MacGPG2/libexec/fixGpgHome "$USER" "${GNUPGHOME:-$HOME/.gnupg}"
-	nudo launchctl load /Library/LaunchAgents/org.gpgtools.macgpg2.gpg-agent.plist &>/dev/null
+	nudo launchctl load /Library/LaunchAgents/org.gpgtools.macgpg2.shutdown-gpg-agent.plist
 	return 0
 }
 
