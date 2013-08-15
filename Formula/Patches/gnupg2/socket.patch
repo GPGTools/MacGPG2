@@ -1,4 +1,4 @@
-diff --git a/agent/gpg-agent.c b/agent/gpg-agent.c
+diff --git agent/gpg-agent.c agent/gpg-agent.c
 index ba25875..a0b6542 100644
 --- agent/gpg-agent.c
 +++ agent/gpg-agent.c
@@ -80,8 +80,7 @@ index ba25875..a0b6542 100644
    xfree (infostr);
    if (rc)
      {
-diff --git a/Makefile.in b/Makefile.in
-index ebf3daf..0863fd1 100644
+diff --git Makefile.in Makefile.in
 --- Makefile.in
 +++ Makefile.in
 @@ -830,7 +830,7 @@ distcleancheck: distclean
@@ -93,8 +92,7 @@ index ebf3daf..0863fd1 100644
  all-am: Makefile $(DATA) config.h
  installdirs: installdirs-recursive
  installdirs-am:
-diff --git a/common/asshelp.c b/common/asshelp.c
-index 3dc4b22..f3c3304 100644
+diff --git common/asshelp.c common/asshelp.c
 --- common/asshelp.c
 +++ common/asshelp.c
 @@ -286,6 +286,12 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
@@ -110,7 +108,7 @@ index 3dc4b22..f3c3304 100644
        if (err)
          {
            /* With no success start a new server.  */
-@@ -309,21 +315,6 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
+@@ -309,21 +315,27 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
            if (!agent_program || !*agent_program)
              agent_program = gnupg_module_name (GNUPG_MODULE_NAME_AGENT);
  
@@ -128,11 +126,31 @@ index 3dc4b22..f3c3304 100644
 -            }          
 -
 -          if (!err && !excode)
--            {
++			
++			argv[0] = "--use-standard-socket-p";
++			argv[1] = NULL;
++			err = gnupg_spawn_process_fd (agent_program, argv, -1, -1, -1, &pid);
++			if (err)
++				log_debug ("starting `%s' for testing failed: %s\n",
++						   agent_program, gpg_strerror (err));
++			else if ((err = gnupg_wait_process (agent_program, pid, &excode)))
+             {
++				if (excode == -1)
++					log_debug ("running `%s' for testing failed: %s\n",
++							   agent_program, gpg_strerror (err));
++            }
++			
++			if (!err && !excode) {
++				sockname = make_filename (homedir, "S.gpg-agent", NULL);
++			} else {
++				sockname = make_filename ("/tmp/gpg-agent", getenv("USER"), "S.gpg-agent", NULL);
++			}
++			
++			
                /* If the agent has been configured for use with a
                   standard socket, an environment variable is not
                   required and thus we we can savely start the agent
-@@ -331,8 +322,7 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
+@@ -331,8 +343,7 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
                lock_agent_t lock;
  
                argv[0] = "--daemon";
@@ -142,7 +160,7 @@ index 3dc4b22..f3c3304 100644
  
                if (!(err = lock_agent_spawning (&lock, homedir))
                    && assuan_socket_connect (ctx, sockname, 0, 0))
-@@ -359,36 +349,6 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
+@@ -359,36 +370,6 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
                  }
  
                unlock_agent_spawning (&lock);
