@@ -2,6 +2,8 @@
 
 PROGRAM_NAME="gpg-agent"
 LOGFILE="$HOME/Library/Logs/shutdown-gpg-agent.log"
+AGENT_SOCKET_DEFAULT="$HOME/.gnupg/S.gpg-agent"
+AGENT_SOCKET_ALT="/tmp/gpg-agent/$USER/S.gpg-agent"
 
 function log {
     current_date=$(date "+%Y-%m-%d %H:%M:%S")
@@ -25,13 +27,29 @@ function onExit {
 	fi
 	
 	log "  - killing gpg-agent..."
-	kill $pid
+	kill -9 $pid
 	
-	if [[ "$?" != "0" ]]; then
+	RET=$?
+	
+	# Now remove the S.gpg-agent file
+	if [ -S "$AGENT_SOCKET_DEFAULT" ]; then
+	    log "Removing S.gpg-agent sockets at $AGENT_SOCKET_DEFAULT" 1
+	    rm -f "$AGENT_SOCKET_DEFAULT"
+	    rm -f "${AGENT_SOCKET_DEFAULT}.ssh"
+	fi
+	
+	if [ -S "$AGENT_SOCKET_ALT" ]; then
+	    log "Removing S.gpg-agent sockets at $AGENT_SOCKET_ALT" 1
+	    rm -f "$AGENT_SOCKET_ALT"
+	    rm -f "${AGENT_SOCKET_ALT}.ssh"
+	fi
+	
+	if [[ "$RET" != "0" ]]; then
 	    log "* Failed to kill gpg-agent. Sorry..." 1
 	else
 	    log "* Successfully killed gpg-agent. job well done" 1
 	fi
+	
 	
 	exit 0
 }
