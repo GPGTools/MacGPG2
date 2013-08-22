@@ -21,6 +21,8 @@ Build
 ```bash
 git clone https://github.com/GPGTools/MacGPG2.git
 cd MacGPG2
+git submodule init
+git submodule update
 ```
 
 ### Build
