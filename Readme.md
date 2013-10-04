@@ -32,8 +32,9 @@ make
 
 ### Install
 To install MacGPG2 on your system.
+Requires Packages: http://s.sudre.free.fr/Software/Packages/about.html
 ```bash
-sudo make install
+make install
 ```
 
 ### More build commands
