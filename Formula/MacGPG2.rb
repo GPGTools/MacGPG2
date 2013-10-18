@@ -1,9 +1,9 @@
 require 'formula'
 
 class Macgpg2 < Formula
-  url 'ftp://ftp.gnupg.org/gcrypt/gnupg/gnupg-2.0.20.tar.bz2'
+  url 'ftp://ftp.gnupg.org/gcrypt/gnupg/gnupg-2.0.22.tar.bz2'
   homepage 'http://www.gnupg.org/'
-  sha1 '7ddfefa37ee9da89a8aaa8f9059d251b4cd02562'
+  sha1 '9ba9ee288e9bf813e0f1e25cbe06b58d3072d8b8'
   
   depends_on 'libiconv'
   depends_on 'gettext'
@@ -24,7 +24,6 @@ class Macgpg2 < Formula
       :p0 => ["#{HOMEBREW_PREFIX}/Library/Formula/Patches/IDEA/gnupg2.patch",
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/cacheid.patch",
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/keysize.patch",
-              "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/launchd.patch",
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/socket.patch",
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/MacGPG2VersionString.patch",
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/options.skel.patch"] }
@@ -64,7 +63,7 @@ class Macgpg2 < Formula
                           "--with-scdaemon-pgm=#{final_install_directory}/libexec/scdaemon",
                           "--disable-gpgsm", # We don't include it in the installation, no need to build it.
                           "--with-dirmngr-pgm=#{final_install_directory}/bin/dirmngr", # It's not possible to disable it, so at least have the right path. 
-                          "--with-gpg-error-prefix=#{HOMEBREW_PREFIX}",
+                          "--with-libgpg-error-prefix=#{HOMEBREW_PREFIX}",
                           "--with-libgcrypt-prefix=#{HOMEBREW_PREFIX}",
                           "--with-libassuan-prefix=#{HOMEBREW_PREFIX}",
                           "--with-ksba-prefix=#{HOMEBREW_PREFIX}",
@@ -193,20 +192,6 @@ index e40f18d..f587b62 100644
 +  return "/usr/local/MacGPG2/libexec";
  #endif /*!HAVE_W32_SYSTEM*/
  }
-
-diff --git a/scd/pcsc-wrapper.c b/scd/pcsc-wrapper.c
-index 1c45a4b..3767b38 100644
---- a/scd/pcsc-wrapper.c
-+++ b/scd/pcsc-wrapper.c
-@@ -66,7 +66,7 @@
- static int verbose;
- 
- #if defined(__APPLE__) || defined(_WIN32) || defined(__CYGWIN__)
--typedef unsinged int pcsc_dword_t;
-+typedef unsigned int pcsc_dword_t;
- #else
- typedef unsigned long pcsc_dword_t;
- #endif
 
 diff --git a/common/homedir.c b/common/homedir.c
 index efb45a6..f0c1508 100644
