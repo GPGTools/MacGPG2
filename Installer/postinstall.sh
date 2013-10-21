@@ -118,10 +118,13 @@ function loadLaunchAgents {
 	
 	nudo launchctl unload /Library/LaunchAgents/org.gpgtools.macgpg2.shutdown-gpg-agent.plist
 	killall -KILL gpg-agent
-	nudo launchctl unload /Library/LaunchAgents/org.gpgtools.macgpg2.fix.plist
-	nudo launchctl load /Library/LaunchAgents/org.gpgtools.macgpg2.fix.plist
 	# Run the fixer once as root, to fix potential permission problems.
 	sudo /usr/local/MacGPG2/libexec/fixGpgHome "$USER" "${GNUPGHOME:-$HOME/.gnupg}"
+	# Load the fixer only after, since we are not sure, when the command runs.
+	# If it is launched before the script is called directly, the two scripts might run at the
+	# same time, which leads to problems with the socket creation.
+	nudo launchctl unload /Library/LaunchAgents/org.gpgtools.macgpg2.fix.plist
+	nudo launchctl load /Library/LaunchAgents/org.gpgtools.macgpg2.fix.plist
 	nudo launchctl load /Library/LaunchAgents/org.gpgtools.macgpg2.shutdown-gpg-agent.plist
 	return 0
 }
