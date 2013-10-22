@@ -1,8 +1,17 @@
-diff --git agent/gpg-agent.c agent/gpg-agent.c
-index ba25875..a0b6542 100644
+--- Makefile.in
++++ Makefile.in
+@@ -830,7 +830,7 @@ distcleancheck: distclean
+ 	       $(distcleancheck_listfiles) ; \
+ 	       exit 1; } >&2
+ check-am: all-am
+-check: check-recursive
++check:
+ all-am: Makefile $(DATA) config.h
+ installdirs: installdirs-recursive
+ installdirs-am:
 --- agent/gpg-agent.c
 +++ agent/gpg-agent.c
-@@ -1454,18 +1454,13 @@ create_socket_name (char *standard_name, char *template)
+@@ -1499,18 +1499,25 @@ create_socket_name (char *standard_name, char *template)
      name = make_filename (opt.homedir, standard_name, NULL);
    else
      {
@@ -20,15 +29,27 @@ index ba25875..a0b6542 100644
 -      *p = '/';
 +		name = "/tmp/gpg-agent";
 +		mode_t _umask = umask(0);
-+		mkdir(name, 0777);
++		if (mkdir(name, 0777) && errno != EEXIST) {
++			log_error (_("can't create directory `%s': %s\n"), name, strerror(errno));
++			agent_exit (2);
++		}
 +		name = make_filename (name, getenv("USER"), NULL);
-+		mkdir(name, 0700);
++		if (mkdir(name, 0700) && errno != EEXIST) {
++			log_error (_("can't create directory `%s': %s\n"), name, strerror(errno));
++			agent_exit (2);
++		}
++		struct stat state;
++		if (stat(name, &state) || state.st_mode != 040700 || state.st_uid != getuid()) {
++			log_error ("wrong permissions `%s': %s\n", name, strerror(errno));
++			agent_exit (2);
++		}
++		
 +		name = make_filename (name, standard_name, NULL);
 +		umask(_umask);
      }
  
    if (strchr (name, PATHSEP_C))
-@@ -2190,13 +2185,15 @@ check_own_socket (void)
+@@ -2443,13 +2450,15 @@ check_own_socket (void)
    char *sockname;
    pth_attr_t tattr;
  
@@ -48,7 +69,7 @@ index ba25875..a0b6542 100644
    if (!sockname)
      return; /* Out of memory.  */
  
-@@ -2262,16 +2259,28 @@ check_for_running_agent (int silent, int mode)
+@@ -2515,16 +2524,28 @@ check_for_running_agent (int silent, int mode)
              return 0; /* Okay, its running on the standard socket. */
            return -1;
          }
@@ -80,19 +101,6 @@ index ba25875..a0b6542 100644
    xfree (infostr);
    if (rc)
      {
-diff --git Makefile.in Makefile.in
---- Makefile.in
-+++ Makefile.in
-@@ -830,7 +830,7 @@ distcleancheck: distclean
- 	       $(distcleancheck_listfiles) ; \
- 	       exit 1; } >&2
- check-am: all-am
--check: check-recursive
-+check:
- all-am: Makefile $(DATA) config.h
- installdirs: installdirs-recursive
- installdirs-am:
-diff --git common/asshelp.c common/asshelp.c
 --- common/asshelp.c
 +++ common/asshelp.c
 @@ -286,6 +286,12 @@ start_new_gpg_agent (assuan_context_t *r_ctx,

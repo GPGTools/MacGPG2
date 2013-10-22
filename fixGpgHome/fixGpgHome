@@ -125,9 +125,16 @@ function fixGPGAgent {
 		rm -f "$tempFile"
     fi
 
-	if $needHup ;then
-		myEcho "Force gpg-agent.conf reload."
-		killall -HUP gpg-agent 2>/dev/null
+	if gpg-agent &>/dev/null ;then
+		if $needHup ;then
+			myEcho "Force gpg-agent.conf reload."
+			killall -HUP gpg-agent 2>/dev/null
+		fi
+	else
+		myEcho "Start gpg-agent."
+		temp_uid=$ACTUAL_UID
+		[[ "$temp_uid" =~ [^0-9] ]] || temp_uid="#$temp_uid"
+		sudo -nu "$temp_uid" /usr/local/MacGPG2/bin/gpg-agent --daemon
 	fi
 }
 
