@@ -27,6 +27,7 @@ class Libgcrypt < Formula
     
     ENV.prepend 'LDFLAGS', '-headerpad_max_install_names'
     ENV.prepend 'LDFLAGS', "-Wl,-rpath,@loader_path/../lib -Wl,-rpath,#{HOMEBREW_PREFIX}/lib"
+    ENV.prepend 'CFLAGS', "-fheinous-gnu-extensions"
     
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}",

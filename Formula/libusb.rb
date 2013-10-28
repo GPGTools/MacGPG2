@@ -1,9 +1,9 @@
 require 'formula'
 
 class Libusb < Formula
-  url 'http://downloads.sourceforge.net/project/libusb/libusb-1.0/libusb-1.0.8/libusb-1.0.8.tar.bz2'
+  url 'http://downloads.sourceforge.net/project/libusb/libusb-1.0/libusb-1.0.9/libusb-1.0.9.tar.bz2'
   homepage 'http://www.libusb.org/'
-  md5 '37d34e6eaa69a4b645a19ff4ca63ceef'
+  sha256 'e920eedc2d06b09606611c99ec7304413c6784cba6e33928e78243d323195f9b'
   
   keep_install_names true
   

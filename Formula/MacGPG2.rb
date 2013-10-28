@@ -39,7 +39,8 @@ class Macgpg2 < Formula
     ENV.build_32_bit
     
     # so we don't use Clang's internal stdint.h
-    ENV['gl_cv_absolute_stdint_h'] = '/usr/include/stdint.h'
+    ENV['gl_cv_absolute_stdint_h'] = "#{MacOS.sdk_path}/usr/include/stdint.h"
+    
     # It's necessary to add the -rpath to the LDFLAGS, otherwise
     # programs can't link to libraries using @rpath.
     ENV.prepend 'LDFLAGS', '-headerpad_max_install_names'
@@ -48,7 +49,8 @@ class Macgpg2 < Formula
     # otherwise MacGPG2 won't work properly on 10.6
     ENV.prepend 'LDFLAGS', "-L#{HOMEBREW_PREFIX}/curl-10.6/lib -lcurl"
     ENV['_libcurl_config'] = "#{HOMEBREW_PREFIX}/curl-10.6/bin/curl-config"
-    
+    ENV.append 'LDFLAGS', '-lresolv'
+        
     final_install_directory = "/usr/local/MacGPG2"
     
     inreplace 'g10/keygen.c', 'max=4096', 'max=8192'
