@@ -7,7 +7,8 @@
 # @thanks	Alex (alex@gpgtools.org) and Benjamin Donnachie. I adopted their script.
 ################################################################################
 
-
+TMP_DESTINATION="/private/tmp/org.gpgtools/MacGPG2"
+FINAL_DESTINATION="/usr/local/MacGPG2"
 
 # Helper functions #############################################################
 function errExit {
@@ -23,6 +24,31 @@ function myEcho {
 	echo "${SCRIPT_NAME:+[$SCRIPT_NAME] }$*"
 }
 
+function moveToFinalDestination {
+	if [ ! -d "$TMP_DESTINATION" ]; then
+		myEcho "Failed to copy MacGPG2 to temporary destination"
+		exit 1
+	fi
+	# If MacGPG2 already exists on this system, remove it.
+	if [ -d "$FINAL_DESTINATION" ] && [ ! -z "$FINAL_DESTINATION" ]; then
+		myEcho "Remove old MacGPG2 installation."
+		rm -rf "$FINAL_DESTINATION" || exit 1
+	fi
+	# Copy MacGPG2 from temporary to final destination.
+	myEcho "Copy new MacGPG2 to final destination."
+	cp -R "$TMP_DESTINATION" "$FINAL_DESTINATION" || exit 1
+	
+	# Check if the directory could be copied.
+	if [ ! -d "$FINAL_DESTINATION" ]; then
+		myEcho "Failed to copy MacGPG2 to final destination."
+		exit 1
+	fi
+	
+	# Remove the TMP directory.
+	if [ -d "$TMP_DESTINATION" ]; then
+		rm -rf "$TMP_DESTINATION"
+	fi
+}
 
 function nudo { # Execute command as a normal user.
 	if [[ -z "$uid" ]] ;then
@@ -138,6 +164,7 @@ function loadLaunchAgents {
 SCRIPT_NAME=macgpg2
 [[ $EUID -eq 0 ]] || errExit "This script must be run as root"
 
+moveToFinalDestination # See what I did there? ;-)
 cleanOldGpg
 globalFixes
 loadLaunchAgents
