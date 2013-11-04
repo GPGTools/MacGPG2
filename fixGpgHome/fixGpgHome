@@ -63,6 +63,8 @@ function fixGpgHome {
 	myEcho "Fixing '$GNUPGHOME'..."
 
 	# Permissions
+	chflags nouchg "$HOME"
+	chmod 755 "$HOME"
 	[[ -e "$GNUPGHOME" ]] || mkdir -m 0700 "$GNUPGHOME"
 	chown -R "$ACTUAL_UID:staff" "$GNUPGHOME"
 	chmod -R -N "$GNUPGHOME" 2>/dev/null
