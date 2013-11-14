@@ -72,14 +72,18 @@ function fixGpgHome {
 
 	# Create gpg.conf if needed.
 	if [[ ! -e "$GNUPGHOME/gpg.conf" ]] ;then
-		cp "/usr/local/MacGPG2/share/gnupg/gpg-conf.skel" "$GNUPGHOME/gpg.conf"
+		cp /usr/local/MacGPG2/share/gnupg/gpg-conf.skel "$GNUPGHOME/gpg.conf"
+		chown "$ACTUAL_UID:staff" "$GNUPGHOME/gpg.conf"
 		myEcho "Created gpg.conf"
 	elif ! /usr/local/MacGPG2/bin/gpg2 --gpgconf-test ;then
 		myEcho "Fixing gpg.conf"
 		mv "$GNUPGHOME/gpg.conf" "$GNUPGHOME/gpg.conf.moved-by-gpgtools-fix"
 		cp /usr/local/MacGPG2/share/gnupg/gpg-conf.skel "$GNUPGHOME/gpg.conf"
+		chown "$ACTUAL_UID:staff" "$GNUPGHOME/gpg.conf"
 		myEcho "Replaced gpg.conf"
 	fi
+	
+	
 
 	# Add a keyserver if none exits
 	if ! grep -q '^[ 	]*keyserver ' "$GNUPGHOME/gpg.conf" ;then
@@ -126,6 +130,9 @@ function fixGPGAgent {
 		fi
 		rm -f "$tempFile"
     fi
+	
+	chown "$ACTUAL_UID:staff" "$gpgAgentConf"
+	
 
 	if gpg-agent &>/dev/null ;then
 		if $needHup ;then
