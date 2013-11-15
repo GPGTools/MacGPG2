@@ -141,9 +141,13 @@ function fixGPGAgent {
 		fi
 	else
 		myEcho "Start gpg-agent."
-		temp_uid=$ACTUAL_UID
-		[[ "$temp_uid" =~ [^0-9] ]] || temp_uid="#$temp_uid"
-		sudo -nu "$temp_uid" /usr/local/MacGPG2/bin/gpg-agent --daemon
+		if [[ "$UID" -eq 0 ]] ;then
+			temp_uid=$ACTUAL_UID
+			[[ "$temp_uid" =~ [^0-9] ]] || temp_uid="#$temp_uid"
+			sudo -nu "$temp_uid" /usr/local/MacGPG2/bin/gpg-agent --daemon
+		else
+			/usr/local/MacGPG2/bin/gpg-agent --daemon
+		fi
 	fi
 }
 
