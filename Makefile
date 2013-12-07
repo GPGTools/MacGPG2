@@ -6,6 +6,7 @@ UPDATER_TARGET = MacGPG2_Updater
 UPDATER_PRODUCT = MacGPG2_Updater.app
 INSTALLED_UPDATER = build/MacGPG2/libexec/$(UPDATER_PRODUCT)
 INSTALLED_FIX = build/MacGPG2/libexec/fixGpgHome
+GET_THE_SOURCE = build/MacGPG2/SOURCE
 MAKE_DEFAULT = Dependencies/GPGTools_Core/newBuildSystem/Makefile.default
 
 
@@ -39,7 +40,11 @@ $(INSTALLED_FIX):
 	rm -rf $(INSTALLED_FIX)
 	cp -R fixGpgHome/fixGpgHome $(INSTALLED_FIX)
 
-pkg-core: $(INSTALLED_UPDATER) $(INSTALLED_FIX)
+$(GET_THE_SOURCE):
+	cp -f "installer/Payload/How to get the source code" "$(GET_THE_SOURCE)"
+
+
+pkg-core: $(INSTALLED_UPDATER) $(INSTALLED_FIX) $(GET_THE_SOURCE)
 
 install: pkg
 	open -b com.apple.installer build/MacGPG2.pkg
