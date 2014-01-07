@@ -132,6 +132,8 @@ function cleanOldGpg {
 }
 
 function loadLaunchAgents {
+	myEcho "loadLaunchAgents start"
+
 	killall -KILL gpg-agent
 	nudo launchctl remove org.gpgtools.macgpg2.gpg-agent
 	nudo launchctl unload /Library/LaunchAgents/org.gpgtools.macgpg2.fix.plist
@@ -145,8 +147,12 @@ function loadLaunchAgents {
 	nudo launchctl unload /Library/LaunchAgents/org.gpgtools.macgpg2.shutdown-gpg-agent.plist
 	
 	# Run the fixer once as root, to fix potential permission problems.
+	myEcho "fixGpgHome"
 	sudo /usr/local/MacGPG2/libexec/fixGpgHome "$USER" "${GNUPGHOME:-$HOME/.gnupg}"
+	myEcho "Load shutdown-gpg-agent"
 	nudo launchctl load /Library/LaunchAgents/org.gpgtools.macgpg2.shutdown-gpg-agent.plist
+
+	myEcho "loadLaunchAgents done"
 	return 0
 }
 

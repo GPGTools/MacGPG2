@@ -8,6 +8,7 @@
 ################################################################################
 
 LOGFILE="$HOME/Library/Logs/gpg-home-fixer.log"
+SCRIPT_NAME=${0##*/}
 
 function log {
     current_date=$(date "+%Y-%m-%d %H:%M:%S")
@@ -18,6 +19,20 @@ function log {
 }
 
 # Helper functions #############################################################
+function logging {
+	# Enables logging into $LOGFILE and to stdout.
+	tempdir=$(mktemp -d -t org.gpgtools.log)
+	if [[ -d "$tempdir" ]]; then
+		trap "rm -rf '$tempdir'" EXIT
+		mkfifo "$tempdir/fifo"
+		tee -a <"$tempdir/fifo" "$LOGFILE" &
+		exec &>"$tempdir/fifo"
+	else
+		echo "Unable to create the temp dir. Log only into '$LOGFILE'" >&2
+		exec >>"$LOGFILE" 2>&1
+	fi
+}
+
 function errExit {
 	msg="$* (${BASH_SOURCE[1]##*/}: line ${BASH_LINENO[0]})"
 	if [[ -t 1 ]] ;then
@@ -90,9 +105,12 @@ function fixGpgHome {
         echo "keyserver hkp://pool.sks-keyservers.net" >> "$GNUPGHOME/gpg.conf"
 		myEcho "Added a keyserver"
     fi
+	myEcho "Fixing done"
 }
 
 function fixGPGAgent {
+	myEcho "fixGPGAgent started"
+	
 	gpgAgentConf="$GNUPGHOME/gpg-agent.conf"
 	needHup=false
 	myEcho "Fixing '$gpgAgentConf'..."
@@ -149,6 +167,7 @@ function fixGPGAgent {
 			/usr/local/MacGPG2/bin/gpg-agent --daemon
 		fi
 	fi
+	myEcho "fixGPGAgent done"
 }
 
 
@@ -156,9 +175,9 @@ function fixGPGAgent {
 ################################################################################
 
 # Setting up the logfile.
-exec >> $LOGFILE 2>&1
+logging
 
-SCRIPT_NAME=${0##*/}
+myEcho "started"
 
 GNUPGHOME=${GNUPGHOME:-$HOME/.gnupg}
 
@@ -177,5 +196,6 @@ fi
 fixGpgHome
 fixGPGAgent
 
+myEcho "done"
 
 exit 0
