@@ -160,10 +160,13 @@ function fixGPGAgent {
 	else
 		myEcho "Start gpg-agent."
 		if [[ "$UID" -eq 0 ]] ;then
+			myEcho "UID = 0"
 			temp_uid=$ACTUAL_UID
 			[[ "$temp_uid" =~ [^0-9] ]] || temp_uid="#$temp_uid"
+			myEcho "Start gpg-agent using uid: '$temp_uid'"
 			sudo -nu "$temp_uid" /usr/local/MacGPG2/bin/gpg-agent --daemon
 		else
+			myEcho "UID: '$UID'"
 			/usr/local/MacGPG2/bin/gpg-agent --daemon
 		fi
 	fi
@@ -177,7 +180,7 @@ function fixGPGAgent {
 # Setting up the logfile.
 logging
 
-myEcho "started"
+myEcho "started with arguments: $@"
 
 GNUPGHOME=${GNUPGHOME:-$HOME/.gnupg}
 
@@ -192,6 +195,9 @@ if [ "$2" != "" ]; then
     GNUPGHOME=$2
     log "Overwrite GNUPGHOME: $GNUPGHOME"
 fi
+
+shasum /usr/local/MacGPG2/bin/gpg2
+shasum /usr/local/MacGPG2/bin/gpg-agent
 
 fixGpgHome
 fixGPGAgent
