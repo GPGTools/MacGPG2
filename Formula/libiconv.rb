@@ -4,7 +4,7 @@ class Libiconv < Formula
   url 'http://ftpmirror.gnu.org/libiconv/libiconv-1.14.tar.gz'
   mirror 'http://ftp.gnu.org/gnu/libiconv/libiconv-1.14.tar.gz'
   homepage 'http://www.gnu.org/software/libiconv/'
-  md5 'e34509b1623cec449dfeb73d7ce9c6c6'
+  sha1 'be7d67e50d72ff067b2c0291311bc283add36965'
 
   # keg_only :provided_by_osx, <<-EOS.undent
   #       A few software packages require this newer version of libiconv.

@@ -11,14 +11,14 @@ index e012a07..7f4b7bb 100644
 -    Some build scripts fail to detect it correctly, please check existing
 -    formulae for solutions.
 -    EOS
-   when 'libxml', 'libxlst' then <<-EOS.undent
-     Apple distributes #{name} with OS X, you can find it in /usr/lib.
-     However not all build scripts look for these hard enough, so you may need
+   when 'wxpython' then <<-EOS.undent
+     The Python bindings (import wx) for wxWidgets are installed by:
+         brew install wxwidgets
 diff --git a/Library/Homebrew/extend/ARGV.rb b/Library/Homebrew/extend/ARGV.rb
 index 6b4d925..67121b2 100644
 --- a/Library/Homebrew/extend/ARGV.rb
 +++ b/Library/Homebrew/extend/ARGV.rb
-@@ -121,6 +121,14 @@ module HomebrewArgvExtension
+@@ -125,6 +125,10 @@ module HomebrewArgvExtension
    def build_universal?
      include? '--universal'
    end
@@ -26,56 +26,17 @@ index 6b4d925..67121b2 100644
 +  def build_env
 +    ENV['HOMEBREW_GPGTOOLS_BUILD_ENV'] || HOMEBREW_GPGTOOLS_BUILD_ENV 
 +  end
-+  
-+  def build_ppc?
-+    include? '--with-ppc'
-+  end
  
    # Request a 32-bit only build.
    # This is needed for some use-cases though we prefer to build Universal
-diff --git a/Library/Homebrew/extend/ENV.rb b/Library/Homebrew/extend/ENV.rb
-index 2c01085..57649d9 100644
---- a/Library/Homebrew/extend/ENV.rb
-+++ b/Library/Homebrew/extend/ENV.rb
-@@ -210,7 +210,13 @@ module HomebrewEnvExtension
-       remove 'CMAKE_FRAMEWORK_PATH', "#{sdk}/System/Library/Frameworks"
+diff --git a/Library/Homebrew/extend/ENV/std.rb b/Library/Homebrew/extend/ENV/std.rb
+index 71e89a6..2fcf19f 100644
+--- a/Library/Homebrew/extend/ENV/std.rb
++++ b/Library/Homebrew/extend/ENV/std.rb
+@@ -285,6 +285,24 @@ module Stdenv
+       replace_in_cflags(/-march=\S*/, "-Xarch_#{Hardware::CPU.arch_32_bit} \\0")
      end
    end
--
-+  
-+  def osx_10_5
-+    self['MACOSX_DEPLOYMENT_TARGET']="10.5"
-+    remove_from_cflags(/ ?-mmacosx-version-min=10\.\d/)
-+    append_to_cflags('-mmacosx-version-min=10.5')
-+  end
-+  
-   def macosxsdk v=MacOS.version
-     # Sets all needed lib and include dirs to CFLAGS, CPPFLAGS, LDFLAGS.
-     remove_macosxsdk
-@@ -307,8 +313,45 @@ module HomebrewEnvExtension
-       # Can't mix "-march" for a 32-bit CPU  with "-arch x86_64"
-       replace_in_cflags(/-march=\S*/, '-Xarch_i386 \0') if Hardware.is_32_bit?
-     end
-+    
-+    # Also build PPC but with local jail containing the compiler.
-+    ARGV.build_ppc? && build_ppc
-+  end
-+  
-+  def build_ppc
-+    # Remove -mssex flag because it isn't supported by ppc cc1.
-+    replace_in_cflags(/-msse\S*/, '')
-+    replace_in_cflags(/-march=\S*/, '')
-+    # Add the arch ppc to compile and linker flags.
-+    append_to_cflags '-arch ppc'
-+    append 'LDFLAGS', '-arch ppc'
-+    # Use the LLVM-CC compiler from the build-env.
-+    self['LD'] = self['CC'] = "#{ARGV.build_env}/usr/bin/llvm-gcc"
-+    # Set the min version to 10.5
-+    osx_10_5
-+    append_to_cflags("-isysroot #{ARGV.build_env}/SDKs/MacOSX10.5.sdk")
-+    append_to_cflags("-isystem #{ARGV.build_env}/SDKs/MacOSX10.5.sdk/include")
-+    append_to_cflags("-DUNIX")
-+  end
 +  
 +  def build_32_bit
 +    %w{ CFLAGS LDFLAGS }.each do |compiler_flag|
@@ -93,17 +54,15 @@ index 2c01085..57649d9 100644
 +    end
 +    
 +    replace_in_cflags(/-march=\S*/, '')
-   end
--
-+  
-   def replace_in_cflags before, after
-     cc_flag_vars.each do |key|
-       self[key] = self[key].sub before, after if self[key]
++  end
+ 
+   def cxx11
+     if compiler == :clang
 diff --git a/Library/Homebrew/formula.rb b/Library/Homebrew/formula.rb
 index bf784d0..a4196b3 100644
 --- a/Library/Homebrew/formula.rb
 +++ b/Library/Homebrew/formula.rb
-@@ -191,7 +191,13 @@ class Formula
+@@ -238,7 +238,13 @@
    def keg_only_reason
      self.class.keg_only_reason
    end
@@ -116,37 +75,36 @@ index bf784d0..a4196b3 100644
 +  end
 +  
    def fails_with? cc
-     return false if self.class.cc_failures.nil?
      cc = Compiler.new(cc) unless cc.is_a? Compiler
-@@ -633,7 +639,7 @@ private
-       end
-     end
- 
--    attr_rw :homepage, :keg_only_reason, :skip_clean_all, :cc_failures
-+    attr_rw :homepage, :keg_only_reason, :skip_clean_all, :cc_failures, :keep_install_names
- 
-     Checksum::TYPES.each do |cksum|
-       class_eval %Q{
+     (self.class.cc_failures || []).any? do |failure|
+@@ -668,7 +668,7 @@
+   class << self
+
+     attr_reader :keg_only_reason, :cc_failures
+-    attr_rw :homepage, :plist_startup, :plist_manual
++    attr_rw :homepage, :plist_startup, :plist_manual, :keep_install_names
+
+     def specs
+       @specs ||= [stable, devel, head, bottle].freeze
 diff --git a/Library/Homebrew/formula_installer.rb b/Library/Homebrew/formula_installer.rb
-index d9cff50..af327f0 100644
+index 9b2ccce..e06dd51 100644
 --- a/Library/Homebrew/formula_installer.rb
 +++ b/Library/Homebrew/formula_installer.rb
-@@ -187,14 +187,28 @@ class FormulaInstaller
+@@ -327,7 +327,11 @@ class FormulaInstaller
+       link
      end
  
-     install_plist
--    fix_install_names
--
+-    fix_install_names if OS.mac?
 +    unless f.keep_install_names?
 +      fix_install_names
 +    else
 +      rpath_install_names
 +    end
-+    
-     ohai "Summary" if ARGV.verbose? or show_summary_heading
-     print "#{f.prefix}: #{f.prefix.abv}"
-     print ", built in #{pretty_duration build_time}" if build_time
-     puts
+ 
+     post_install
+ 
+@@ -349,6 +353,16 @@ class FormulaInstaller
+     s
    end
  
 +  def rpath_install_names
@@ -160,44 +118,45 @@ index d9cff50..af327f0 100644
 +  end
 +
    def build_time
-     @build_time ||= Time.now - @start_time unless install_bottle or ARGV.interactive? or @start_time.nil?
+     @build_time ||= Time.now - @start_time unless pour_bottle? or ARGV.interactive? or @start_time.nil?
    end
 diff --git a/Library/Homebrew/global.rb b/Library/Homebrew/global.rb
-index 12157b0..f7cdc2d 100644
+index dc2379b..72a2457 100644
 --- a/Library/Homebrew/global.rb
 +++ b/Library/Homebrew/global.rb
-@@ -58,6 +58,9 @@ else
+@@ -64,6 +64,9 @@ else
    HOMEBREW_REPOSITORY+"Cellar"
  end
  
 +# GPGTools Homebrew build environment.
 +HOMEBREW_GPGTOOLS_BUILD_ENV = "/"
 +
- HOMEBREW_LOGS = Pathname.new('~/Library/Logs/Homebrew/').expand_path
+ HOMEBREW_LOGS = Pathname.new(ENV['HOMEBREW_LOGS'] || '~/Library/Logs/Homebrew/').expand_path
  
- if RUBY_PLATFORM =~ /darwin/
+ HOMEBREW_TEMP = Pathname.new(ENV.fetch('HOMEBREW_TEMP', '/tmp'))
 diff --git a/Library/Homebrew/keg.rb b/Library/Homebrew/keg.rb
-index 3bae926..5247ef1 100644
+index 8ad5ffa..5d3b551 100644
 --- a/Library/Homebrew/keg.rb
 +++ b/Library/Homebrew/keg.rb
-@@ -29,7 +29,7 @@ class Keg < Pathname
-   def unlink
-     n=0
+@@ -12,8 +12,8 @@ class Keg < Pathname
+   # locale-specific directories have the form language[_territory][.codeset][@modifier]
+   LOCALEDIR_RX = /(locale|man)\/([a-z]{2}|C|POSIX)(_[A-Z]{2})?(\.[a-zA-Z\-0-9]+(@.+)?)?/
+   INFOFILE_RX = %r[info/([^.].*?\.info|dir)$]
+-  TOP_LEVEL_DIRECTORIES = %w[bin etc include lib sbin share var Frameworks]
+-  PRUNEABLE_DIRECTORIES = %w[bin etc include lib sbin share Frameworks LinkedKegs].map do |d|
++  TOP_LEVEL_DIRECTORIES = %w[bin etc libexec include lib sbin share var Frameworks]
++  PRUNEABLE_DIRECTORIES = %w[bin etc libexec include lib sbin share Frameworks LinkedKegs].map do |d|
+     case d when 'LinkedKegs' then HOMEBREW_LIBRARY/d else HOMEBREW_PREFIX/d end
+   end
  
--    %w[bin etc lib include sbin share var].map{ |d| self/d }.each do |src|
-+    %w[bin etc lib libexec include sbin share var].map{ |d| self/d }.each do |src|
-       next unless src.exist?
-       src.find do |src|
-         next if src == self
 diff --git a/Library/Homebrew/keg_fix_install_names.rb b/Library/Homebrew/keg_fix_install_names.rb
-index a6d4e68..ea9aa43 100644
+index 3fc827b..19ff28f 100644
 --- a/Library/Homebrew/keg_fix_install_names.rb
 +++ b/Library/Homebrew/keg_fix_install_names.rb
-@@ -29,13 +29,71 @@ class Keg
+@@ -17,6 +17,35 @@ class Keg
        end
      end
    end
--
 +  
 +  def rpath_install_names
 +    ohai "Fixing libs to use @rpath"
@@ -227,12 +186,10 @@ index a6d4e68..ea9aa43 100644
 +      end
 +    end
 +  end
-+  
-+  
-+  
-   private
  
-   OTOOL_RX = /\t(.*) \(compatibility version (\d+\.)*\d+, current version (\d+\.)*\d+\)/
+   def relocate_install_names old_prefix, new_prefix, old_cellar, new_cellar, options={}
+     mach_o_files.each do |file|
+@@ -118,6 +147,25 @@ class Keg
  
    def lib; join 'lib' end
  
@@ -254,40 +211,30 @@ index a6d4e68..ea9aa43 100644
 +    
 +    yield id, install_names
 +  end
-+  
-+  def binaries
-+    if(bin = join 'bin').directory?
-+      bin.children.select { |pn| not pn.symlink? }
-+    else
-+      []
-+    end
-+  end
-+  
-   def bad_install_names_for file
-     ENV['HOMEBREW_MACH_O_FILE'] = file.to_s # solves all shell escaping problems
-     install_names = `#{MacOS.locate("otool")} -L "$HOMEBREW_MACH_O_FILE"`.split "\n"
++
+   def each_install_name_for file, &block
+     dylibs = file.dynamically_linked_libraries
+     dylibs.reject! { |fn| fn =~ /^@(loader_|executable_|r)path/ }
 diff --git a/Library/Homebrew/utils.rb b/Library/Homebrew/utils.rb
-index 0970f99..d9d9694 100644
+index 2bc7297..dd12f3c 100644
 --- a/Library/Homebrew/utils.rb
 +++ b/Library/Homebrew/utils.rb
-@@ -125,7 +125,11 @@ def curl *args
-   args << "--insecure" if MacOS.version < 10.6
+@@ -142,6 +142,10 @@ def curl *args
    args << "--verbose" if ENV['HOMEBREW_CURL_VERBOSE']
    args << "--silent" unless $stdout.tty?
--
-+  
+ 
 +  if !$stdout.tty? || ARGV.quieter?
 +    args << "--silent"
 +  end
-+  
++
    safe_system curl, *args
  end
  
 diff --git a/Library/Homebrew/download_strategy.rb b/Library/Homebrew/download_strategy.rb
-index 68a91d0..e737cde 100644
+index e7e482e..3d9ac7f 100644
 --- a/Library/Homebrew/download_strategy.rb
 +++ b/Library/Homebrew/download_strategy.rb
-@@ -399,6 +399,37 @@ class GitDownloadStrategy < AbstractDownloadStrategy
+@@ -606,6 +606,36 @@ class GitDownloadStrategy < VCSDownloadStrategy
    end
  end
  
@@ -321,16 +268,15 @@ index 68a91d0..e737cde 100644
 +  end
 +end
 +
-+
- class CVSDownloadStrategy < AbstractDownloadStrategy
-   def initialize name, package
-     super
-@@ -599,6 +630,8 @@ class DownloadStrategyDetector
+ class CVSDownloadStrategy < VCSDownloadStrategy
+   def cvspath
+     @path ||= %W[
+@@ -819,6 +849,8 @@ class DownloadStrategyDetector
      when %r[^http://www.apache.org/dyn/closer.cgi] then CurlApacheMirrorDownloadStrategy
        # Common URL patterns
      when %r[^https?://svn\.] then SubversionDownloadStrategy
 +      # Local directory
 +    when %r[^file://] then FileDownloadStrategy
-     when bottle_native_regex, bottle_regex, old_bottle_regex
+     when bottle_native_regex, bottle_regex
        CurlBottleDownloadStrategy
        # Otherwise just try to download

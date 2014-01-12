@@ -17,6 +17,7 @@ class LibgpgError < Formula
     # programs can't link to libraries using @rpath.
     ENV.prepend 'LDFLAGS', '-headerpad_max_install_names'
     ENV.prepend 'LDFLAGS', "-Wl,-rpath,@loader_path/../lib -Wl,-rpath,#{HOMEBREW_PREFIX}/lib"
+    ENV.append 'CFLAGS', '-mmacosx-version-min=10.6'
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
                           "--enable-static=no", "--disable-maintainer-mode"

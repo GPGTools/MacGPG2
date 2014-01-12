@@ -111,7 +111,7 @@ pushd "$INSTALLDIR" > /dev/null
         # Build MacGPG2 with make -j4
 	export HOMEBREW_MAKE_JOBS=4
 		./bin/brew install --universal --quieter pinentry
-        ./bin/brew install --env=std --universal --quieter MacGPG2
+        ./bin/brew install --env=std --universal MacGPG2 #--quieter 
         EXIT="$?"
     else
         success "MacGPG2 is already built. No need to do it again."

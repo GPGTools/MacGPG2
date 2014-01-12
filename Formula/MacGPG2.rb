@@ -5,13 +5,15 @@ class Macgpg2 < Formula
   homepage 'http://www.gnupg.org/'
   sha1 '9ba9ee288e9bf813e0f1e25cbe06b58d3072d8b8'
   
+  depends_on 'libgcrypt'
+
   depends_on 'libiconv'
   depends_on 'gettext'
   depends_on 'pth'
   depends_on 'libusb-compat'
   depends_on 'libgpg-error'
   depends_on 'libassuan'
-  depends_on 'libgcrypt'
+
   depends_on 'libksba'
   depends_on 'zlib'
   depends_on 'pinentry'
@@ -54,6 +56,8 @@ class Macgpg2 < Formula
     final_install_directory = "/usr/local/MacGPG2"
     
     inreplace 'g10/keygen.c', 'max=4096', 'max=8192'
+    
+    ENV.append 'CFLAGS', '-mmacosx-version-min=10.6'
     
     system "./configure", "--prefix=#{prefix}",
                           "--disable-maintainer-mode",

@@ -1,45 +1,51 @@
 require 'formula'
 
 class Libgcrypt < Formula
-  url 'ftp://ftp.gnupg.org/gcrypt/libgcrypt/libgcrypt-1.5.3.tar.bz2'
-  sha1 '2c6553cc17f2a1616d512d6870fe95edf6b0e26e'
-  homepage 'http://directory.fsf.org/project/libgcrypt/'
+  homepage 'http://gnupg.org/'
+  url 'ftp://ftp.gnupg.org/gcrypt/libgcrypt/libgcrypt-1.6.0.tar.bz2'
+  sha1 '43283c0b41c41e3d3bc13c2d8f937dfe2aaa1a77'
 
-  depends_on 'pth'
   depends_on 'libgpg-error'
   
   keep_install_names true
-  
-  def patches
-    if ENV.compiler == :clang
-      { :p0 => ["https://trac.macports.org/export/85232/trunk/dports/devel/libgcrypt/files/clang-asm.patch"]}
-    else
-      { :p0 => []}
-    end
+
+  option :universal
+
+  resource 'config.h.ed' do
+    url 'http://trac.macports.org/export/113198/trunk/dports/devel/libgcrypt/files/config.h.ed'
+    version '113198'
+    sha1 '136f636673b5c9d040f8a55f59b430b0f1c97d7a'
+  end if build.universal?
+
+  fails_with :clang do
+    build 77
+    cause "basic test fails"
   end
 
+  # NOTE: the patch for building with clang and "universal" doesn't
+  # apply anymore
+
   def install
-    ENV.universal_binary if ARGV.build_universal?
-    ENV.build_32_bit
-    # Make sure that deployment target is 10.6+ so the lib works
-    # on 10.6 and up not only on host system os x version.
+    ENV.universal_binary if build.universal?
+    #ENV.build_32_bit
     ENV.macosxsdk("10.6")
     
-    ENV.prepend 'LDFLAGS', '-headerpad_max_install_names'
-    ENV.prepend 'LDFLAGS', "-Wl,-rpath,@loader_path/../lib -Wl,-rpath,#{HOMEBREW_PREFIX}/lib"
-    ENV.prepend 'CFLAGS', "-fheinous-gnu-extensions"
-    
+    ENV.append 'CFLAGS', '-std=gnu89 -fheinous-gnu-extensions' if ENV.compiler == :clang
+    ENV.append 'CFLAGS', '-mmacosx-version-min=10.6'
+
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
                           "--disable-asm",
-                          "--enable-m-guard",
-                          "--with-gpg-error-prefix=#{HOMEBREW_PREFIX}",
-                          "--with-pth-prefix=#{HOMEBREW_PREFIX}",
-                          "--enable-static=no", "--disable-maintainer-mode"
-    # Separate steps, or parallel builds fail
-    system "make"
-    system "make check"
+                          "--with-gpg-error-prefix=#{HOMEBREW_PREFIX}"
+
+    if build.universal?
+      buildpath.install resource('config.h.ed')
+      system "ed -s - config.h <config.h.ed"
+    end
+
+    # Parallel builds work, but only when run as separate steps
+    system "make", "CFLAGS=#{ENV.cflags}"
+    #system "make check"
     system "make install"
   end
 end
-
