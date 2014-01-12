@@ -151,7 +151,10 @@ function fixGPGAgent {
 	
 	chown "$ACTUAL_UID:staff" "$gpgAgentConf"
 	
+	# Fix permissions of the central gpg-agent socket dir.
+	[[ -e /tmp/gpg-agent ]] && chmod a+rwx /tmp/gpg-agent
 
+	# Reload gpg-agent.conf or start gpg-agent.
 	if gpg-agent &>/dev/null ;then
 		if $needHup ;then
 			myEcho "Force gpg-agent.conf reload."
