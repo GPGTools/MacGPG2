@@ -69,7 +69,7 @@ if [ "$NO_BUILDROOT_EXISTS" == "1" ]; then
     git clone --recursive "$HOMEBREWDIR" "$INSTALLDIR" > /dev/null
     
     bail_if_necessary "$?" "Failed to bootstrap homebrew"
-    
+	    
     pushd "$INSTALLDIR" > /dev/null
         # Patch brew to add the install name patch and the build options
         # patch.
@@ -111,7 +111,7 @@ pushd "$INSTALLDIR" > /dev/null
         # Build MacGPG2 with make -j4
 	export HOMEBREW_MAKE_JOBS=4
 		./bin/brew install --universal --quieter pinentry
-        ./bin/brew install --env=std --universal MacGPG2 #--quieter 
+        ./bin/brew install --cc=llvm-gcc --env=std --universal MacGPG2 #--quieter 
         EXIT="$?"
     else
         success "MacGPG2 is already built. No need to do it again."

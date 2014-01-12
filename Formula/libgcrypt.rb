@@ -31,7 +31,6 @@ class Libgcrypt < Formula
     ENV.macosxsdk("10.6")
     
     ENV.append 'CFLAGS', '-std=gnu89 -fheinous-gnu-extensions' if ENV.compiler == :clang
-    ENV.append 'CFLAGS', '-mmacosx-version-min=10.6'
 
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
