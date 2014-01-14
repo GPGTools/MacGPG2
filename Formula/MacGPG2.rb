@@ -22,8 +22,8 @@ class Macgpg2 < Formula
   keep_install_names true
   
   def patches
-    { :p1 => [DATA],
-      :p0 => ["#{HOMEBREW_PREFIX}/Library/Formula/Patches/IDEA/gnupg2.patch",
+    { :p1 => [DATA,
+              "#{HOMEBREW_PREFIX}/Library/Formula/Patches/IDEA/gnupg2.patch",
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/cacheid.patch",
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/keysize.patch",
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/socket.patch",
