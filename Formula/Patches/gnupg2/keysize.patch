@@ -1,7 +1,6 @@
-diff -ru g10/keygen.c g10/keygen.c
---- g10/keygen.c	2011-01-10 19:09:46.000000000 +0100
-+++ g10/keygen.c	2011-12-22 12:45:02.000000000 +0100
-@@ -1774,14 +1774,20 @@
+--- a/g10/keygen.c
++++ b/g10/keygen.c
+@@ -1771,14 +1771,20 @@
  static unsigned
  ask_keysize (int algo, unsigned int primary_keysize)
  {

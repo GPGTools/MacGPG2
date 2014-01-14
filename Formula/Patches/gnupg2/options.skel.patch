@@ -1,7 +1,6 @@
-diff -ru g10/options.skel g10/options.skel
---- g10/options.skel
-+++ g10/options.skel
-@@ -166,7 +166,7 @@
+--- a/g10/options.skel
++++ b/g10/options.skel
+@@ -159,7 +159,7 @@
  # no-include-attributes = do not include attribute IDs (aka "photo IDs")
  #                         when sending keys to the keyserver.
  
@@ -10,7 +9,7 @@ diff -ru g10/options.skel g10/options.skel
  
  # Uncomment this line to display photo user IDs in key listings and
  # when a signature from a key with a photo is verified.
-@@ -204,3 +204,36 @@
+@@ -197,3 +197,36 @@
  # Use your MIME handler to view photos:
  # photo-viewer "metamail -q -d -b -c %T -s 'KeyID 0x%k' -f GnuPG"
  

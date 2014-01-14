@@ -1,6 +1,6 @@
---- Makefile.in
-+++ Makefile.in
-@@ -830,7 +830,7 @@ distcleancheck: distclean
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -830,7 +830,7 @@
  	       $(distcleancheck_listfiles) ; \
  	       exit 1; } >&2
  check-am: all-am
@@ -9,9 +9,9 @@
  all-am: Makefile $(DATA) config.h
  installdirs: installdirs-recursive
  installdirs-am:
---- agent/gpg-agent.c
-+++ agent/gpg-agent.c
-@@ -1499,18 +1499,25 @@ create_socket_name (char *standard_name, char *template)
+--- a/agent/gpg-agent.c
++++ b/agent/gpg-agent.c
+@@ -1499,18 +1499,25 @@
      name = make_filename (opt.homedir, standard_name, NULL);
    else
      {
@@ -49,7 +49,29 @@
      }
  
    if (strchr (name, PATHSEP_C))
-@@ -2443,13 +2450,15 @@ check_own_socket (void)
+@@ -1558,9 +1565,9 @@
+   strcpy (serv_addr->sun_path, name);
+   len = SUN_LEN (serv_addr);
+   rc = assuan_sock_bind (fd, (struct sockaddr*) serv_addr, len);
+-  if (opt.use_standard_socket && rc == -1 && errno == EADDRINUSE)
++  if (rc == -1 && errno == EADDRINUSE)
+     {
+-      /* Check whether a gpg-agent is already running on the standard
++      /* Check whether a gpg-agent is already running on this
+          socket.  We do this test only if this is not the ssh socket.
+          For ssh we assume that a test for gpg-agent has already been
+          done and reuse the requested ssh socket.  Testing the
+@@ -1591,8 +1598,7 @@
+                  gpg_strerror (gpg_error_from_errno (errno)));
+ 
+       assuan_sock_close (fd);
+-      if (opt.use_standard_socket)
+-        *name = 0; /* Inhibit removal of the socket by cleanup(). */
++	  *name = 0; /* Inhibit removal of the socket by cleanup(). */
+       agent_exit (2);
+     }
+ 
+@@ -2443,13 +2449,15 @@
    char *sockname;
    pth_attr_t tattr;
  
@@ -69,7 +91,7 @@
    if (!sockname)
      return; /* Out of memory.  */
  
-@@ -2515,16 +2524,28 @@ check_for_running_agent (int silent, int mode)
+@@ -2515,16 +2523,28 @@
              return 0; /* Okay, its running on the standard socket. */
            return -1;
          }
@@ -101,9 +123,9 @@
    xfree (infostr);
    if (rc)
      {
---- common/asshelp.c
-+++ common/asshelp.c
-@@ -286,6 +286,12 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
+--- a/common/asshelp.c
++++ b/common/asshelp.c
+@@ -286,6 +286,12 @@
        sockname = make_filename (homedir, "S.gpg-agent", NULL);
        err = assuan_socket_connect (ctx, sockname, 0, 0);
  
@@ -116,7 +138,7 @@
        if (err)
          {
            /* With no success start a new server.  */
-@@ -309,21 +315,27 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
+@@ -309,21 +315,27 @@
            if (!agent_program || !*agent_program)
              agent_program = gnupg_module_name (GNUPG_MODULE_NAME_AGENT);
  
@@ -158,7 +180,7 @@
                /* If the agent has been configured for use with a
                   standard socket, an environment variable is not
                   required and thus we we can savely start the agent
-@@ -331,8 +343,7 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
+@@ -331,8 +343,7 @@
                lock_agent_t lock;
  
                argv[0] = "--daemon";
@@ -168,7 +190,7 @@
  
                if (!(err = lock_agent_spawning (&lock, homedir))
                    && assuan_socket_connect (ctx, sockname, 0, 0))
-@@ -359,36 +370,6 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
+@@ -359,36 +370,6 @@
                  }
  
                unlock_agent_spawning (&lock);
