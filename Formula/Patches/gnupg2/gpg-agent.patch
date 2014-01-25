@@ -1,0 +1,10 @@
+--- a/agent/gpg-agent.c
++++ b/agent/gpg-agent.c
+@@ -888,6 +888,7 @@
+ #endif
+ 
+   set_debug ();
++  _(""); // We need to use gettext before a fork. If we use it the first time after a fork, it crashes.
+ 
+   if (atexit (cleanup))
+     {

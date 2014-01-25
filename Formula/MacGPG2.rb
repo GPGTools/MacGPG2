@@ -27,6 +27,7 @@ class Macgpg2 < Formula
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/cacheid.patch",
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/keysize.patch",
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/socket.patch",
+              "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/gpg-agent.patch",
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/MacGPG2VersionString.patch",
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/options.skel.patch"] }
   end
