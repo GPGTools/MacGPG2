@@ -39,8 +39,6 @@ class Macgpg2 < Formula
     # on 10.6 and up not only on host system os x version.
     ENV.macosxsdk("10.6")
     
-    ENV.build_32_bit
-    
     # so we don't use Clang's internal stdint.h
     ENV['gl_cv_absolute_stdint_h'] = "#{MacOS.sdk_path}/usr/include/stdint.h"
     
