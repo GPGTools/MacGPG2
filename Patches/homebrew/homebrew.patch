@@ -280,3 +280,21 @@ index e7e482e..3d9ac7f 100644
      when bottle_native_regex, bottle_regex
        CurlBottleDownloadStrategy
        # Otherwise just try to download
+
+--- a/Library/Homebrew/keg_fix_install_names.rb	2014-01-25 18:18:02.000000000 +0100
++++ b/Library/Homebrew/keg_fix_install_names.rb	2014-01-25 18:18:37.000000000 +0100
+@@ -166,6 +166,14 @@
+     yield id, install_names
+   end
+ 
++  def binaries
++    if(bin = join 'bin').directory?
++      bin.children.select { |pn| not pn.symlink? }
++    else
++      []
++    end
++  end
++
+   def each_install_name_for file, &block
+     dylibs = file.dynamically_linked_libraries
+     dylibs.reject! { |fn| fn =~ /^@(loader_|executable_|r)path/ }
