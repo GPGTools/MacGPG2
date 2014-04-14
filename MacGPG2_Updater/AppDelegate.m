@@ -10,6 +10,10 @@
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
 	updater = [SUUpdater sharedUpdater];
 	updater.delegate = self;
+	NSArray *arguments = [[NSProcessInfo processInfo] arguments];
+	if ([arguments containsObject:@"checkNow"]) {
+		[updater checkForUpdates:nil];
+	}
 	[NSTimer scheduledTimerWithTimeInterval:10 target:self selector:@selector(terminateIfIdle) userInfo:nil repeats:YES];
 }
 
