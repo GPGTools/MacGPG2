@@ -9,7 +9,7 @@
  
  # Uncomment this line to display photo user IDs in key listings and
  # when a signature from a key with a photo is verified.
-@@ -197,3 +197,36 @@
+@@ -197,3 +197,37 @@
  # Use your MIME handler to view photos:
  # photo-viewer "metamail -q -d -b -c %T -s 'KeyID 0x%k' -f GnuPG"
  
@@ -45,4 +45,5 @@
 +cert-digest-algo SHA512
 +default-preference-list SHA512 SHA384 SHA256 SHA224 AES256 AES192 AES CAST5 ZLIB BZIP2 ZIP Uncompressed
 +personal-digest-preferences SHA512 SHA384 SHA256 SHA224
++no-emit-version
 +
