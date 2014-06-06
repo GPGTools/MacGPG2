@@ -71,20 +71,22 @@
    dialog box (PGP).
  
    @item showphoto
+new file mode 100644
+Binary files /dev/null and b/g10/.DS_Store differ
 --- a/g10/armor.c
 +++ b/g10/armor.c
 @@ -1078,7 +1078,7 @@
  	    iobuf_writestr(a,afx->eol);
- 	    if( !opt.no_version )
+ 	    if (opt.emit_version)
  	      {
--		iobuf_writestr(a, "Version: GnuPG v"  VERSION " ("
-+		iobuf_writestr(a, "Version: GnuPG/MacGPG2 v"  VERSION " ("
- 			       PRINTABLE_OS_NAME ")" );
- 		iobuf_writestr(a,afx->eol);
- 	      }
+-		iobuf_writestr (a, "Version: GnuPG v");
++		iobuf_writestr (a, "Version: GnuPG/MacGPG2 v");
+                 for (s=VERSION; *s && *s != '.'; s++)
+                   iobuf_writebyte (a, *s);
+                 if (opt.emit_version > 1 && *s)
 --- a/g10/gpg.c
 +++ b/g10/gpg.c
-@@ -811,7 +811,7 @@
+@@ -813,7 +813,7 @@
    const char *p;
  
      switch( level ) {
