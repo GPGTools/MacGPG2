@@ -1,0 +1,40 @@
+# This patch allows to use --passphrase-fd without --batch.
+
+--- a/g10/passphrase.c
++++ b/g10/passphrase.c
+@@ -179,7 +179,7 @@
+ int
+ have_static_passphrase()
+ {
+-  return !!fd_passwd && opt.batch;
++  return !!fd_passwd;
+ }
+ 
+ /****************
+@@ -242,17 +242,6 @@
+   int i, len;
+   char *pw;
+ 
+-  if ( !opt.batch )
+-    { /* Not used but we have to do a dummy read, so that it won't end
+-         up at the begin of the message if the quite usual trick to
+-         prepend the passphtrase to the message is used. */
+-      char buf[1];
+-
+-      while (!(read (fd, buf, 1) != 1 || *buf == '\n' ))
+-        ;
+-      *buf = 0;
+-      return;
+-    }
+ 
+   for (pw = NULL, i = len = 100; ; i++ )
+     {
+@@ -273,8 +262,6 @@
+         break;
+     }
+   pw[i] = 0;
+-  if (!opt.batch)
+-    tty_printf("\b\b\b   \n" );
+ 
+   xfree ( fd_passwd );
+   fd_passwd = pw;
