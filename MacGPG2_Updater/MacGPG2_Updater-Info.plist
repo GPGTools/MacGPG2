@@ -41,7 +41,7 @@
 	<key>CFBundleDisplayName</key>
 	<string>MacGPG2</string>
 	<key>SUFeedURL_nightly</key>
-	<string>https://nightly.gpgtools.org/releases/macgpg2/appcast.xml</string>
+	<string>https://releases.gpgtools.org/nightlies/macgpg2/appcast.xml</string>
 	<key>SUFeedURL_prerelease</key>
 	<string>https://nightly.gpgtools.org/releases/macgpg2/pre-appcast.xml</string>
 	<key>SUFeedURL</key>
