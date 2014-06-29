@@ -129,3 +129,15 @@
  @HAVE_DOSISH_SYSTEM_FALSE@               -DGNUPG_LIBDIR="\"$(libdir)/@PACKAGE@\""  \
  @HAVE_DOSISH_SYSTEM_FALSE@               -DGNUPG_DATADIR="\"$(datadir)/@PACKAGE@\"" \
  @HAVE_DOSISH_SYSTEM_FALSE@               -DGNUPG_SYSCONFDIR="\"$(sysconfdir)/@PACKAGE@\""
+
+--- a/doc/Makefile.in
++++ b/doc/Makefile.in
+@@ -389,7 +389,7 @@
+        howtos.texi howto-create-a-server-cert.texi
+
+ DVIPS = TEXINPUTS="$(srcdir)$(PATH_SEPARATOR)$$TEXINPUTS" dvips
+-AM_MAKEINFOFLAGS = -I $(srcdir) --css-ref=/share/site.css
++AM_MAKEINFOFLAGS = -I $(srcdir) --css-include=/share/site.css
+ YAT2M_OPTIONS = -I $(srcdir) \
+         --release "GnuPG @PACKAGE_VERSION@" --source "GNU Privacy Guard"
+
