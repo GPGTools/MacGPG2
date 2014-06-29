@@ -75,7 +75,7 @@ if [ "$NO_BUILDROOT_EXISTS" == "1" ]; then
         # patch.
         status "Applying GPGTools homebrew patches"
         for file in "$PATCHDIR"/homebrew/*.patch; do
-            patch --force -p1 < "$file" > /dev/null
+            patch --force -p1 < "$file"
             bail_if_necessary "$?" "Failed to apply homebrew patch $file"
         done
     popd > /dev/null
