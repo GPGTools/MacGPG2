@@ -1,9 +1,9 @@
 require 'formula'
 
 class Macgpg2 < Formula
-  url 'ftp://ftp.gnupg.org/gcrypt/gnupg/gnupg-2.0.24.tar.bz2'
+  url 'ftp://ftp.gnupg.org/gcrypt/gnupg/gnupg-2.0.25.tar.bz2'
   homepage 'http://www.gnupg.org/'
-  sha1 '010e027d5f622778cadc4c124013fe515ed705cf'
+  sha1 '890d77d89f2d187382f95e83e386f2f7ba789436'
   
   depends_on 'libgcrypt'
 
