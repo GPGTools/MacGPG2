@@ -30,7 +30,8 @@ class Macgpg2 < Formula
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/gpg-agent.patch",
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/MacGPG2VersionString.patch",
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/passphrase-fd.patch",
-              "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/options.skel.patch"] }
+              "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/options.skel.patch",
+              "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/import-filter.patch"] }
   end
 
   def install
