@@ -6,7 +6,7 @@
 	<dict>
 		<key>Resources/Info.plist</key>
 		<data>
-		gWpDUdJJ1m9K/4hjjFFICcu5pvM=
+		0EN1H9Mg7xVQj2Z/SmQ37fcDBdk=
 		</data>
 		<key>Resources/License.txt</key>
 		<data>
@@ -175,11 +175,11 @@
 		</dict>
 		<key>Resources/dmgExtract.app/Contents/Info.plist</key>
 		<data>
-		dBF4wzkALhayGZSeZK/PmO2P0bw=
+		DTOev1SAEJiOPQOLLvAC/NZQ0xo=
 		</data>
 		<key>Resources/dmgExtract.app/Contents/MacOS/dmgExtract</key>
 		<data>
-		2jmPDJYVskBtQAeHH/hmZ7BU2hM=
+		nBUmzjZs98Pnutb3Qvd6HmiboE8=
 		</data>
 		<key>Resources/dmgExtract.app/Contents/PkgInfo</key>
 		<data>
@@ -272,11 +272,11 @@
 		</dict>
 		<key>Resources/finish_installation.app/Contents/Info.plist</key>
 		<data>
-		eT69Vpl1H+XMx6lr1d86wgRcgWA=
+		cOT0hSPIn1oSdg+FFVzINy19Wvc=
 		</data>
 		<key>Resources/finish_installation.app/Contents/MacOS/finish_installation</key>
 		<data>
-		+25sFFOH3kDQIAQj4q7Xe7QbgAQ=
+		4NHtPQl5t97Zjp/j7r+ta0HuI3g=
 		</data>
 		<key>Resources/finish_installation.app/Contents/PkgInfo</key>
 		<data>
@@ -1188,6 +1188,10 @@
 	</dict>
 	<key>files2</key>
 	<dict>
+		<key>Headers/ClassPrefixes.h</key>
+		<data>
+		hT/jemJ9nv08W2UBR8PvsN5LTOY=
+		</data>
 		<key>Headers/SUAppcast.h</key>
 		<data>
 		WU0Oz96Oj12OVgIyFoXy8c//5Fw=
@@ -1210,11 +1214,11 @@
 		</data>
 		<key>Headers/Sparkle.h</key>
 		<data>
-		L7ZMguRipF7+oO6qLCVLvu+EMCk=
+		tI22IzhRWT/8CrDLv27rxCvs8H8=
 		</data>
 		<key>Resources/Info.plist</key>
 		<data>
-		gWpDUdJJ1m9K/4hjjFFICcu5pvM=
+		0EN1H9Mg7xVQj2Z/SmQ37fcDBdk=
 		</data>
 		<key>Resources/License.txt</key>
 		<data>
@@ -1383,11 +1387,11 @@
 		</dict>
 		<key>Resources/dmgExtract.app/Contents/Info.plist</key>
 		<data>
-		dBF4wzkALhayGZSeZK/PmO2P0bw=
+		DTOev1SAEJiOPQOLLvAC/NZQ0xo=
 		</data>
 		<key>Resources/dmgExtract.app/Contents/MacOS/dmgExtract</key>
 		<data>
-		2jmPDJYVskBtQAeHH/hmZ7BU2hM=
+		nBUmzjZs98Pnutb3Qvd6HmiboE8=
 		</data>
 		<key>Resources/dmgExtract.app/Contents/PkgInfo</key>
 		<data>
@@ -1480,11 +1484,11 @@
 		</dict>
 		<key>Resources/finish_installation.app/Contents/Info.plist</key>
 		<data>
-		eT69Vpl1H+XMx6lr1d86wgRcgWA=
+		cOT0hSPIn1oSdg+FFVzINy19Wvc=
 		</data>
 		<key>Resources/finish_installation.app/Contents/MacOS/finish_installation</key>
 		<data>
-		+25sFFOH3kDQIAQj4q7Xe7QbgAQ=
+		4NHtPQl5t97Zjp/j7r+ta0HuI3g=
 		</data>
 		<key>Resources/finish_installation.app/Contents/PkgInfo</key>
 		<data>
