@@ -1,9 +1,9 @@
 require 'formula'
 
 class Macgpg2 < Formula
-  url 'ftp://ftp.gnupg.org/gcrypt/gnupg/gnupg-2.0.25.tar.bz2'
+  url 'ftp://ftp.gnupg.org/gcrypt/gnupg/gnupg-2.0.26.tar.bz2'
   homepage 'http://www.gnupg.org/'
-  sha1 '890d77d89f2d187382f95e83e386f2f7ba789436'
+  sha1 '3ff5b38152c919724fd09cf2f17df704272ba192'
   
   depends_on 'libgcrypt'
 
@@ -30,8 +30,7 @@ class Macgpg2 < Formula
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/gpg-agent.patch",
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/MacGPG2VersionString.patch",
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/passphrase-fd.patch",
-              "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/options.skel.patch",
-              "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/import-filter.patch"] }
+              "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/options.skel.patch"] }
   end
 
   def install
