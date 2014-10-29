@@ -1,0 +1,29 @@
+#!/bin/sh
+
+macgpg=/usr/local/MacGPG2
+
+# an existsting old link would have been overwritten with preinstall
+
+cd /usr/local/bin
+ln -s ../gnupg-2.1/bin/gpg2 gpg
+
+if [ -d $macgpg ]; then
+  r=$(/usr/local/gnupg-2.1/bin/pinentry-mac.app/Contents/MacOS/pinentry-mac --no-global-grab <<EOT | tail -n 1
+SETTITLE Install GnuPG
+SETDESC Found an installation of GPG Tools (MacGPG2). We recommend you uninstall it to avoid compatibility issues between GnuPG 2.1 and GPGTools.%0A%0ADo you wan to uninstall GPG Tools?
+SETOK Uninstall GPG Tools
+SETCANCEL Leave GPG Tools untouched
+CONFIRM
+EOT
+)
+
+  if [ "$r" = "OK" ]; then
+    rm -rf $macgpg
+  fi
+fi
+
+# unconditionally kill all instances of gpg-agent
+killall shutdown-gpg-agent # terminate gpg-agent wrapper of GPGTools
+killall gpg-agent
+
+exit 0  # unconditionally exit with "OK"

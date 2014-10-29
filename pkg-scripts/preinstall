@@ -1,0 +1,20 @@
+#!/bin/sh
+
+INSTDIR=/usr/local/gnupg-2.1
+BINLINK=/usr/local/bin/gpg
+
+if [ -d $INSTDIR ]; then
+  rm -rf $INSTDIR
+fi
+
+if [ -e $INSTDIR ]; then
+  rm -rf $INSTDIR
+fi
+
+if [ -L $BINLINK ]; then
+  rm -f $BINLINK
+fi
+
+if [ -e $BINLINK ]; then
+  mv -f $BINLINK ${BINLINK}.orig
+fi

@@ -1,0 +1,51 @@
+From 47d2d4ccf93f81fcb3f16081297babb0b70e6b0b Mon Sep 17 00:00:00 2001
+From: Colin Davis <e1ven@e1ven.com>
+Date: Sun, 25 May 2014 20:13:24 -0400
+Subject: [PATCH] Makefile changes to explicitly include needed libraries
+
+---
+ common/Makefile.am | 4 ++--
+ g10/Makefile.am    | 2 +-
+ tools/Makefile.am  | 2 +-
+ 3 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/g10/Makefile.am b/g10/Makefile.am
+index ba68648..54c86c4 100644
+--- a/g10/Makefile.am
++++ b/g10/Makefile.am
+@@ -25,7 +25,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/common \
+ 
+ include $(top_srcdir)/am/cmacros.am
+ 
+-AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS)
++AM_CFLAGS = $(KSBA_CFLAGS) $(LIBGCRYPT_CFLAGS) $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS)
+ 
+ needed_libs = ../kbx/libkeybox.a $(libcommon) ../gl/libgnu.a
+ 
+diff --git a/tools/Makefile.am b/tools/Makefile.am
+index 946ae4a..045ddea 100644
+--- a/tools/Makefile.am
++++ b/tools/Makefile.am
+@@ -23,7 +23,7 @@ EXTRA_DIST = \
+ 	ccidmon.c ChangeLog-2011 gpg-connect-agent-w32info.rc
+ 
+ 
+-AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/intl -I$(top_srcdir)/common
++AM_CPPFLAGS = $(AM_CFLAGS) -I$(top_srcdir)/gl -I$(top_srcdir)/intl -I$(top_srcdir)/common
+ include $(top_srcdir)/am/cmacros.am
+ 
+ if HAVE_W32_SYSTEM
+-- 
+1.9.3
+
+--- a/common/Makefile.in	2014-10-27 16:35:56.000000000 +0100
++++ b/common/Makefile.in	2014-10-27 16:36:34.000000000 +0100
+@@ -718,7 +718,7 @@
+ t_common_cflags = $(KSBA_CFLAGS) $(LIBGCRYPT_CFLAGS) \
+                   $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS)
+ 
+-t_common_ldadd = libcommon.a ../gl/libgnu.a \
++t_common_ldadd = libcommon.a libcommon_a-init.o ../gl/libgnu.a \
+                  $(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
+ 	         $(LIBINTL) $(LIBICONV)
+ 

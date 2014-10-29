@@ -1,0 +1,260 @@
+#!/bin/bash
+
+# This file is licensed under the GNU Lesser General Public License v3.0
+# See https://www.gnu.org/licenses/lgpl-3.0.txt for a copy of the license
+#
+# Usage: buildgpg [-arch 32|64] [step_num]
+
+ABI=64     ## default is 64-bit build
+
+if [ "$1" = "-arch" ]; then
+  ABI=$2
+  shift 2
+fi
+
+
+# specify main directory
+MAIN_DIR=/Users/pbr/enigmail/gpg21
+
+PINENTRY=pinentry-mac-0.8.1
+
+GPGVERSION=gnupg-2.1.0-beta895
+PKGVERSION=2.1.0.0001
+
+
+step=0
+
+if [ $# -gt 0 ]; then
+  step=$1
+fi
+
+if [ $ABI -eq 32 ]; then
+  ARCH="i386"
+  HOSTSYSTEM="-host=i386-apple-darwin8.0.0"
+else
+  ARCH="x86_64"
+  HOSTSYSTEM=""
+fi
+
+MAIN_PREFIX=$MAIN_DIR/build
+SRC_DIR=$MAIN_DIR/src
+DIST_DIR=$MAIN_DIR/dist$ABI
+REL_DIR=$MAIN_DIR/rel$ABI
+INSTALL_DIR=$MAIN_DIR/inst
+
+
+function doFail {
+  echo "Terminated at step $1"
+  exit 1
+}
+
+function unpack {
+  inFile=$1
+  fn=`echo $inFile|sed -E 's/^.*\.tar//'`
+
+  case $fn in
+  .lz)
+    lunzip -k -c $inFile | tar xf -
+    ;;
+  .bz2)
+    tar jxf $inFile
+    ;;
+  .gz)
+    tar zxf $inFile
+    ;;
+  esac
+}
+
+function buildlib {
+  echo ""
+  echo "**** building $2 ****"
+  echo ""
+
+  libname=${lib/-[0-9]*}
+  moreParams=`grep $libname $MAIN_DIR/config-params.txt | cut -d: -f2`
+  if [ "$moreParams" = "ignore" ]; then
+    return 0
+  fi
+
+  CFLAGS="-arch $ARCH  -m$ABI" \
+    CXXFLAGS="-arch $ARCH" \
+    ABI=$ABI \
+    LDFLAGS="-L$DIST_DIR/lib -arch $ARCH" \
+    CPPFLAGS="-I$DIST_DIR/include -arch $ARCH" \
+    PKG_CONFIG_PATH=$DIST_DIR/lib/pkgconfig \
+    ./configure --prefix=$DIST_DIR \
+    $HOSTSYSTEM $moreParams || doFail $1
+
+  make -j 2 && make install || doFail $1
+}
+
+
+if [ $step -le 1 ]; then
+  echo "Downloading required files"
+  cd $SRC_DIR
+  for l in `cat $MAIN_DIR/libs.txt`; do
+    wget $l
+  done
+fi
+
+if [ $step -le 5 ]; then
+  echo "deleting build and dist directories"
+  rm -rf $MAIN_PREFIX $DIST_DIR
+fi
+
+
+mkdir -p $MAIN_PREFIX
+mkdir -p $DIST_DIR
+cd $MAIN_PREFIX
+
+if [ $step -le 8 ]; then
+  for l in `cat $MAIN_DIR/libs.txt`; do
+    lib=`basename $l`
+    echo "unpacking $lib"
+    unpack $SRC_DIR/$lib
+  done
+fi
+
+if [ $step -le 9 ]; then
+  cd $MAIN_PREFIX
+  tar jxf $SRC_DIR/${GPGVERSION}.tar.bz2 || doFail 9
+fi
+
+
+export PATH=$DIST_DIR/bin:$PATH
+
+cstep=10
+for l in `cat $MAIN_DIR/libs.txt`; do
+  if [ $step -le $cstep ]; then
+    lib=`basename $l | sed -E 's/.tar.(gz|bz2|lz)//'`
+    cd $MAIN_PREFIX/$lib
+    make distclean > /dev/null 2>&1
+    buildlib $cstep $lib
+  fi
+  cstep=`expr $cstep + 1`
+done
+
+
+if [ $step -le 23 ]; then
+  cd $MAIN_PREFIX/$PINENTRY
+  make || doFail 23
+fi
+
+
+cd $MAIN_PREFIX/$GPGVERSION
+
+if [ $step -le 25 ]; then
+  patch -p1 < $MAIN_DIR/patches/makefile.patch || doFail 25
+fi
+
+if [ $step -le 26 ]; then
+  patch -p1 < $MAIN_DIR/patches/stdint.patch || doFail 26
+fi
+
+if [ $step -le 30 ]; then
+
+  CFLAGS="-arch $ARCH" \
+    CXXFLAGS="-arch $ARCH" \
+    ABI=$ABI \
+    LDFLAGS="-L$DIST_DIR/lib -arch $ARCH" \
+    CPPFLAGS="-I$DIST_DIR/include -arch $ARCH" \
+    PKG_CONFIG_PATH=$DIST_DIR/lib/pkgconfig \
+    ./configure \
+    --prefix=$DIST_DIR \
+    $HOSTSYSTEM \
+    --with-pinentry-pgm=/usr/local/gnupg-2.1/bin/pinentry-mac.app/Contents/MacOS/pinentry-mac \
+    --with-agent-pgm=/usr/local/gnupg-2.1/bin/gpg-agent \
+    --with-scdaemon-pgm=/usr/local/gnupg-2.1/libexec/scdaemon \
+    --with-dirmngr-pgm=/usr/local/gnupg-2.1/bin/dirmngr \
+    --with-dirmngr-ldap-pgm=/usr/local/gnupg-2.1/libexec/dirmngr_ldap \
+    --with-protect-tool-pgm=/usr/local/gnupg-2.1/libexec/gpg-protect-tool \
+    --with-libgpg-error-prefix=$DIST_DIR \
+    --with-libgcrypt-prefix=$DIST_DIR \
+    --with-libassuan-prefix=$DIST_DIR \
+    --with-ksba-prefix=$DIST_DIR \
+    --with-pth-prefix=$DIST_DIR \
+    --with-readline=$DIST_DIR \
+    --with-libiconv-prefix=$DIST_DIR || doFail 30
+fi
+
+if [ $step -le 35 ]; then
+  make -j 1 && make install || doFail 35
+fi
+
+if [ $step -le 40 ]; then
+  cd $DIST_DIR/bin
+  for f in gpg2 gpgv2 g13 gpg-agent gpg-connect-agent gpg-error gpgconf gpgkey2ssh gpgparsemail gpgsm \
+      gpgtar kbxutil watchgnupg dirmngr-client dirmngr; do
+    echo "adapting ld-paths for $f"
+    install_name_tool -add_rpath @loader_path/../lib $f
+    for l in `otool -L $f | cut -d' ' -f1`; do
+      if [ `echo $l | grep -c "$DIST_DIR/lib"` -gt 0 ]; then
+        b=@rpath/`basename $l`
+        install_name_tool -change $l $b $f
+      fi
+    done
+  done
+fi
+
+if [ $step -le 42 ]; then
+  cd $DIST_DIR/libexec
+  for f in dirmngr_ldap gpg-preset-passphrase scdaemon gpg-check-pattern gpg-protect-tool; do
+    echo "adapting ld-paths for $f"
+    install_name_tool -add_rpath @loader_path/../lib $f
+    for l in `otool -L $f | cut -d' ' -f1`; do
+      if [ `echo $l | grep -c "$DIST_DIR/lib"` -gt 0 ]; then
+        b=@rpath/`basename $l`
+        install_name_tool -change $l $b $f
+      fi
+    done
+  done
+fi
+
+if [ $step -le 45 ]; then
+  rm -rf $REL_DIR >/dev/null 2>&1
+  mkdir -p $REL_DIR
+  cd $DIST_DIR
+  tar c --exclude 'bin/*-config' -f - bin lib/*dylib libexec  share/gnupg share/man| (cd $REL_DIR; tar xf -)
+
+  cd $MAIN_PREFIX/$PINENTRY/build/Release
+  tar cf - pinentry-mac.app | (cd $REL_DIR/bin; tar xf -)
+
+  cd $REL_DIR/bin
+  ln -s gpg2 gpg
+fi
+
+if [ $step -le 50 ]; then
+  cd $REL_DIR/lib
+  for f in `find . -type f -name "*.dylib"`; do
+    echo "adapting ld-paths for $f"
+    install_name_tool -add_rpath @loader_path/../lib $f
+    for l in `otool -L $f | cut -d' ' -f1`; do
+      if [ `echo $l | grep -c "$DIST_DIR/lib"` -gt 0 ]; then
+        b=@rpath/`basename $l`
+        install_name_tool -change $l $b $f
+      fi
+    done
+  done
+fi
+
+if [ $step -le 55 ]; then
+  echo "Creating installer package"
+
+  rm -rf $INSTALL_DIR
+  mkdir -p $INSTALL_DIR
+  pkgbuild --root $REL_DIR \
+    --identifier org.gnupg.gpg2 \
+    --version $PKGVERSION \
+    --install-location /usr/local/gnupg-2.1 \
+    --scripts $MAIN_DIR/pkg-scripts \
+    $INSTALL_DIR/"Install.pkg" || doFail 55
+fi
+
+if [ $step -le 60 ]; then
+  echo "Creating final .dmg file"
+  cp $MAIN_DIR/pkg-docs/License.txt $MAIN_DIR/pkg-docs/"Read Me.rtf" $INSTALL_DIR
+  rm -f $MAIN_DIR/GnuPG-2.1.dmg
+  hdiutil create $MAIN_DIR/GnuPG-2.1.dmg -volname "GnuPG 2.1" -srcfolder $INSTALL_DIR || doFail 60
+fi
+
+echo "done"
