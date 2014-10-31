@@ -6,24 +6,50 @@ macgpg=/usr/local/MacGPG2
 
 cd /usr/local/bin
 ln -s ../gnupg-2.1/bin/gpg2 gpg
+ln -s ../gnupg-2.1/bin/gpgsm gpgsm
 
-if [ -d $macgpg ]; then
-  r=$(/usr/local/gnupg-2.1/bin/pinentry-mac.app/Contents/MacOS/pinentry-mac --no-global-grab <<EOT | tail -n 1
-SETTITLE Install GnuPG
-SETDESC Found an installation of GPG Tools (MacGPG2). We recommend you uninstall it to avoid compatibility issues between GnuPG 2.1 and GPGTools.%0A%0ADo you wan to uninstall GPG Tools?
-SETOK Uninstall GPG Tools
-SETCANCEL Leave GPG Tools untouched
-CONFIRM
+# Include man pages in global man pages
+cat >> /private/etc/man.conf <<EOT
+
+MANPATH /usr/local/gnupg-2.1/share/man   ### Added by gnupg-2.1
 EOT
-)
 
-  if [ "$r" = "OK" ]; then
-    rm -rf $macgpg
+gpgTools=$(pkgutil --pkgs | grep '^org.gpgtools')
+
+if [ "x$gpgTools" != "x" ]; then
+  r=$(osascript -e '
+set question to "Found an installation of GPG Tools (MacGPG2). We recommend you uninstall it to avoid compatibility issues between GnuPG 2.1 and GPGTools.\n\nDo you wan to uninstall GPG Tools?"
+set cancel to "Ignore"
+set uninst to "Uninstall GPG Tools"
+activate
+display dialog question buttons {cancel, uninst} default button uninst
+')
+
+  if [ "x$r" != "x" ]; then
+
+    killall -kill gpg-agent
+    launchctl stop org.gpgtools.Libmacgpg.xpc
+    launchctl stop org.gpgtools.gpgmail.patch-uuid-user
+    launchctl stop org.gpgtools.macgpg2.fix
+    launchctl stop org.gpgtools.macgpg2.shutdown-gpg-agent
+    launchctl stop org.gpgtools.macgpg2.updater
+    launchctl stop org.gpgtools.macgpg2.gpg-agent
+
+    launchctl remove org.gpgtools.Libmacgpg.xpc
+    launchctl remove org.gpgtools.gpgmail.patch-uuid-user
+    launchctl remove org.gpgtools.macgpg2.fix
+    launchctl remove org.gpgtools.macgpg2.shutdown-gpg-agent
+    launchctl remove org.gpgtools.macgpg2.updater
+    launchctl remove org.gpgtools.macgpg2.gpg-agent
+
+    cd /
+    for pkg in $gpgTools; do
+      pkgutil --only-files --files $pkg | tr '\n' '\0' | xargs -n 1 -0  rm -f
+    done
+
+    rm -rf /usr/local/MacGPG2
   fi
 fi
-
-# unconditionally kill all instances of gpg-agent
-killall shutdown-gpg-agent # terminate gpg-agent wrapper of GPGTools
-killall gpg-agent
+exit
 
 exit 0  # unconditionally exit with "OK"

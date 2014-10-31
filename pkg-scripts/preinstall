@@ -1,7 +1,7 @@
 #!/bin/sh
 
 INSTDIR=/usr/local/gnupg-2.1
-BINLINK=/usr/local/bin/gpg
+BINLINKS=/usr/local/bin/gpg /usr/local/bin/gpgsm
 
 if [ -d $INSTDIR ]; then
   rm -rf $INSTDIR
@@ -11,10 +11,14 @@ if [ -e $INSTDIR ]; then
   rm -rf $INSTDIR
 fi
 
-if [ -L $BINLINK ]; then
-  rm -f $BINLINK
-fi
+for f in $BINLINKS; do
 
-if [ -e $BINLINK ]; then
-  mv -f $BINLINK ${BINLINK}.orig
-fi
+  if [ -L $f ]; then
+    rm -f $f
+  fi
+
+  if [ -e $f ]; then
+    mv -f $f ${f}.orig
+  fi
+
+done

@@ -3,48 +3,68 @@
 # This file is licensed under the GNU Lesser General Public License v3.0
 # See https://www.gnu.org/licenses/lgpl-3.0.txt for a copy of the license
 #
-# Usage: buildgpg [-arch 32|64] [step_num]
+# Usage: buildgpg config-file [step-num]
+
+function printUsage {
+  echo "Usage: $0 config-file [step-num]"
+}
+
 
 ABI=64     ## default is 64-bit build
 
-if [ "$1" = "-arch" ]; then
-  ABI=$2
-  shift 2
+if [ "$1" = "-h" -o "$1" = "--help" ]; then
+  printUsage
+  exit
 fi
 
+if [ $# -lt 1 ]; then
+  printUsage
+  exit 1
+fi
 
-# specify main directory
-MAIN_DIR=/Users/pbr/enigmail/gpg21
+if [ ! -f "$1" ]; then
+  echo "Cannot find config file '$1'"
+  exit 1
+fi
 
+. "$1"
+
+# internal variables
 PINENTRY=pinentry-mac-0.8.1
+GPGVERSION=2.1.0-beta-908
+PKGVERSION=2.1.0.0002
+BASEDIR=$(dirname $0)
 
-GPGVERSION=gnupg-2.1.0-beta895
-PKGVERSION=2.1.0.0001
-
+if [ "${BASEDIR:0:1}" != "/" ]; then
+  # ensure that BASEDIR is an absolute path
+  BASEDIR=$(pwd)"/$BASEDIR"
+fi
 
 step=0
 
-if [ $# -gt 0 ]; then
-  step=$1
+if [ $# -gt 1 ]; then
+  step=$2
 fi
 
-if [ $ABI -eq 32 ]; then
+case $ABI in
+32)
   ARCH="i386"
   HOSTSYSTEM="-host=i386-apple-darwin8.0.0"
-else
+  ;;
+64)
   ARCH="x86_64"
   HOSTSYSTEM=""
-fi
-
-MAIN_PREFIX=$MAIN_DIR/build
-SRC_DIR=$MAIN_DIR/src
-DIST_DIR=$MAIN_DIR/dist$ABI
-REL_DIR=$MAIN_DIR/rel$ABI
-INSTALL_DIR=$MAIN_DIR/inst
+  ;;
+*)
+  echo "Invalid ABI '$ABI'"
+  exit 1
+esac
 
 
 function doFail {
-  echo "Terminated at step $1"
+  echo ""
+  echo " ** ERROR at step $1 **   - build failed"
+  echo ""
   exit 1
 }
 
@@ -71,7 +91,7 @@ function buildlib {
   echo ""
 
   libname=${lib/-[0-9]*}
-  moreParams=`grep $libname $MAIN_DIR/config-params.txt | cut -d: -f2`
+  moreParams=`grep $libname $BASEDIR/config-params.txt | cut -d: -f2`
   if [ "$moreParams" = "ignore" ]; then
     return 0
   fi
@@ -92,7 +112,7 @@ function buildlib {
 if [ $step -le 1 ]; then
   echo "Downloading required files"
   cd $SRC_DIR
-  for l in `cat $MAIN_DIR/libs.txt`; do
+  for l in `cat $BASEDIR/libs.txt`; do
     wget $l
   done
 fi
@@ -108,7 +128,7 @@ mkdir -p $DIST_DIR
 cd $MAIN_PREFIX
 
 if [ $step -le 8 ]; then
-  for l in `cat $MAIN_DIR/libs.txt`; do
+  for l in `cat $BASEDIR/libs.txt`; do
     lib=`basename $l`
     echo "unpacking $lib"
     unpack $SRC_DIR/$lib
@@ -117,14 +137,14 @@ fi
 
 if [ $step -le 9 ]; then
   cd $MAIN_PREFIX
-  tar jxf $SRC_DIR/${GPGVERSION}.tar.bz2 || doFail 9
+  tar jxf $SRC_DIR/gnupg-${GPGVERSION}.tar.bz2 || doFail 9
 fi
 
 
 export PATH=$DIST_DIR/bin:$PATH
 
 cstep=10
-for l in `cat $MAIN_DIR/libs.txt`; do
+for l in `cat $BASEDIR/libs.txt`; do
   if [ $step -le $cstep ]; then
     lib=`basename $l | sed -E 's/.tar.(gz|bz2|lz)//'`
     cd $MAIN_PREFIX/$lib
@@ -141,14 +161,10 @@ if [ $step -le 23 ]; then
 fi
 
 
-cd $MAIN_PREFIX/$GPGVERSION
+cd $MAIN_PREFIX/gnupg-$GPGVERSION
 
 if [ $step -le 25 ]; then
-  patch -p1 < $MAIN_DIR/patches/makefile.patch || doFail 25
-fi
-
-if [ $step -le 26 ]; then
-  patch -p1 < $MAIN_DIR/patches/stdint.patch || doFail 26
+  patch -p1 < $BASEDIR/patches/makefile.patch || doFail 25
 fi
 
 if [ $step -le 30 ]; then
@@ -214,7 +230,27 @@ if [ $step -le 45 ]; then
   rm -rf $REL_DIR >/dev/null 2>&1
   mkdir -p $REL_DIR
   cd $DIST_DIR
-  tar c --exclude 'bin/*-config' -f - bin lib/*dylib libexec  share/gnupg share/man| (cd $REL_DIR; tar xf -)
+  tar cf - \
+    bin/dirmngr \
+    bin/dirmngr-client \
+    bin/dumpsexp \
+    bin/g13 \
+    bin/gpg-agent \
+    bin/gpg-connect-agent \
+    bin/gpg-error \
+    bin/gpg2 \
+    bin/gpgconf \
+    bin/gpgkey2ssh \
+    bin/gpgparsemail \
+    bin/gpgsm \
+    bin/gpgsm-gencert.sh \
+    bin/gpgtar \
+    bin/gpgv2 \
+    bin/hmac256 \
+    bin/kbxutil \
+    bin/mpicalc \
+    bin/watchgnupg \
+    lib/*dylib libexec share/gnupg share/man | (cd $REL_DIR; tar xf -)
 
   cd $MAIN_PREFIX/$PINENTRY/build/Release
   tar cf - pinentry-mac.app | (cd $REL_DIR/bin; tar xf -)
@@ -243,18 +279,18 @@ if [ $step -le 55 ]; then
   rm -rf $INSTALL_DIR
   mkdir -p $INSTALL_DIR
   pkgbuild --root $REL_DIR \
-    --identifier org.gnupg.gpg2 \
+    --identifier org.gnupg.gpg2.1 \
     --version $PKGVERSION \
     --install-location /usr/local/gnupg-2.1 \
-    --scripts $MAIN_DIR/pkg-scripts \
+    --scripts $BASEDIR/pkg-scripts \
     $INSTALL_DIR/"Install.pkg" || doFail 55
 fi
 
 if [ $step -le 60 ]; then
   echo "Creating final .dmg file"
-  cp $MAIN_DIR/pkg-docs/License.txt $MAIN_DIR/pkg-docs/"Read Me.rtf" $INSTALL_DIR
+  cp $BASEDIR/pkg-docs/License.txt $BASEDIR/pkg-docs/"Read Me.rtf" $INSTALL_DIR
   rm -f $MAIN_DIR/GnuPG-2.1.dmg
-  hdiutil create $MAIN_DIR/GnuPG-2.1.dmg -volname "GnuPG 2.1" -srcfolder $INSTALL_DIR || doFail 60
+  hdiutil create $MAIN_DIR/GnuPG-${GPGVERSION}.dmg -volname "GnuPG 2.1" -srcfolder $INSTALL_DIR || doFail 60
 fi
 
 echo "done"

@@ -38,12 +38,12 @@ index 946ae4a..045ddea 100644
 -- 
 1.9.3
 
---- a/common/Makefile.in	2014-10-27 16:35:56.000000000 +0100
-+++ b/common/Makefile.in	2014-10-27 16:36:34.000000000 +0100
-@@ -718,7 +718,7 @@
+--- a/common/Makefile.am	2014-10-31 14:21:34.000000000 +0100
++++ b/common/Makefile.am	2014-10-31 17:16:27.000000000 +0100
+@@ -191,7 +191,7 @@
+ 
  t_common_cflags = $(KSBA_CFLAGS) $(LIBGCRYPT_CFLAGS) \
                    $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS)
- 
 -t_common_ldadd = libcommon.a ../gl/libgnu.a \
 +t_common_ldadd = libcommon.a libcommon_a-init.o ../gl/libgnu.a \
                   $(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
