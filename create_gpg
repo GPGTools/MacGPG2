@@ -31,8 +31,8 @@ fi
 
 # internal variables
 PINENTRY=pinentry-mac-0.8.1
-GPGVERSION=2.1.0-beta-908
-PKGVERSION=2.1.0.0002
+GPGVERSION=2.1.0
+PKGVERSION=2.1.0.0003
 BASEDIR=$(dirname $0)
 
 if [ "${BASEDIR:0:1}" != "/" ]; then
@@ -111,6 +111,7 @@ function buildlib {
 
 if [ $step -le 1 ]; then
   echo "Downloading required files"
+  mkdir -p $SRC_DIR
   cd $SRC_DIR
   for l in `cat $BASEDIR/libs.txt`; do
     wget $l
@@ -135,11 +136,6 @@ if [ $step -le 8 ]; then
   done
 fi
 
-if [ $step -le 9 ]; then
-  cd $MAIN_PREFIX
-  tar jxf $SRC_DIR/gnupg-${GPGVERSION}.tar.bz2 || doFail 9
-fi
-
 
 export PATH=$DIST_DIR/bin:$PATH
 
@@ -158,6 +154,11 @@ done
 if [ $step -le 23 ]; then
   cd $MAIN_PREFIX/$PINENTRY
   make || doFail 23
+fi
+
+if [ $step -le 24 ]; then
+  cd $MAIN_PREFIX
+  tar jxf $SRC_DIR/gnupg-${GPGVERSION}.tar.bz2 || doFail 24
 fi
 
 
