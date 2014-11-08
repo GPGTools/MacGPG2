@@ -170,6 +170,8 @@ fi
 
 if [ $step -le 30 ]; then
 
+  # ld does not support rpath on Mac (see below)
+
   CFLAGS="-arch $ARCH" \
     CXXFLAGS="-arch $ARCH" \
     ABI=$ABI \
@@ -179,6 +181,7 @@ if [ $step -le 30 ]; then
     ./configure \
     --prefix=$DIST_DIR \
     $HOSTSYSTEM \
+    --disable-rpath \
     --with-pinentry-pgm=/usr/local/gnupg-2.1/bin/pinentry-mac.app/Contents/MacOS/pinentry-mac \
     --with-agent-pgm=/usr/local/gnupg-2.1/bin/gpg-agent \
     --with-scdaemon-pgm=/usr/local/gnupg-2.1/libexec/scdaemon \
@@ -189,7 +192,7 @@ if [ $step -le 30 ]; then
     --with-libgcrypt-prefix=$DIST_DIR \
     --with-libassuan-prefix=$DIST_DIR \
     --with-ksba-prefix=$DIST_DIR \
-    --with-pth-prefix=$DIST_DIR \
+    --with-npth-prefix=$DIST_DIR \
     --with-readline=$DIST_DIR \
     --with-libiconv-prefix=$DIST_DIR || doFail 30
 fi
@@ -198,6 +201,7 @@ if [ $step -le 35 ]; then
   make -j 1 && make install || doFail 35
 fi
 
+# Adjust rpath using otool for binaries in bin/
 if [ $step -le 40 ]; then
   cd $DIST_DIR/bin
   for f in gpg2 gpgv2 g13 gpg-agent gpg-connect-agent gpg-error gpgconf gpgkey2ssh gpgparsemail gpgsm \
@@ -213,6 +217,7 @@ if [ $step -le 40 ]; then
   done
 fi
 
+# Adjust rpath using otool for binaries in libexec/
 if [ $step -le 42 ]; then
   cd $DIST_DIR/libexec
   for f in dirmngr_ldap gpg-preset-passphrase scdaemon gpg-check-pattern gpg-protect-tool; do
@@ -260,6 +265,7 @@ if [ $step -le 45 ]; then
   ln -s gpg2 gpg
 fi
 
+# Adjust rpath using otool for libraries in lib/
 if [ $step -le 50 ]; then
   cd $REL_DIR/lib
   for f in `find . -type f -name "*.dylib"`; do
@@ -290,7 +296,7 @@ fi
 if [ $step -le 60 ]; then
   echo "Creating final .dmg file"
   cp $BASEDIR/pkg-docs/License.txt $BASEDIR/pkg-docs/"Read Me.rtf" $INSTALL_DIR
-  rm -f $MAIN_DIR/GnuPG-2.1.dmg
+  rm -f $MAIN_DIR/GnuPG-${GPGVERSION}.dmg
   hdiutil create $MAIN_DIR/GnuPG-${GPGVERSION}.dmg -volname "GnuPG 2.1" -srcfolder $INSTALL_DIR || doFail 60
 fi
 
