@@ -14,7 +14,9 @@
 \
 Double click the 
 \i \ul Install
-\i0 \ulnone  package to install GnuPG 2.1. Any previous version of GnuPG 2.1 will automatically be uninstalled during the installation process.\
+\i0 \ulnone  package to install GnuPG 2.1. Any previous version of GnuPG 2.1 will automatically be uninstalled during the installation process. Do 
+\i not
+\i0  install GnuPG to any target other than your \'93Macintosh HD\'94 device.\
 \
 
 \b Converting existing Keyrings\
@@ -29,16 +31,28 @@ Double click the
 \f1 \
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
 
-\f0\b \cf0 License
+\f0\b \cf0 Verifying the Package Signature\
+\
+
+\b0 The installer DMG file contains an OpenPGP signature which can be used to verify the Installer package. To verify it, make sure that the DMG file is loaded, the open a Terminal window and execute:\
+
+\b \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+
+\f2\b0 \cf0 gpg --verify "/Volumes/GnuPG 2.1/Install.pkg.sig" "/Volumes/GnuPG 2.1/Install.pkg"
+\f0\b \
+\
+License
 \b0 \
 \
 GnuPG and all its parts, are licensed under the GNU Public License and/or the Lesser GNU Public License. See License.txt for details.\
 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
 
-\b Source Code
+\b \cf0 Source Code
 \b0 \
 \
-The GnuPG source code is available from \ul https://gnupg.org/download/index.html\ulnone \
+The GnuPG source code is available from \ul https://www.gnupg.org/download/index.html\ulnone \
 \
-The tools and patches used to create this installer is available from \ul http://gpgosx.sourceforge.net/\
+The tools and patches used to create this installer are available from \ul https://sourceforge.net/p/gpgosx/\
 }

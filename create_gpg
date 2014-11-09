@@ -283,16 +283,40 @@ if [ $step -le 50 ]; then
 fi
 
 if [ $step -le 55 ]; then
-  echo "Creating installer package"
 
   rm -rf $INSTALL_DIR
   mkdir -p $INSTALL_DIR
-  pkgbuild --root $REL_DIR \
-    --identifier org.gnupg.gpg2.1 \
-    --version $PKGVERSION \
-    --install-location /usr/local/gnupg-2.1 \
-    --scripts $BASEDIR/pkg-scripts \
-    $INSTALL_DIR/"Install.pkg" || doFail 55
+
+  if [ "x$PKG_SIGN_CERT" != "x" ]; then
+    echo "Creating signed installer package"
+    pkgbuild --root $REL_DIR \
+      --identifier org.gnupg.gpg2.1 \
+      --version $PKGVERSION \
+      --install-location /usr/local/gnupg-2.1 \
+      --scripts $BASEDIR/pkg-scripts \
+      --component-plist $BASEDIR/pkg-data/install-pkg.plist \
+      --sign "$PKG_SIGN_CERT" \
+      $INSTALL_DIR/"Install.pkg" || doFail 55
+
+  else
+    echo "Creating unsigned installer package"
+
+    pkgbuild --root $REL_DIR \
+      --identifier org.gnupg.gpg2.1 \
+      --version $PKGVERSION \
+      --install-location /usr/local/gnupg-2.1 \
+      --scripts $BASEDIR/pkg-scripts \
+      --component-plist $BASEDIR/pkg-data/install-pkg.plist \
+      $INSTALL_DIR/"Install.pkg" || doFail 55
+
+  fi
+fi
+
+if [ $step -le 57 ]; then
+  rm -f $INSTALL_DIR/"Install.pkg.sig"
+  if [ "x$SIGNING_KEY_ID" != "x" ]; then
+    gpg -o $INSTALL_DIR/"Install.pkg.sig" -u "$SIGNING_KEY_ID" --detach-sign $INSTALL_DIR/"Install.pkg"
+  fi
 fi
 
 if [ $step -le 60 ]; then

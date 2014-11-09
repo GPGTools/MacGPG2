@@ -8,11 +8,13 @@ cd /usr/local/bin
 ln -s ../gnupg-2.1/bin/gpg2 gpg
 ln -s ../gnupg-2.1/bin/gpgsm gpgsm
 
-# Include man pages in global man pages
-cat >> /private/etc/man.conf <<EOT
+if [ $(grep -c 'MANPATH.*/usr/local/gnupg-2.1/share/man' /private/etc/man.conf) -eq 0 ]; then
+  # Include man pages in global man pages
+  cat >> /private/etc/man.conf <<EOT
 
 MANPATH /usr/local/gnupg-2.1/share/man   ### Added by gnupg-2.1
 EOT
+fi
 
 echo "/usr/local/gnupg-2.1/share/man" > /private/etc/manpaths.d/50-GnuPG-21
 
