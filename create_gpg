@@ -263,6 +263,8 @@ if [ $step -le 45 ]; then
 
   cd $REL_DIR/bin
   ln -s gpg2 gpg
+
+  cp $BASEDIR/scripts/convert-keyring .
 fi
 
 # Adjust rpath using otool for libraries in lib/

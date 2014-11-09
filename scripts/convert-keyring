@@ -1,0 +1,56 @@
+#!/bin/bash
+
+# Script to convert old (pre GnuPG 2.1) public key files to the new
+# key format.
+
+cat <<EOT
+
+This script converts your existing public keys to the GnuPG 2.1 keyring
+format. Once you do this, GnuPG 1.x and 2.0.x will use a different file
+for storing the public keys. This may lead to incompatibilities; we therefore
+recommend that you only do this if you don't want to use GnuPG 1.x or 2.0.x
+anymore.
+
+Type Y (and hit ENTER) to continue or anything else to abort
+EOT
+
+read r
+
+if [ "x$r" != "xy" -a "x$r" != "xY" ]; then
+  echo "aborted"
+  exit 2
+fi
+
+GNUPG=/usr/local/gnupg-2.1/bin/gpg2
+
+if [ "x$GNUPGHOME" = "x" ]; then
+  GNUPGHOME=$HOME/.gnupg
+fi
+
+cd $GNUPGHOME
+
+if [ -f pubring.kbx ]; then
+  echo "New public key file already existing; nothing to do."
+  echo "If you want to re-convert your public keys, please delete pubring.kbx first"
+  exit 1
+fi
+
+mv -f pubring.gpg gpg1-public-keys.gpg
+mv -f trustdb.gpg trustdb.gpg.orig
+
+$GNUPG --import gpg1-public-keys.gpg
+
+if [ $? -ne 0 ]; then
+  mv -f gpg1-public-keys.gpg pubring.gpg
+  mv -f trustdb.gpg.orig trustdb.gpg
+  echo "Conversion failed; reverted all steps"
+  exit 1
+fi
+
+rm -f trustdb.gpg
+mv trustdb.gpg.orig  trustdb.gpg
+
+$GNUPG --check-trustdb
+mv -f gpg1-public-keys.gpg pubring.gpg
+
+echo "Done"
