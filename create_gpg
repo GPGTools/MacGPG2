@@ -32,7 +32,7 @@ fi
 # internal variables
 PINENTRY=pinentry-mac-0.8.1
 GPGVERSION=2.1.0
-PKGVERSION=2.1.0.0003
+PKGVERSION=2.1.0.0004
 BASEDIR=$(dirname $0)
 
 if [ "${BASEDIR:0:1}" != "/" ]; then

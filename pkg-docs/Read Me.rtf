@@ -5,9 +5,10 @@
 \paperw11900\paperh16840\margl1440\margr1440\vieww14440\viewh9900\viewkind0
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
 
-\f0\b\fs28 \cf0 GnuPG 2.1\
+\f0\b\fs28 \cf0 Welcome to GnuPG 2.1\
 
 \b0\fs24 \
+\
 
 \b Installation Instructions
 \b0 \
@@ -18,29 +19,32 @@ Double click the
 \i not
 \i0  install GnuPG to any target other than your \'93Macintosh HD\'94 device.\
 \
+\
 
 \b Converting existing Keyrings\
 \
 
-\b0 If you do not intend to use your keyring with GnuPG 1.x or 2.0.x in the future, we recommend that you convert it to the new GnuPG 2.1 format. This will speed up any keyring operations dramatically. The drawback is that you keyring is not compatible to GnuPG versions before 2.1.\
+\b0 If you do not intend to use your keyring with GnuPG 1.x or 2.0.x in the future, we recommend that you convert it to the new GnuPG 2.1 format. This will speed up any keyring operations. However, the drawback is that you keyring is not compatible to GnuPG versions before 2.1.\
 \
 \pard\pardeftab720\sa240
 
-\f1 \cf0 To convert an existing pubring.gpg file to the keybox format, a helper tool is provided. Simply execute 
-\f2 /usr/local/gnupg-2.1/bin/convert-keyring 
+\f1 \cf0 To convert an existing pubring.gpg file to the new keybox format, a helper tool is provided. Simply execute\uc0\u8232 
+\f2 /usr/local/gnupg-2.1/bin/convert-keyring\
+
 \f1 \
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
 
 \f0\b \cf0 Verifying the Package Signature\
 \
 
-\b0 The installer DMG file contains an OpenPGP signature which can be used to verify the Installer package. To verify it, make sure that the DMG file is loaded, the open a Terminal window and execute:\
+\b0 In addition to the developer signature verified by Mac OS X, the Installer Disk Image also contains an OpenPGP signature which can be used to verify the Installer package. To verify the integrity of the installer, make sure that the DMG file is loaded, then open a Terminal window and execute:\
 
 \b \
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
 
 \f2\b0 \cf0 gpg --verify "/Volumes/GnuPG 2.1/Install.pkg.sig" "/Volumes/GnuPG 2.1/Install.pkg"
 \f0\b \
+\
 \
 License
 \b0 \
@@ -49,10 +53,11 @@ GnuPG and all its parts, are licensed under the GNU Public License and/or the Le
 \
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
 
-\b \cf0 Source Code
+\b \cf0 \
+Source Code
 \b0 \
 \
-The GnuPG source code is available from \ul https://www.gnupg.org/download/index.html\ulnone \
+The GnuPG source code is available from {\field{\*\fldinst{HYPERLINK "https://www.gnupg.org/download/index.html"}}{\fldrslt \ul https://www.gnupg.org/download/index.html}}\
 \
-The tools and patches used to create this installer are available from \ul https://sourceforge.net/p/gpgosx/\
+The tools and patches used to create this installer are available from {\field{\*\fldinst{HYPERLINK "https://sourceforge.net/p/gpgosx/"}}{\fldrslt \ul https://sourceforge.net/p/gpgosx/}}\ul \
 }

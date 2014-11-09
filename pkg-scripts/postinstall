@@ -20,6 +20,10 @@ echo "/usr/local/gnupg-2.1/share/man" > /private/etc/manpaths.d/50-GnuPG-21
 
 gpgTools=$(pkgutil --pkgs | grep '^org.gpgtools')
 
+# kill all potentially pre-existing daemons
+killall -kill gpg-agent scdaemon dirmngr
+
+
 if [ "x$gpgTools" != "x" ]; then
   r=$(osascript -e '
 set question to "Found an installation of GPG Tools (MacGPG2). We recommend you uninstall it to avoid compatibility issues between GnuPG 2.1 and GPGTools.\n\nDo you wan to uninstall GPG Tools?"
@@ -31,7 +35,6 @@ display dialog question buttons {cancel, uninst} default button uninst
 
   if [ "x$r" != "x" ]; then
 
-    killall -kill gpg-agent
     launchctl stop org.gpgtools.Libmacgpg.xpc
     launchctl stop org.gpgtools.gpgmail.patch-uuid-user
     launchctl stop org.gpgtools.macgpg2.fix
