@@ -1,7 +1,7 @@
 #!/bin/sh
 
 INSTDIR=/usr/local/gnupg-2.1
-BINLINKS=/usr/local/bin/gpg /usr/local/bin/gpgsm
+BINLINKS=/usr/local/bin/gpg /usr/local/bin/gpg2 /usr/local/bin/gpgsm /usr/local/bin/gpg-agent /usr/local/bin/gpg-connect-agent
 
 if [ -d $INSTDIR ]; then
   rm -rf $INSTDIR

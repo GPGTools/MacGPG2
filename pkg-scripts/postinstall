@@ -14,6 +14,8 @@ cat >> /private/etc/man.conf <<EOT
 MANPATH /usr/local/gnupg-2.1/share/man   ### Added by gnupg-2.1
 EOT
 
+echo "/usr/local/gnupg-2.1/share/man" > /private/etc/manpaths.d/50-GnuPG-21
+
 gpgTools=$(pkgutil --pkgs | grep '^org.gpgtools')
 
 if [ "x$gpgTools" != "x" ]; then
@@ -48,6 +50,11 @@ display dialog question buttons {cancel, uninst} default button uninst
     done
 
     rm -rf /usr/local/MacGPG2
+
+    # remove PKG information from OS X
+    for f in $(pkgutil --pkgs | grep '^org.gpgtools'); do
+      pkgutil --forget $f
+    done
   fi
 fi
 exit
