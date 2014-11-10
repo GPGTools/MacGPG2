@@ -13,4 +13,4 @@ PREREQUISITES
 CONFIGURATION
 =============
 
-The various directories can be configured by modifying defaults.sh
+The various directories and options can be configured by modifying defaults.cfg
