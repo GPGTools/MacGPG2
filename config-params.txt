@@ -1,4 +1,5 @@
-gnutls:--without-p11-kit --disable-doc --disable-cxx --disable-rpath
+gnutls:--without-p11-kit --disable-doc --disable-cxx --disable-rpath --disable-nls
 nettle:--disable-assembler
+gettext:--disable-java --disable-rpath --disable-c++ --disable-openmp
 pinentry-mac:ignore
 pth:-target=i386-apple-darwin8.0.0

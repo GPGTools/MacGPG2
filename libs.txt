@@ -1,4 +1,5 @@
 https://github.com/GPGTools/pinentry-mac/archive/v0.8.1.tar.gz
+http://mirror.switch.ch/ftp/mirror/gnu/gettext/gettext-0.19.3.tar.gz
 http://mirror.switch.ch/ftp/mirror/gnu/libiconv/libiconv-1.14.tar.gz
 http://mirror.switch.ch/ftp/mirror/gnu/gmp/gmp-5.1.3.tar.bz2
 http://mirror.switch.ch/ftp/mirror/gnu/nettle/nettle-2.7.1.tar.gz

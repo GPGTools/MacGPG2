@@ -32,7 +32,7 @@ fi
 # internal variables
 PINENTRY=pinentry-mac-0.8.1
 GPGVERSION=2.1.0
-PKGVERSION=2.1.0.0004
+PKGVERSION=2.1.0.0005
 BASEDIR=$(dirname $0)
 
 if [ "${BASEDIR:0:1}" != "/" ]; then
@@ -180,6 +180,8 @@ if [ $step -le 30 ]; then
     PKG_CONFIG_PATH=$DIST_DIR/lib/pkgconfig \
     ./configure \
     --prefix=$DIST_DIR \
+    --localstatedir=/var \
+    --sysconfdir=/etc \
     $HOSTSYSTEM \
     --disable-rpath \
     --with-pinentry-pgm=/usr/local/gnupg-2.1/bin/pinentry-mac.app/Contents/MacOS/pinentry-mac \
@@ -284,42 +286,54 @@ fi
 
 if [ $step -le 55 ]; then
 
+  echo "Creating GnuPG package"
+
+  rm -f $DIST_DIR/"GnuPG.pkg"
+
+  pkgbuild --root $REL_DIR \
+    --identifier net.sourceforge.gpgosx \
+    --version $PKGVERSION \
+    --install-location /usr/local/gnupg-2.1 \
+    --scripts $BASEDIR/pkg-scripts \
+    --component-plist $BASEDIR/pkg-data/install-pkg.plist \
+    $DIST_DIR/"GnuPG.pkg" || doFail 55
+
+fi
+
+if [ $step -le 60 ]; then
   rm -rf $INSTALL_DIR
   mkdir -p $INSTALL_DIR
 
+  sed 's/{PKGVERSION}/'${PKGVERSION}'/' $BASEDIR/pkg-data/distro.xml > $DIST_DIR/distro.xml
+
   if [ "x$PKG_SIGN_CERT" != "x" ]; then
+
     echo "Creating signed installer package"
-    pkgbuild --root $REL_DIR \
-      --identifier org.gnupg.gpg2.1 \
-      --version $PKGVERSION \
-      --install-location /usr/local/gnupg-2.1 \
-      --scripts $BASEDIR/pkg-scripts \
-      --component-plist $BASEDIR/pkg-data/install-pkg.plist \
-      --sign "$PKG_SIGN_CERT" \
-      $INSTALL_DIR/"Install.pkg" || doFail 55
+
+    productbuild --distribution $DIST_DIR/distro.xml \
+      --sign "${PKG_SIGN_CERT}" \
+      --package-path $DIST_DIR \
+      $INSTALL_DIR/"Install.pkg"
 
   else
+
     echo "Creating unsigned installer package"
 
-    pkgbuild --root $REL_DIR \
-      --identifier org.gnupg.gpg2.1 \
-      --version $PKGVERSION \
-      --install-location /usr/local/gnupg-2.1 \
-      --scripts $BASEDIR/pkg-scripts \
-      --component-plist $BASEDIR/pkg-data/install-pkg.plist \
-      $INSTALL_DIR/"Install.pkg" || doFail 55
-
+    productbuild --distribution $DIST_DIR/distro.xml \
+      --package-path $DIST_DIR \
+      $INSTALL_DIR/"Install.pkg"
   fi
+
 fi
 
-if [ $step -le 57 ]; then
+if [ $step -le 65 ]; then
   rm -f $INSTALL_DIR/"Install.pkg.sig"
   if [ "x$SIGNING_KEY_ID" != "x" ]; then
     gpg -o $INSTALL_DIR/"Install.pkg.sig" -u "$SIGNING_KEY_ID" --detach-sign $INSTALL_DIR/"Install.pkg"
   fi
 fi
 
-if [ $step -le 60 ]; then
+if [ $step -le 70 ]; then
   echo "Creating final .dmg file"
   cp $BASEDIR/pkg-docs/License.txt $BASEDIR/pkg-docs/"Read Me.rtf" $INSTALL_DIR
   rm -f $MAIN_DIR/GnuPG-${GPGVERSION}.dmg
