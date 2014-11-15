@@ -5,7 +5,7 @@ macgpg=/usr/local/MacGPG2
 # an existsting old link would have been overwritten with preinstall
 
 cd /usr/local/bin
-ln -s ../gnupg-2.1/bin/gpg2 gpg
+ln -s ../gnupg-2.1/bin/gpg2 gpg2
 ln -s ../gnupg-2.1/bin/gpgsm gpgsm
 
 if [ $(grep -c 'MANPATH.*/usr/local/gnupg-2.1/share/man' /private/etc/man.conf) -eq 0 ]; then

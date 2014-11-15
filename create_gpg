@@ -114,7 +114,11 @@ if [ $step -le 1 ]; then
   mkdir -p $SRC_DIR
   cd $SRC_DIR
   for l in `cat $BASEDIR/libs.txt`; do
-    wget $l
+    if [ ! -f $(basename $l) ]; then
+      wget $l
+    else
+      echo "Skipping $l"
+    fi
   done
 fi
 
@@ -150,22 +154,37 @@ for l in `cat $BASEDIR/libs.txt`; do
   cstep=`expr $cstep + 1`
 done
 
+# pinentry
 
-if [ $step -le 23 ]; then
-  cd $MAIN_PREFIX/$PINENTRY
-  make || doFail 23
+if [ $step -le 22 ]; then
+  if [ ! -f $SRC_DIR/pinentry-mac-0.8.1.tar.gz ]; then
+    cd $SRC_DIR
+    wget https://github.com/GPGTools/pinentry-mac/archive/v0.8.1.tar.gz || doFail 22
+    mv v0.8.1.tar.gz pinentry-mac-0.8.1.tar.gz
+  fi
+
+fi
+
+if [ $step -le 22 ]; then
+  cd $MAIN_PREFIX
+  tar zxf $SRC_DIR/pinentry-mac-0.8.1.tar.gz || doFail 22
 fi
 
 if [ $step -le 24 ]; then
+  cd $MAIN_PREFIX/$PINENTRY
+  make || doFail 24
+fi
+
+if [ $step -le 26 ]; then
   cd $MAIN_PREFIX
-  tar jxf $SRC_DIR/gnupg-${GPGVERSION}.tar.bz2 || doFail 24
+  tar jxf $SRC_DIR/gnupg-${GPGVERSION}.tar.bz2 || doFail 26
 fi
 
 
 cd $MAIN_PREFIX/gnupg-$GPGVERSION
 
-if [ $step -le 25 ]; then
-  patch -p1 < $BASEDIR/patches/makefile.patch || doFail 25
+if [ $step -le 27 ]; then
+  patch -p1 < $BASEDIR/patches/makefile.patch || doFail 27
 fi
 
 if [ $step -le 30 ]; then
