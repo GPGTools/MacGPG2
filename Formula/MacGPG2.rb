@@ -35,7 +35,7 @@ class Macgpg2 < Formula
 
   def install
     (var+'run').mkpath
-    ENV.universal_binary if ARGV.build_universal?
+
     # Make sure that deployment target is 10.6+ so the lib works
     # on 10.6 and up not only on host system os x version.
     ENV.macosxsdk("10.6")
@@ -47,12 +47,10 @@ class Macgpg2 < Formula
     # programs can't link to libraries using @rpath.
     ENV.prepend 'LDFLAGS', '-headerpad_max_install_names'
     ENV.prepend 'LDFLAGS', "-Wl,-rpath,@loader_path/../lib -Wl,-rpath,#{HOMEBREW_PREFIX}/lib"
-    # Set the flags so the build uses our 10.6 libcurl instead of the OS X one,
-    # otherwise MacGPG2 won't work properly on 10.6
-    ENV.prepend 'LDFLAGS', "-L#{HOMEBREW_PREFIX}/curl-10.6/lib -lcurl"
-    ENV['_libcurl_config'] = "#{HOMEBREW_PREFIX}/curl-10.6/bin/curl-config"
+
     ENV.append 'LDFLAGS', '-lresolv'
-        
+    
+    
     final_install_directory = "/usr/local/MacGPG2"
     
     inreplace 'g10/keygen.c', 'max=4096', 'max=8192'
@@ -75,9 +73,9 @@ class Macgpg2 < Formula
                           "--with-zlib=#{HOMEBREW_PREFIX}",
                           "--with-libiconv-prefix=#{HOMEBREW_PREFIX}",
                           "--with-libintl-prefix=#{HOMEBREW_PREFIX}",
-                          "--with-libcurl=#{HOMEBREW_PREFIX}/curl-10.6",
+                          "--with-libcurl=#{HOMEBREW_PREFIX}",
                           "--with-adns=#{HOMEBREW_PREFIX}"
-    
+                         
     system "make"
     system "make check"
     system "make install"

@@ -7,6 +7,7 @@ UPDATER_PRODUCT = MacGPG2_Updater.app
 INSTALLED_UPDATER = build/MacGPG2/libexec/$(UPDATER_PRODUCT)
 INSTALLED_FIX = build/MacGPG2/libexec/fixGpgHome
 GET_THE_SOURCE = build/MacGPG2/SOURCE
+SKS_CA_CERT = build/MacGPG2/share/sks-keyservers.netCA.pem
 MAKE_DEFAULT = Dependencies/GPGTools_Core/newBuildSystem/Makefile.default
 
 
@@ -42,9 +43,12 @@ $(INSTALLED_FIX):
 
 $(GET_THE_SOURCE):
 	cp -f "installer/Payload/How to get the source code" "$(GET_THE_SOURCE)"
+	
+$(SKS_CA_CERT):
+	cp -f "installer/Payload/sks-keyservers.netCA.pem" "$(SKS_CA_CERT)"
 
 
-pkg-core: $(INSTALLED_UPDATER) $(INSTALLED_FIX) $(GET_THE_SOURCE)
+pkg-core: $(INSTALLED_UPDATER) $(INSTALLED_FIX) $(GET_THE_SOURCE) $(SKS_CA_CERT)
 
 install: pkg
 	open -b com.apple.installer build/MacGPG2.pkg
