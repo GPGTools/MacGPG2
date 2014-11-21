@@ -80,8 +80,6 @@ class Macgpg2 < Formula
     system "make check"
     system "make install"
     
-    system "install_name_tool -change /usr/lib/libcurl.4.dylib @rpath/libcurl.4.dylib #{HOMEBREW_PREFIX}/libexec/gpg2keys_curl"
-    system "install_name_tool -change /usr/lib/libcurl.4.dylib @rpath/libcurl.4.dylib #{HOMEBREW_PREFIX}/libexec/gpg2keys_hkp"
     
     # Homebrew doesn't like touching libexec for some reason.
     # That's why we have to manually symlink.
@@ -92,6 +90,10 @@ class Macgpg2 < Formula
     Pathname.new("#{HOMEBREW_PREFIX}/libexec/gpg2keys_hkp").make_relative_symlink("#{prefix}/libexec/gpg2keys_hkp")
     Pathname.new("#{HOMEBREW_PREFIX}/libexec/gpg2keys_ldap").make_relative_symlink("#{prefix}/libexec/gpg2keys_ldap")
     Pathname.new("#{HOMEBREW_PREFIX}/libexec/scdaemon").make_relative_symlink("#{prefix}/libexec/scdaemon")
+
+    system "install_name_tool -change /usr/lib/libcurl.4.dylib @rpath/libcurl.4.dylib #{HOMEBREW_PREFIX}/libexec/gpg2keys_curl"
+    system "install_name_tool -change /usr/lib/libcurl.4.dylib @rpath/libcurl.4.dylib #{HOMEBREW_PREFIX}/libexec/gpg2keys_hkp"
+
   end
 end
 
