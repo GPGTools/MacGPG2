@@ -80,6 +80,9 @@ class Macgpg2 < Formula
     system "make check"
     system "make install"
     
+    system "install_name_tool -change /usr/lib/libcurl.4.dylib @rpath/libcurl.4.dylib #{HOMEBREW_PREFIX}/libexec/gpg2keys_curl"
+    system "install_name_tool -change /usr/lib/libcurl.4.dylib @rpath/libcurl.4.dylib #{HOMEBREW_PREFIX}/libexec/gpg2keys_hkp"
+    
     # Homebrew doesn't like touching libexec for some reason.
     # That's why we have to manually symlink.
     # Also uninstalling wouldn't take care of libexec, so I've pachted keg.rb
