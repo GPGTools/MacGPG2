@@ -1,5 +1,14 @@
 --- a/g10/options.skel
 +++ b/g10/options.skel
+@@ -123,7 +123,7 @@
+ # servers.  To see the IP address of the server actually used, you may use
+ # the "--keyserver-options debug".
+ 
+-keyserver hkp://keys.gnupg.net
++keyserver hkps://hkps.pool.sks-keyservers.net
+ #keyserver http://http-keys.gnupg.net
+ #keyserver mailto:pgp-public-keys@keys.nl.pgp.net
+ 
 @@ -159,7 +159,7 @@
  # no-include-attributes = do not include attribute IDs (aka "photo IDs")
  #                         when sending keys to the keyserver.
