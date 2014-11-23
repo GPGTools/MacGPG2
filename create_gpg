@@ -115,7 +115,7 @@ if [ $step -le 1 ]; then
   cd $SRC_DIR
   for l in `cat $BASEDIR/libs.txt`; do
     if [ ! -f $(basename $l) ]; then
-      wget $l
+      curl -L -o $(basename $l) $l
     else
       echo "Skipping $l"
     fi
@@ -159,8 +159,7 @@ done
 if [ $step -le 22 ]; then
   if [ ! -f $SRC_DIR/pinentry-mac-0.8.1.tar.gz ]; then
     cd $SRC_DIR
-    wget https://github.com/GPGTools/pinentry-mac/archive/v0.8.1.tar.gz || doFail 22
-    mv v0.8.1.tar.gz pinentry-mac-0.8.1.tar.gz
+    curl -L -o pinentry-mac-0.8.1.tar.gz https://github.com/GPGTools/pinentry-mac/archive/v0.8.1.tar.gz || doFail 22
   fi
 
 fi
