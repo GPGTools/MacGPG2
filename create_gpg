@@ -31,8 +31,8 @@ fi
 
 # internal variables
 PINENTRY=pinentry-mac-0.8.1
-GPGVERSION=2.1.0
-PKGVERSION=2.1.0.0005
+GPGVERSION=2.1.1-beta35
+PKGVERSION=2.1.1.0001
 BASEDIR=$(dirname $0)
 
 if [ "${BASEDIR:0:1}" != "/" ]; then
@@ -181,10 +181,6 @@ fi
 
 
 cd $MAIN_PREFIX/gnupg-$GPGVERSION
-
-if [ $step -le 27 ]; then
-  patch -p1 < $BASEDIR/patches/makefile.patch || doFail 27
-fi
 
 if [ $step -le 30 ]; then
 
@@ -347,7 +343,7 @@ fi
 if [ $step -le 65 ]; then
   rm -f $INSTALL_DIR/"Install.pkg.sig"
   if [ "x$SIGNING_KEY_ID" != "x" ]; then
-    gpg -o $INSTALL_DIR/"Install.pkg.sig" -u "$SIGNING_KEY_ID" --detach-sign $INSTALL_DIR/"Install.pkg"
+    gpg2 -o $INSTALL_DIR/"Install.pkg.sig" -u "$SIGNING_KEY_ID" --detach-sign $INSTALL_DIR/"Install.pkg"
   fi
 fi
 
