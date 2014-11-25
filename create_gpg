@@ -343,7 +343,7 @@ fi
 if [ $step -le 65 ]; then
   rm -f $INSTALL_DIR/"Install.pkg.sig"
   if [ "x$SIGNING_KEY_ID" != "x" ]; then
-    gpg2 -o $INSTALL_DIR/"Install.pkg.sig" -u "$SIGNING_KEY_ID" --detach-sign $INSTALL_DIR/"Install.pkg"
+    gpg2 -o $INSTALL_DIR/"Install.pkg.sig" -u "$SIGNING_KEY_ID" --detach-sign $INSTALL_DIR/"Install.pkg" || doFail 65
   fi
 fi
 
