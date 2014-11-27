@@ -302,3 +302,16 @@ index 2bc7297..dd12f3c 100644
    safe_system curl, *args
  end
  
+diff --git a/Library/Homebrew/extend/ENV/std.rb b/Library/Homebrew/extend/ENV/std.rb
+index 71e89a6..9538752 100644
+--- a/Library/Homebrew/extend/ENV/std.rb
++++ b/Library/Homebrew/extend/ENV/std.rb
+@@ -159,7 +159,7 @@ module Stdenv
+     self.cxx = MacOS.locate("clang++")
+     replace_in_cflags(/-Xarch_#{Hardware::CPU.arch_32_bit} (-march=\S*)/, '\1')
+     # Clang mistakenly enables AES-NI on plain Nehalem
+-    set_cpu_cflags '-march=native', :nehalem => '-march=native -Xclang -target-feature -Xclang -aes'
++    set_cpu_cflags '-march=core2', :nehalem => '-march=core2 -Xclang -target-feature -Xclang -aes'
+     @compiler = :clang
+   end
+
