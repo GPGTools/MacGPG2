@@ -23,8 +23,8 @@ class LibgpgError < Formula
 
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
-                          "--with-libiconv-prefix=#{prefix}",
-                          "--with-libintl-prefix=#{prefix}",
+                          "--with-libiconv-prefix=#{HOMEBREW_PREFIX}",
+                          "--with-libintl-prefix=#{HOMEBREW_PREFIX}",
                           "--enable-static=no", "--disable-maintainer-mode"
     
     system "make check"
