@@ -1,0 +1,74 @@
+diff -ru gnutls-old/lib/Makefile.am gnutls/lib/Makefile.am
+--- gnutls-old/lib/Makefile.am	2013-06-02 19:33:57.000000000 +0200
++++ gnutls/lib/Makefile.am	2013-11-10 13:28:18.000000000 +0100
+@@ -152,6 +152,10 @@
+ DISTCLEANFILES += $(defexec_DATA)
+ endif
+ 
++if MACOSX
++libgnutls_la_LDFLAGS +=  -Wl,-framework,Security,-framework,CoreFoundation
++endif
++
+ if WINDOWS
+ thirdparty_libadd += -lcrypt32
+ endif
+diff -ru gnutls-old/lib/system.c gnutls/lib/system.c
+--- gnutls-old/lib/system.c	2013-04-10 22:25:51.000000000 +0200
++++ gnutls/lib/system.c	2013-11-10 13:30:31.000000000 +0100
+@@ -57,6 +57,15 @@
+ #undef send
+ #undef select
+ 
++#ifdef __APPLE__
++#include "TargetConditionals.h"
++#ifdef TARGET_OS_MAC
++#define _UINT64
++#include <Security/Security.h>
++#include <Security/SecCertificate.h>
++#endif
++#endif
++
+ /* System specific function wrappers.
+  */
+ 
+@@ -550,6 +559,40 @@
+ 
+   return r;
+ }
++#elif defined(__APPLE__)
++#if TARGET_OS_MAC
++static
++int add_system_trust(gnutls_x509_trust_list_t list, unsigned int tl_flags, unsigned int tl_vflags)
++{
++    CFArrayRef anchors;
++    int ret = 0;
++    if (SecTrustCopyAnchorCertificates(&anchors) != 0)
++        return -1;
++
++    CFIndex count = CFArrayGetCount(anchors);
++    for (int i = 0; i < count; i++) {
++        SecCertificateRef certref = (SecCertificateRef)CFArrayGetValueAtIndex(anchors, i);
++
++        CSSM_DATA certData;
++        SecCertificateGetData(certref, &certData);
++        gnutls_datum data = {
++            .data = certData.Data,
++            .size = certData.Length,
++        };
++
++        if (!gnutls_x509_trust_list_add_trust_mem(list, &data, NULL, GNUTLS_X509_FMT_DER, tl_flags, tl_vflags))
++            printf("cannot add x509 credentials\n");
++        else
++            ret++;
++    }
++    CFRelease(anchors);
++
++    return ret;
++}
++
++#else
++#define add_system_trust(x,y,z) GNUTLS_E_UNIMPLEMENTED_FEATURE
++#endif
+ #else
+ 
+ #define add_system_trust(x,y,z) GNUTLS_E_UNIMPLEMENTED_FEATURE

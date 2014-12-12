@@ -13,7 +13,7 @@ class Macgpg2 < Formula
   depends_on 'libusb-compat'
   depends_on 'libgpg-error'
   depends_on 'libassuan'
-
+  depends_on 'curl'
   depends_on 'libksba'
   depends_on 'zlib'
   depends_on 'pinentry'

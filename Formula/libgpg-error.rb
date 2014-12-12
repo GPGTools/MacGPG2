@@ -7,6 +7,9 @@ class LibgpgError < Formula
   
   keep_install_names true
   
+  depends_on "libiconv"
+  depends_on "gettext"
+  
   def install
     ENV.j1
     ENV.universal_binary if ARGV.build_universal? # build fat so wine can use it
@@ -20,6 +23,8 @@ class LibgpgError < Formula
 
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
+                          "--with-libiconv-prefix=#{prefix}",
+                          "--with-libintl-prefix=#{prefix}",
                           "--enable-static=no", "--disable-maintainer-mode"
     
     system "make check"

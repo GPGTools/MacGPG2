@@ -95,14 +95,6 @@ pushd "$INSTALLDIR" > /dev/null
         bail_if_necessary "$?" "Failed to symlink build-env"
     fi
     
-	# Copy curl into hombrew dir.
-	# Infos zu curl:
-	# curl mit ./configure --with-ca-bundle=/usr/local/MacGPG2/share/sks-keyservers.netCA.pem && make erstellen.
-	# rpath mit install_name_tool -id "@rpath/libcurl.4.dylib" libcurl.4.dylib setzen.
-	cp -R "${SOURCEDIR}/curl/" ./
-	bail_if_necessary "$?" "Failed to copy curl"
-	
-
     # Check if MacGPG2 is already built. If so, don't do it again,
     # unless force is set.
     EXIT="$?"

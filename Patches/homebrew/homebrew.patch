@@ -315,3 +315,53 @@ index 71e89a6..9538752 100644
      @compiler = :clang
    end
 
+diff --git a/Library/Homebrew/formula.rb b/Library/Homebrew/formula.rb
+index a35b286..9397fce5 100644
+--- a/Library/Homebrew/formula.rb
++++ b/Library/Homebrew/formula.rb
+@@ -558,7 +558,43 @@ class Formula
+   end
+ 
+   protected
+-
++  
++  def build_variant variant, args, &pre_install_block
++    # Remove all architecture relevant information
++    ENV.remove 'LDFLAGS', "-arch i386"
++    ENV.remove_from_cflags "-arch i386"
++    ENV.remove_from_cflags "-m32"
++    ENV.remove 'LDFLAGS', "-arch x86_64"
++    ENV.remove_from_cflags "-arch x86_64"
++    ENV.remove_from_cflags "-m64"
++    
++    args.delete "ABI=64"
++    args.delete "ABI=32"
++    if variant == "32bit":
++      ENV.m32
++      args << "ABI=32"
++    else
++      ENV.m64
++      args << "ABI=64"
++    end
++    
++    system "./configure", *args
++    system "make"
++    ENV.deparallelize
++    if pre_install_block
++      pre_install_block.call
++    end
++    system "make install"
++  end
++  
++  def combine_archs dylib, alt_arch
++    # Create the universal lib using lipo and combining the two.
++    system "cp #{prefix}/lib/#{dylib} #{prefix}/lib/64bit.#{dylib}" 
++    system "rm #{prefix}/lib/#{dylib}"
++    system "lipo -create #{prefix}/lib/64bit.#{dylib} -create #{prefix}/#{alt_arch}/lib/#{dylib} -output #{prefix}/lib/#{dylib}"
++    system "rm #{prefix}/lib/64bit.#{dylib}"
++  end
++  
+   # Pretty titles the command and buffers stdout/stderr
+   # Throws if there's an error
+   def system cmd, *args
+
