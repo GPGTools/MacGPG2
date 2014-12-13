@@ -14,6 +14,8 @@ class Gnutls < Formula
     cause "Undefined symbols when linking"
   end
 
+  keep_install_names true
+
   def patches
     { :p1 => ["#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnutls/gnutls-pkgconfig-osx.patch",
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnutls/mac-keychain-lookup.patch",
