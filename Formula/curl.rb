@@ -11,6 +11,10 @@ class Curl < Formula
   
   keep_install_names true
   
+  def patches
+    { :p1 => ["#{HOMEBREW_PREFIX}/Library/Formula/Patches/curl/support-gnutls-keychain-ca-lookup.patch"] }
+  end
+  
   def install
     ENV.macosxsdk("10.6")
     
