@@ -21,7 +21,7 @@ class Gmp < Formula
     ENV.prepend 'LDFLAGS', '-headerpad_max_install_names'
     ENV.prepend 'LDFLAGS', "-Wl,-rpath,@loader_path/../lib -Wl,-rpath,#{HOMEBREW_PREFIX}/lib"
     
-    args = ["--prefix=#{prefix}/32-bit", "--enable-cxx"]
+    args = ["--prefix=#{prefix}/32-bit"]
     
     resource("32-bit").stage {
       ENV.prepend 'LDFLAGS', "-Wl,-rpath,#{prefix}/lib"
