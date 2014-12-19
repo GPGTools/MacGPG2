@@ -90,11 +90,6 @@ class Macgpg2 < Formula
     Pathname.new("#{HOMEBREW_PREFIX}/libexec/gpg2keys_hkp").make_relative_symlink("#{prefix}/libexec/gpg2keys_hkp")
     Pathname.new("#{HOMEBREW_PREFIX}/libexec/gpg2keys_ldap").make_relative_symlink("#{prefix}/libexec/gpg2keys_ldap")
     Pathname.new("#{HOMEBREW_PREFIX}/libexec/scdaemon").make_relative_symlink("#{prefix}/libexec/scdaemon")
-
-
-    system "install_name_tool -change \"$(otool -L /usr/local/MacGPG2/libexec/gpg2keys_curl | sed -En 's/.(.*libcurl\..+\.dylib) .*/\1/p')\" @rpath/libcurl.4.dylib #{HOMEBREW_PREFIX}/libexec/gpg2keys_curl"
-    system "install_name_tool -change \"$(otool -L /usr/local/MacGPG2/libexec/gpg2keys_hkp | sed -En 's/.(.*libcurl\..+\.dylib) .*/\1/p')\" @rpath/libcurl.4.dylib #{HOMEBREW_PREFIX}/libexec/gpg2keys_hkp"
-
   end
 end
 

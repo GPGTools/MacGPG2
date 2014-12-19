@@ -365,3 +365,66 @@ index a35b286..9397fce5 100644
    # Throws if there's an error
    def system cmd, *args
 
+diff --git a/Library/Homebrew/keg_fix_install_names.rb b/Library/Homebrew/keg_fix_install_names.rb
+index 37b4082..4dd15d5 100644
+--- a/Library/Homebrew/keg_fix_install_names.rb
++++ b/Library/Homebrew/keg_fix_install_names.rb
+@@ -27,6 +27,24 @@ class Keg
+           dylib_basename = Pathname.new(file).relative_path_from(join 'lib')
+           # Change the absolute path to @rpath/dylib using install_name_tool -id.
+           system MacOS.locate("install_name_tool"), "-id", "@rpath/#{dylib_basename}", "#{dylib_name}"
++
++          fix_dep_dylib_path = Proc.new { |bad_name, arch|
++            # Don't fix absolute paths unless they are rooted in the build directory
++            next if bad_name.start_with? '/' and not bad_name.start_with? HOMEBREW_PREFIX.to_s
++
++            dep_dylib_basename = Pathname.new(bad_name).relative_path_from(join 'lib').basename
++            new_name = "@rpath/#{dep_dylib_basename}"
++            puts "- Fix rpath in #{dep_dylib_basename} (#{arch})"
++            change_install_name(bad_name, new_name, file) unless new_name == bad_name
++          }
++
++          # Fix path of lib dependencies as well.
++          each_install_name_for file, "x86_64" do |bad_name|
++            fix_dep_dylib_path.call(bad_name, "x86_64")
++          end
++          each_install_name_for file, "i386" do |bad_name|
++            fix_dep_dylib_path.call(bad_name, "i386")
++          end
+         end
+       end
+     end
+@@ -174,8 +192,8 @@ class Keg
+     end
+   end
+ 
+-  def each_install_name_for file, &block
+-    dylibs = file.dynamically_linked_libraries
++  def each_install_name_for file, arch=nil, &block
++    dylibs = file.dynamically_linked_libraries arch
+     dylibs.reject! { |fn| fn =~ /^@(loader_|executable_|r)path/ }
+     dylibs.each(&block)
+   end
+diff --git a/Library/Homebrew/mach.rb b/Library/Homebrew/mach.rb
+index 54e65a0..f90b3de 100644
+--- a/Library/Homebrew/mach.rb
++++ b/Library/Homebrew/mach.rb
+@@ -149,11 +149,16 @@ module MachO
+   # to be absolute paths.
+   # Returns an empty array both for software that links against no libraries,
+   # and for non-mach objects.
+-  def dynamically_linked_libraries
++  def dynamically_linked_libraries arch=nil
+     # Use an environment variable to avoid escaping problems
+     ENV['HOMEBREW_MACH_O_FILE'] = expand_path.to_s
+ 
+-    libs = `#{MacOS.locate("otool")} -L "$HOMEBREW_MACH_O_FILE"`.split("\n")
++    arch_param = ""
++    unless arch.nil?
++      arch_param = "-arch #{arch}"
++    end
++
++    libs = `#{MacOS.locate("otool")} -L #{arch_param} "$HOMEBREW_MACH_O_FILE"`.split("\n")
+ 
+     # First line is the filename
+     libs.shift

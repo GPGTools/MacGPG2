@@ -35,11 +35,6 @@ class Nettle < Formula
     
     # Create the universal lib using lipo and combining the two.
     combine_archs "libnettle.4.7.dylib", "32-bit"
-    
-    # 32bit version of libhogweed points to 32-bit folder. we have to fix that with install_name_tool
-    system "install_name_tool -change #{prefix}/32-bit/lib/libnettle.4.dylib #{HOMEBREW_PREFIX}/lib/libnettle.4.dylib #{prefix}/32-bit/lib/libhogweed.2.5.dylib"
-    system "install_name_tool -change #{prefix}/lib/libnettle.4.dylib #{HOMEBREW_PREFIX}/lib/libnettle.4.dylib #{prefix}/lib/libhogweed.2.5.dylib"
-    
     combine_archs "libhogweed.2.5.dylib", "32-bit"
     
     system "rm -rf #{prefix}/32-bit"

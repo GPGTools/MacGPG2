@@ -39,10 +39,6 @@ class Xz < Formula
                           "--disable-silent-rules",
                           "--prefix=#{prefix}"
     system "make", "install"
-    # Fix xz since it's not happy with our @rpath/libintl.dylib directive.
-    system "chmod u+w #{prefix}/bin/xz"
-    system "install_name_tool -change \"$(otool -L #{prefix}/bin/xz | sed -En 's/.(.*libintl\..+\.dylib) .*/\1/p')\" #{HOMEBREW_PREFIX}/lib/libintl.8.dylib #{prefix}/bin/xz"
-    system "chmod u-w #{prefix}/bin/xz"
   end
 
   test do
