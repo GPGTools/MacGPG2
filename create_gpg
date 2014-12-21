@@ -31,7 +31,7 @@ fi
 
 # internal variables
 PINENTRY=pinentry-mac-0.8.1
-GPGVERSION=2.1.1-beta35
+GPGVERSION=2.1.1
 PKGVERSION=2.1.1.0001
 BASEDIR=$(dirname $0)
 
