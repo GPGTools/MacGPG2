@@ -2,7 +2,7 @@ require 'formula'
 
 class Pinentry < Formula
   homepage 'http://gpgtools.org'
-  url 'https://github.com/GPGTools/pinentry-mac.git', :revision => 'origin/master'
+  head 'https://github.com/GPGTools/pinentry-mac.git', :revision => '98d883de855ca543cf6989665527e9cabfa6ebd4'
   sha1 ''
   version '0.8.1'
   # depends_on 'cmake' => :build
