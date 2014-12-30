@@ -257,7 +257,8 @@ def main():
         resolve_files(BASE_DIR, prepend_path_component("bin", 
             ["dumpsexp", "gpgparsemail", "gpgsm", "gpgsm-gencert.sh", 
              "kbxutil", "gpg-error", "gpgv2", "msg*", "*gettext*", "*-config", 
-             "recode*", "iconv", "brew", "envsubst", "autopoint"])),
+             "recode*", "iconv", "brew", "envsubst", "autopoint", "adns*", "asn1*", "lz*",
+             "unlzma", "unxz", "xz*"])),
     
         # ./lib files to exclude
         resolve_files(BASE_DIR, prepend_path_component("lib", ["pkgconfig**", "gettext**"]) + 
