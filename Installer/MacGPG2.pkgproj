@@ -24,6 +24,46 @@
 			<key>UUID</key>
 			<string>AEAA15C6-7ED1-4E97-A5C7-26AEF26E05D8</string>
 		</dict>
+		<dict>
+			<key>PACKAGE_SETTINGS</key>
+			<dict>
+				<key>LOCATION</key>
+				<integer>0</integer>
+				<key>NAME</key>
+				<string>Libmacgpg_Core</string>
+			</dict>
+			<key>PATH</key>
+			<dict>
+				<key>PATH</key>
+				<string>../Dependencies/Libmacgpg/build/Libmacgpg_Core.pkg</string>
+				<key>PATH_TYPE</key>
+				<integer>1</integer>
+			</dict>
+			<key>TYPE</key>
+			<integer>1</integer>
+			<key>UUID</key>
+			<string>ED5EF45D-49BA-4815-8DA3-71B7A938DF8D</string>
+		</dict>
+		<dict>
+			<key>PACKAGE_SETTINGS</key>
+			<dict>
+				<key>LOCATION</key>
+				<integer>0</integer>
+				<key>NAME</key>
+				<string>LibmacgpgXPC_Core</string>
+			</dict>
+			<key>PATH</key>
+			<dict>
+				<key>PATH</key>
+				<string>../Dependencies/Libmacgpg/build/LibmacgpgXPC_Core.pkg</string>
+				<key>PATH_TYPE</key>
+				<integer>1</integer>
+			</dict>
+			<key>TYPE</key>
+			<integer>1</integer>
+			<key>UUID</key>
+			<string>FF9192F8-8799-4BF2-AECE-61A70B67837E</string>
+		</dict>
 	</array>
 	<key>PROJECT</key>
 	<dict>
@@ -89,6 +129,48 @@
 								<integer>0</integer>
 								<key>UUID</key>
 								<string>AFAAFDE5-78A4-4F78-9757-9CDE51B6EA41</string>
+							</dict>
+							<dict>
+								<key>DESCRIPTION</key>
+								<array/>
+								<key>OPTIONS</key>
+								<dict>
+									<key>HIDDEN</key>
+									<false/>
+									<key>STATE</key>
+									<integer>1</integer>
+								</dict>
+								<key>PACKAGE_UUID</key>
+								<string>ED5EF45D-49BA-4815-8DA3-71B7A938DF8D</string>
+								<key>TITLE</key>
+								<array/>
+								<key>TOOLTIP</key>
+								<array/>
+								<key>TYPE</key>
+								<integer>0</integer>
+								<key>UUID</key>
+								<string>CDED495A-AE94-4CB0-93DC-0D5F3CC1F358</string>
+							</dict>
+							<dict>
+								<key>DESCRIPTION</key>
+								<array/>
+								<key>OPTIONS</key>
+								<dict>
+									<key>HIDDEN</key>
+									<false/>
+									<key>STATE</key>
+									<integer>1</integer>
+								</dict>
+								<key>PACKAGE_UUID</key>
+								<string>FF9192F8-8799-4BF2-AECE-61A70B67837E</string>
+								<key>TITLE</key>
+								<array/>
+								<key>TOOLTIP</key>
+								<array/>
+								<key>TYPE</key>
+								<integer>0</integer>
+								<key>UUID</key>
+								<string>21438914-7AEE-4FF1-B69B-E87DA5126DE7</string>
 							</dict>
 						</array>
 						<key>REMOVED</key>
