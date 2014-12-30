@@ -18,7 +18,7 @@
  
  # Uncomment this line to display photo user IDs in key listings and
  # when a signature from a key with a photo is verified.
-@@ -197,3 +197,37 @@
+@@ -197,3 +197,38 @@
  # Use your MIME handler to view photos:
  # photo-viewer "metamail -q -d -b -c %T -s 'KeyID 0x%k' -f GnuPG"
  
@@ -48,11 +48,12 @@
 +# You may also list arbitrary keyservers here by URL.
 +#
 +# Try CERT, then PKA, then LDAP, then hkp://keys.gnupg.net:
-+auto-key-locate hkp://keys.gnupg.net
++auto-key-locate hkps://hkps.pool.sks-keyservers.net
 +
 +comment GPGTools - https://gpgtools.org
 +cert-digest-algo SHA512
 +default-preference-list SHA512 SHA384 SHA256 SHA224 AES256 AES192 AES CAST5 ZLIB BZIP2 ZIP Uncompressed
 +personal-digest-preferences SHA512 SHA384 SHA256 SHA224
 +no-emit-version
++keyserver-options no-honor-keyserver-url
 +

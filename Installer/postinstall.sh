@@ -111,6 +111,29 @@ function globalFixes {
     defaults read com.apple.loginwindow LoginHook 2>/dev/null  | grep -qF "/sbin/gpg-login.sh"  && defaults delete com.apple.loginwindow LoginHook
     defaults read com.apple.loginwindow LogoutHook 2>/dev/null | grep -qF "/sbin/gpg-logout.sh" && defaults delete com.apple.loginwindow LogoutHook
 
+	# Migrate pool.sks-keyservers.net and keys.gnupg.net to hkps keyserver.
+	CONF_HOME="${GNUPGHOME:-$HOME/.gnupg}"
+	myEcho "GnuPG Home at: {$CONF_HOME}"
+	if grep -q '^[ 	]*keyserver[ 	]*hkp://pool.sks-keyservers.net' "$CONF_HOME/gpg.conf" ;then
+        echo "keyserver hkps://hkps.pool.sks-keyservers.net" >> "$CONF_HOME/gpg.conf"
+		myEcho "Migrated hkp sks-keyservers.net to hkps"
+  fi
+	# Migrate pool.sks-keyservers.net and keys.gnupg.net to hkps keyserver.
+	if grep -Eq '^[ 	]*keyserver[ 	]*(.*)keys\.gnupg\.net' "$CONF_HOME/gpg.conf" ;then
+        echo "keyserver hkps://hkps.pool.sks-keyservers.net" >> "$CONF_HOME/gpg.conf"
+		myEcho "Migrated hkp keys.gnupg.net to hkps"
+  fi
+	# Migrate auto-key-locate
+	if grep -qE '^[ 	]*auto-key-locate[ 	]*(.*)hkp://pool.sks-keyservers.net' "$CONF_HOME/gpg.conf" ;then
+        grep -E '^[ 	]*auto-key-locate[ 	]*(.*)hkp://pool.sks-keyservers.net' "$CONF_HOME/gpg.conf" | sed 's|hkp://pool.sks-keyservers.net|hkps://hkps.pool.sks-keyservers.net|g' >> "$CONF_HOME/gpg.conf"
+		myEcho "Migrated auto-key-locate hkp sks-keyservers.net to hkps"
+  fi
+	# Migrate auto-key-locate
+	if grep -qE '^[ 	]*auto-key-locate[ 	]*(.*)hkp://keys.gnupg.net' "$CONF_HOME/gpg.conf" ;then
+        grep -E '^[ 	]*auto-key-locate[ 	]*(.*)hkp://keys.gnupg.net' "$CONF_HOME/gpg.conf" | sed 's|hkp://keys.gnupg.net|hkps://hkps.pool.sks-keyservers.net|g' >> "$CONF_HOME/gpg.conf"
+		myEcho "Migrated auto-key-locate hkp sks-keyservers.net to hkps"
+  fi
+
 }
 
 function cleanOldGpg {
