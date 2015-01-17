@@ -9,7 +9,10 @@ INSTALLED_FIX = build/MacGPG2/libexec/fixGpgHome
 GET_THE_SOURCE = build/MacGPG2/SOURCE
 SKS_CA_CERT = build/MacGPG2/share/sks-keyservers.netCA.pem
 MAKE_DEFAULT = Dependencies/GPGTools_Core/newBuildSystem/Makefile.default
-NEED_LIBMACGPG = 1
+
+ifndef LIBMACGPG_CORE_PATH
+	NEED_LIBMACGPG = 1
+endif
 
 
 -include $(MAKE_DEFAULT)
