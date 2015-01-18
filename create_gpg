@@ -182,9 +182,13 @@ fi
 
 cd $MAIN_PREFIX/gnupg-$GPGVERSION
 
+## configure GnuPG
+
 if [ $step -le 30 ]; then
 
   # ld does not support rpath on Mac (see below)
+
+  export PATH=$BASE_DIR/bin:$PATH
 
   CFLAGS="-arch $ARCH" \
     CXXFLAGS="-arch $ARCH" \
@@ -193,9 +197,9 @@ if [ $step -le 30 ]; then
     CPPFLAGS="-I$DIST_DIR/include -arch $ARCH" \
     PKG_CONFIG_PATH=$DIST_DIR/lib/pkgconfig \
     ./configure \
-    --prefix=$DIST_DIR \
+    --prefix=/usr/local/gnupg-2.1 \
     --localstatedir=/var \
-    --sysconfdir=/etc \
+    --sysconfdir=/usr/local/gnupg-2.1/etc \
     $HOSTSYSTEM \
     --disable-rpath \
     --with-pinentry-pgm=/usr/local/gnupg-2.1/bin/pinentry-mac.app/Contents/MacOS/pinentry-mac \
@@ -213,9 +217,39 @@ if [ $step -le 30 ]; then
     --with-libiconv-prefix=$DIST_DIR || doFail 30
 fi
 
-if [ $step -le 35 ]; then
-  make -j 1 && make install || doFail 35
+# tweak Makefiles
+if [ $step -le 31 ]; then
+  if [ ! -e build-aux/install-sh.orig ]; then
+    mv build-aux/install-sh build-aux/install-sh.orig || doFail 31
+  fi
+
+  dist=$(echo $DIST_DIR | sed 's/\//\\\//g')
+  sed 's/##DISTDIR##/'$dist'/' < $BASEDIR/bin/install-sh-wrapper > build-aux/install-sh || doFail 31
+  chmod +x build-aux/install-sh || doFail 31
 fi
+
+
+if [ $step -le 32 ]; then
+
+  dist=$(echo $DIST_DIR | sed 's/\//\\\//g')
+  sed 's/##DISTDIR##/'$dist'/' < $BASEDIR/bin/install-wrapper > $DIST_DIR/install-wrapper || doFail 32
+  chmod +x $DIST_DIR/install-wrapper || doFail 32
+
+  for f in $(find . -name Makefile); do
+    sed 's/\/usr\/bin\/install/'$dist'\/install-wrapper/' < $f > a || doFail 32
+    mv a $f
+  done
+fi
+
+if [ $step -le 35 ]; then
+  make -j 2 || doFail 35
+fi
+
+if [ $step -le 36 ]; then
+
+  make install || doFail 36
+fi
+
 
 # Adjust rpath using otool for binaries in bin/
 if [ $step -le 40 ]; then

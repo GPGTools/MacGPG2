@@ -1,0 +1,10 @@
+#!/bin/bash
+
+DISTDIR=$(echo '##DISTDIR##' | sed 's/\//\\\//g')
+
+param=$(echo $@ | sed 's/\/usr\/local\/gnupg-2.1/'$DISTDIR'/g')
+
+${0%-wrapper}.orig $param
+
+exit $?
+
