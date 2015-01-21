@@ -1,0 +1,13 @@
+--- a/g10/exec.c
++++ b/g10/exec.c
+@@ -383,10 +383,6 @@
+              keep their stdout/stderr */
+          if(!(*info)->flags.writeonly)
+            {
+-             /* implied close of STDERR */
+-             if(dup2(STDOUT_FILENO,STDERR_FILENO)==-1)
+-               _exit(1);
+-
+              /* implied close of STDOUT */
+              close(from[0]);
+              if(dup2(from[1],STDOUT_FILENO)==-1)
