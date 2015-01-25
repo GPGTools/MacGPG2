@@ -1,0 +1,71 @@
+# This patch prevents pcsc-wrappper on OS X 10.10 to hang forever.
+
+--- a/scd/pcsc-wrapper.c
++++ b/scd/pcsc-wrapper.c
+@@ -47,6 +47,7 @@
+ #include <stdarg.h>
+ #include <assert.h>
+ #include <dlfcn.h>
++#include <pthread.h>
+ 
+ 
+ #define PGM "pcsc-wrapper"
+@@ -561,6 +562,22 @@
+ }
+ 
+ 
++struct myArgs {
++    long pcsc_context;
++    struct pcsc_readerstate_s *rdrstates;
++    pthread_cond_t cond;
++    long err;
++};
++
++// Helper Thread to have a timeout for pcsc_get_status_change.
++void *get_status_change_thread (void *pointer) {
++    struct myArgs *args = pointer;
++    args->err = pcsc_get_status_change (args->pcsc_context,
++                                  0,
++                                  args->rdrstates, 1);
++    pthread_cond_signal(&args->cond);
++    return NULL;
++}
+ 
+ /* Handle a status request.  We expect no arguments.  We may modifiy
+    ARGBUF. */
+@@ -585,9 +602,32 @@
+   memset (rdrstates, 0, sizeof *rdrstates);
+   rdrstates[0].reader = current_rdrname;
+   rdrstates[0].current_state = PCSC_STATE_UNAWARE;
+-  err = pcsc_get_status_change (pcsc_context,
+-                                0,
+-                                rdrstates, 1);
++	
++	pthread_t thread;
++    struct myArgs args;
++    args.rdrstates = rdrstates;
++    args.pcsc_context = pcsc_context;
++    
++    pthread_cond_init(&args.cond, NULL);
++    pthread_create(&thread, NULL, get_status_change_thread, &args);
++    
++    static struct timespec time_to_wait = {0, 0};
++    time_to_wait.tv_sec = time(NULL) + 5;
++    
++    pthread_mutex_t lock;
++    pthread_mutex_init(&lock, NULL);
++    pthread_mutex_lock(&lock);
++    err = pthread_cond_timedwait(&args.cond, &lock, &time_to_wait);
++    pthread_mutex_unlock(&lock);
++    
++    if (err) {
++        pthread_cancel(thread);
++        err = 0x8010000a;
++    } else {
++        pthread_join (thread, NULL);
++        err = args.err;
++    }
++
+   if (err == 0x8010000a) /* Timeout.  */
+     err = 0;
+   if (err)

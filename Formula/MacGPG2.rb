@@ -31,6 +31,7 @@ class Macgpg2 < Formula
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/MacGPG2VersionString.patch",
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/passphrase-fd.patch",
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/exec_write_stderr.patch",
+              "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/pcsc-wrapper.patch",
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/options.skel.patch"] }
   end
 
