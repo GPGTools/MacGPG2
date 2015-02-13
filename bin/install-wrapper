@@ -2,9 +2,17 @@
 
 DISTDIR=$(echo '##DISTDIR##' | sed 's/\//\\\//g')
 
-param=$(echo $@ | sed 's/\/usr\/local\/gnupg-2.1/'$DISTDIR'/g')
+i=$#
+j=0
 
-/usr/bin/install $param
+while [ $i -ge 0 ]; do
+  args[$j]=$(echo ${BASH_ARGV[$i]} | sed 's/\/usr\/local\/gnupg-2.1/'$DISTDIR'/g')
+  i=$(expr $i - 1)
+  j=$(expr $j + 1)
+done
+
+mkdir -p ${args[$#]}
+
+/usr/bin/install ${args[@]}
 
 exit $?
-

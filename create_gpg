@@ -11,6 +11,10 @@ function printUsage {
 
 
 ABI=64     ## default is 64-bit build
+LIBS_FILE=libs.txt
+GPGVERSION=2.0.26
+PKGVERSION=${GPGVERSION}.0001
+
 
 if [ "$1" = "-h" -o "$1" = "--help" ]; then
   printUsage
@@ -31,9 +35,8 @@ fi
 
 # internal variables
 PINENTRY=pinentry-mac-0.8.1
-GPGVERSION=2.1.1
-PKGVERSION=2.1.1.0001
 BASEDIR=$(dirname $0)
+NCPU=$(sysctl hw.ncpu | awk '{print $2}')
 
 if [ "${BASEDIR:0:1}" != "/" ]; then
   # ensure that BASEDIR is an absolute path
@@ -91,10 +94,17 @@ function buildlib {
   echo ""
 
   libname=${lib/-[0-9]*}
-  moreParams=`grep $libname $BASEDIR/config-params.txt | cut -d: -f2`
+  moreParams=$(grep $libname $BASEDIR/config-params.txt | cut -d: -f2)
+  n_cpu=$(grep $libname $BASEDIR/config-params.txt | cut -d: -f3)
+
   if [ "$moreParams" = "ignore" ]; then
     return 0
   fi
+
+  if [ n_cpu = "" ]; then
+    n_cpu=$NCPU
+  fi
+
 
   CFLAGS="-arch $ARCH  -m$ABI" \
     CXXFLAGS="-arch $ARCH" \
@@ -105,7 +115,7 @@ function buildlib {
     ./configure --prefix=$DIST_DIR \
     $HOSTSYSTEM $moreParams || doFail $1
 
-  make -j 2 && make install || doFail $1
+  make -j $n_cpu && make install || doFail $1
 }
 
 
@@ -113,7 +123,7 @@ if [ $step -le 1 ]; then
   echo "Downloading required files"
   mkdir -p $SRC_DIR
   cd $SRC_DIR
-  for l in `cat $BASEDIR/libs.txt`; do
+  for l in `cat $BASEDIR/$LIBS_FILE`; do
     if [ ! -f $(basename $l) ]; then
       curl -L -o $(basename $l) $l
     else
@@ -133,7 +143,7 @@ mkdir -p $DIST_DIR
 cd $MAIN_PREFIX
 
 if [ $step -le 8 ]; then
-  for l in `cat $BASEDIR/libs.txt`; do
+  for l in `cat $BASEDIR/$LIBS_FILE`; do
     lib=`basename $l`
     echo "unpacking $lib"
     unpack $SRC_DIR/$lib
@@ -144,7 +154,7 @@ fi
 export PATH=$DIST_DIR/bin:$PATH
 
 cstep=10
-for l in `cat $BASEDIR/libs.txt`; do
+for l in `cat $BASEDIR/$LIBS_FILE`; do
   if [ $step -le $cstep ]; then
     lib=`basename $l | sed -E 's/.tar.(gz|bz2|lz)//'`
     cd $MAIN_PREFIX/$lib
@@ -188,6 +198,8 @@ if [ $step -le 30 ]; then
 
   # ld does not support rpath on Mac (see below)
 
+  gl_cv_absolute_stdint_h=${OSX_SDK_PATH}/usr/include/stdint.h
+
   export PATH=$BASE_DIR/bin:$PATH
 
   CFLAGS="-arch $ARCH" \
@@ -219,13 +231,15 @@ fi
 
 # tweak Makefiles
 if [ $step -le 31 ]; then
-  if [ ! -e build-aux/install-sh.orig ]; then
-    mv build-aux/install-sh build-aux/install-sh.orig || doFail 31
-  fi
+  if [ -d build-aux ]; then
+    if [ ! -e build-aux/install-sh.orig ]; then
+      mv build-aux/install-sh build-aux/install-sh.orig || doFail 31
+    fi
 
-  dist=$(echo $DIST_DIR | sed 's/\//\\\//g')
-  sed 's/##DISTDIR##/'$dist'/' < $BASEDIR/bin/install-sh-wrapper > build-aux/install-sh || doFail 31
-  chmod +x build-aux/install-sh || doFail 31
+    dist=$(echo $DIST_DIR | sed 's/\//\\\//g')
+    sed 's/##DISTDIR##/'$dist'/' < $BASEDIR/bin/install-sh-wrapper > build-aux/install-sh || doFail 31
+    chmod +x build-aux/install-sh || doFail 31
+  fi
 fi
 
 
@@ -237,12 +251,13 @@ if [ $step -le 32 ]; then
 
   for f in $(find . -name Makefile); do
     sed 's/\/usr\/bin\/install/'$dist'\/install-wrapper/' < $f > a || doFail 32
+    sed 's/\/usr\/local\/bin\/ginstall/'$dist'\/install-wrapper/' < $f > a || doFail 32
     mv a $f
   done
 fi
 
 if [ $step -le 35 ]; then
-  make -j 2 || doFail 35
+  make -j $NCPU || doFail 35
 fi
 
 if [ $step -le 36 ]; then
@@ -361,7 +376,7 @@ if [ $step -le 60 ]; then
     productbuild --distribution $DIST_DIR/distro.xml \
       --sign "${PKG_SIGN_CERT}" \
       --package-path $DIST_DIR \
-      $INSTALL_DIR/"Install.pkg"
+      $INSTALL_DIR/"Install.pkg" || doFail 60
 
   else
 
@@ -369,23 +384,26 @@ if [ $step -le 60 ]; then
 
     productbuild --distribution $DIST_DIR/distro.xml \
       --package-path $DIST_DIR \
-      $INSTALL_DIR/"Install.pkg"
+      $INSTALL_DIR/"Install.pkg"  || doFail 60
   fi
 
 fi
 
 if [ $step -le 65 ]; then
-  rm -f $INSTALL_DIR/"Install.pkg.sig"
-  if [ "x$SIGNING_KEY_ID" != "x" ]; then
-    gpg2 -o $INSTALL_DIR/"Install.pkg.sig" -u "$SIGNING_KEY_ID" --detach-sign $INSTALL_DIR/"Install.pkg" || doFail 65
-  fi
-fi
-
-if [ $step -le 70 ]; then
   echo "Creating final .dmg file"
   cp $BASEDIR/pkg-docs/License.txt $BASEDIR/pkg-docs/"Read Me.rtf" $INSTALL_DIR
   rm -f $MAIN_DIR/GnuPG-${GPGVERSION}.dmg
-  hdiutil create $MAIN_DIR/GnuPG-${GPGVERSION}.dmg -volname "GnuPG 2.1" -srcfolder $INSTALL_DIR || doFail 60
+  hdiutil create $MAIN_DIR/GnuPG-${GPGVERSION}.dmg -volname "GnuPG 2.1" -srcfolder $INSTALL_DIR || doFail 65
 fi
+
+if [ $step -le 70 ]; then
+  rm -f $MAIN_DIR/GnuPG-${GPGVERSION}.dmg.sig
+  if [ "x$SIGNING_KEY_ID" != "x" ]; then
+    gpg2 -o $MAIN_DIR/GnuPG-${GPGVERSION}.dmg.sig -u "$SIGNING_KEY_ID" --detach-sign $MAIN_DIR/GnuPG-${GPGVERSION}.dmg || doFail 70
+    echo "Created DMG signature file"
+  fi
+fi
+
+
 
 echo "done"
