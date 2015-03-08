@@ -1,13 +1,15 @@
 require 'formula'
 
 class Gnutls < Formula
-  homepage 'http://gnutls.org'
-  url 'ftp://ftp.gnutls.org/gcrypt/gnutls/v3.3/gnutls-3.3.11.tar.xz'
-  sha1 '82db10dc9b10d03cacbb86b567ef692401f34add'
+  homepage "http://gnutls.org"
+  url "ftp://ftp.gnutls.org/gcrypt/gnutls/v3.3/gnutls-3.3.12.tar.xz"
+  mirror "http://mirrors.dotsrc.org/gcrypt/gnutls/v3.3/gnutls-3.3.12.tar.xz"
+  sha256 "67ab3e92c5d48f3323b897d7c1aa0bb2af6f3a84f5bd9931cda163a7ff32299b"
 
   depends_on 'pkg-config'
   depends_on 'libtasn1'
   depends_on 'nettle'
+  depends_on 'automake'
 
   fails_with :llvm do
     build 2326
