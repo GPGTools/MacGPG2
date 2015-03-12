@@ -103,7 +103,6 @@ pushd "$INSTALLDIR" > /dev/null
     if [ "$MACGPG2_ALREADY_BUILT" != "0" ] || [ "$FORCE" == "1" ]; then
         # Build MacGPG2 with make -j4
 		export HOMEBREW_MAKE_JOBS=4
-		./bin/brew install --universal --quieter --HEAD pinentry &&
         ./bin/brew install --env=std --universal MacGPG2
         EXIT="$?"
     else

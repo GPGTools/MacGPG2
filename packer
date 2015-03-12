@@ -311,7 +311,7 @@ def main():
     try:
         copy_from_homebrew(BASE_DIR, DEST_DIR, distro_files)
         # For homebrew compatibility create a file with the current version.
-        version = version_from_config("%s/Makefile.config" % (working_dir))
+        version = version_from_config("%s/Version.config" % (working_dir))
         if os.path.isdir("%s/share/gnupg" % DEST_DIR) and version:
             status("Create version file for homebrew in %s/share/gnupg" % (DEST_DIR_ORIGINAL))
             fh = open("%s/share/gnupg/VERSION" % DEST_DIR, "w")
