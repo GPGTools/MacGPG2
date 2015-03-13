@@ -13,7 +13,7 @@ This script takes care of creating the correct structure re-creating
 all symlinks as symlinks. 
 """
 
-import os, pprint, types, glob, re, sys, shutil
+import os, pprint, types, glob, re, sys, shutil, distutils.dir_util
 from optparse import OptionParser
 
 class TerminalColor(object):
@@ -75,6 +75,8 @@ def error(msg):
     sys.exit(2)
 
 def version_from_config(config_file):
+    print >> sys.stderr, "TODO: Update this to call the config, instead of reading it line by line."
+    sys.exit(2)
     fh = open(config_file, "r")
     major = None
     minor = None
@@ -258,7 +260,7 @@ def main():
             ["dumpsexp", "gpgparsemail", "gpgsm", "gpgsm-gencert.sh", 
              "kbxutil", "gpg-error", "gpgv2", "msg*", "*gettext*", "*-config", 
              "recode*", "iconv", "brew", "envsubst", "autopoint", "adns*", "asn1*", "lz*",
-             "unlzma", "unxz", "xz*"])),
+             "unlzma", "unxz", "xz*", "aclocal*", "auto*", "ifnames"])),
     
         # ./lib files to exclude
         resolve_files(BASE_DIR, prepend_path_component("lib", ["pkgconfig**", "gettext**"]) + 
@@ -275,7 +277,7 @@ def main():
             prepend_path_component("share",  
                 # Two stars denote that tree_files should be used to also exclude
                 # any subfolders.
-                append_path_component("**", ["aclocal", "common-lisp", "doc", "gettext"]))),
+                append_path_component("**", ["aclocal", "aclocal-1.14", "autoconf", "automake-1.14", "common-lisp", "doc", "gettext", "emacs"]))),
         
         # ./share/gnupg files to include
         inverted_files(BASE_DIR, os.path.join("share", "gnupg"), map(lambda x: os.path.join("share", "gnupg", x),
@@ -311,7 +313,7 @@ def main():
     try:
         copy_from_homebrew(BASE_DIR, DEST_DIR, distro_files)
         # For homebrew compatibility create a file with the current version.
-        version = version_from_config("%s/Makefile.config" % (working_dir))
+        version = version_from_config("%s/Version.config" % (working_dir))
         if os.path.isdir("%s/share/gnupg" % DEST_DIR) and version:
             status("Create version file for homebrew in %s/share/gnupg" % (DEST_DIR_ORIGINAL))
             fh = open("%s/share/gnupg/VERSION" % DEST_DIR, "w")
@@ -322,10 +324,12 @@ def main():
         import traceback
         traceback.print_exc()
         error("Failed to copy files from %s - %s" % (BASE_DIR_ORIGINAL, e))
-          
-    # Copy the shutdown-gpg-agent file from Installer/shutdown-gpg-agent.
-    xcopy(os.path.join(CURRENT_DIR, "Installer/Payload/shutdown-gpg-agent"), os.path.join(DEST_DIR, "libexec"))      
-        
+    
+    
+
+    # Copy the additional files from Payload/libexec.
+    distutils.dir_util.copy_tree(os.path.join(CURRENT_DIR, "Payload/libexec/"), os.path.join(DEST_DIR, "libexec/"))
+    
     # Change back to the original directory
     os.chdir(working_dir)
     
