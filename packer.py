@@ -150,6 +150,8 @@ def wildcard_expander(file):
     return glob.glob(file.replace("**", ""))
 
 def tree_files(directory):
+    if not os.path.isdir(directory):
+        return []
     return reduce(lambda l1,l2: l1 + l2,
                   map(lambda entry: map(lambda x: os.path.join(entry[0], x), entry[2]), 
                                         os.walk(directory, followlinks=True)))
@@ -312,7 +314,7 @@ def main():
 
     # Copy the additional files from Payload/libexec.
     distutils.dir_util.copy_tree(os.path.join(CURRENT_DIR, "Payload/libexec/"), os.path.join(DEST_DIR, "libexec/"))
-    
+    distutils.dir_util.copy_tree(os.path.join(CURRENT_DIR, "Payload/share/"), os.path.join(DEST_DIR, "share/"))
     # Change back to the original directory
     os.chdir(working_dir)
     
