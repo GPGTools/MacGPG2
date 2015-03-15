@@ -13,7 +13,7 @@ This script takes care of creating the correct structure re-creating
 all symlinks as symlinks. 
 """
 
-import os, pprint, types, glob, re, sys, shutil, distutils.dir_util
+import os, pprint, types, glob, re, sys, shutil, distutils.dir_util, subprocess
 from optparse import OptionParser
 
 class TerminalColor(object):
@@ -75,29 +75,12 @@ def error(msg):
     sys.exit(2)
 
 def version_from_config(config_file):
-    print >> sys.stderr, "TODO: Update this to call the config, instead of reading it line by line."
-    sys.exit(2)
-    fh = open(config_file, "r")
-    major = None
-    minor = None
-    revision = None
-    for x in fh.readlines():
-        if x.find("=") == -1:
-            continue
-        
-        (key,value) = x.split("=")
-        
-        key = key.lower()
-        
-        if key == "major":
-            major = value
-        if key == "minor":
-            minor = value
-        if key == "revision":
-            revision = value
-    
-    version = "%s.%s.%s" % (major.replace("\"", "").strip(), minor.replace("\"", "").strip(), revision.replace("\"", "").strip())
+    command = ['bash', '-c', 'source %s && echo $MAJOR.$MINOR${REVISION:+.$REVISION}' % config_file]
+    p = subprocess.Popen(command, stdout=subprocess.PIPE)
+    version = p.communicate()[0].strip()
 
+    p.returncode == 0 or sys.exit("Unable to get version from '%s'!" % config_file)
+    version[:2] == '2.' or sys.exit("Invalid version '%s'" % version)
     return version
 
 def xcopy(src, dst, makedirs=False):
