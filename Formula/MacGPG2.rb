@@ -1,9 +1,9 @@
 require 'formula'
 
 class Macgpg2 < Formula
-  url 'ftp://ftp.gnupg.org/gcrypt/gnupg/gnupg-2.0.26.tar.bz2'
+  url 'ftp://ftp.gnupg.org/gcrypt/gnupg/gnupg-2.0.27.tar.bz2'
   homepage 'http://www.gnupg.org/'
-  sha1 '3ff5b38152c919724fd09cf2f17df704272ba192'
+  sha1 'd065be185f5bac8ea07b210ab7756e79b83b63d4'
   
   depends_on 'libgcrypt'
 
@@ -22,7 +22,6 @@ class Macgpg2 < Formula
   
   def patches
     { :p1 => ["#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/other.patch",
-              "#{HOMEBREW_PREFIX}/Library/Formula/Patches/IDEA/gnupg2.patch",
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/cacheid.patch",
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/socket.patch",
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/gpg-agent.patch",

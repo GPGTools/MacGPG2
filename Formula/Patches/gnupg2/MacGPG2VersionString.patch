@@ -31,26 +31,6 @@
        break;
      case 13: p = VERSION; break;
      case 17: p = PRINTABLE_OS_NAME; break;
---- a/doc/gnupg.info-1
-+++ b/doc/gnupg.info-1
-@@ -1300,7 +1300,7 @@
- 3 Invoking GPG
- **************
- 
--`gpg2' is the OpenPGP part of the GNU Privacy Guard (GnuPG). It is a
-+`gpg2' is the OpenPGP part of the GNU Privacy Guard (GnuPG/MacGPG2). It is a
- tool to provide digital encryption and signing services using the
- OpenPGP standard. `gpg2' features complete key management and all bells
- and whistles you can expect from a decent OpenPGP implementation.
-@@ -1784,7 +1784,7 @@
-           file that   will be embedded into the user ID. Note that a
-           very large JPEG will make   for a very large key. Also note
-           that some programs will display your   JPEG unchanged
--          (GnuPG), and some programs will scale it to fit in a   dialog
-+          (GnuPG/MacGPG2), and some programs will scale it to fit in a   dialog
-           box (PGP).
- 
-     showphoto
 --- a/doc/gpg.texi
 +++ b/doc/gpg.texi
 @@ -65,7 +65,7 @@
