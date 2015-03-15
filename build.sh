@@ -96,7 +96,7 @@ if [ "$EXIT" != "0" ]; then
     exit 1
 fi
 
-/usr/bin/python packer.py --prune "$INSTALLDIR" "$DEPLOYDIR" || (error "Preparing files for the installer failed." && exit 1)
+/usr/bin/python packer.py --prune "$INSTALLDIR" "$DEPLOYDIR" || { error "Preparing files for the installer failed."; exit 1; }
 
 
 success "Build succeeded!"
