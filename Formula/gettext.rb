@@ -21,7 +21,7 @@ class Gettext < Formula
     unless ARGV.include? '--with-examples'
       # Use a MacPorts patch to disable building examples at all,
       # rather than build them and remove them afterwards.
-      {:p0 => [ 'https://trac.macports.org/export/102008/trunk/dports/devel/gettext/files/patch-gettext-tools-Makefile.in']}
+      {:p0 => [ "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gettext/patch-gettext-tools-Makefile.in"]}
     end
   end
 
