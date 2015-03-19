@@ -6,7 +6,7 @@
 	<dict>
 		<key>Resources/Info.plist</key>
 		<data>
-		cnrinW7/vypqyEW/W/6UNgLwxB8=
+		NNVl+GtcOUp31fsxhHj3gAoYvlo=
 		</data>
 		<key>Resources/License.txt</key>
 		<data>
@@ -175,11 +175,11 @@
 		</dict>
 		<key>Resources/dmgExtract.app/Contents/Info.plist</key>
 		<data>
-		vUZXkiYft7p3jn31GcJbC7FkcQY=
+		1gLVt/vw16TjHNKAB67dU5rb2Qo=
 		</data>
 		<key>Resources/dmgExtract.app/Contents/MacOS/dmgExtract</key>
 		<data>
-		Qz9lktiVuIZ/EYln7QYEzEE4tdc=
+		Iy2mDHEiAtc8n0z5S++6ZWTsHRA=
 		</data>
 		<key>Resources/dmgExtract.app/Contents/PkgInfo</key>
 		<data>
@@ -229,7 +229,7 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			S2fp6iWSGtLv/FsMalgc4n3HRpk=
+			9eF2ZF4wimpM3hPee2tzn0f1TiA=
 			</data>
 			<key>optional</key>
 			<true/>
@@ -272,11 +272,11 @@
 		</dict>
 		<key>Resources/finish_installation.app/Contents/Info.plist</key>
 		<data>
-		vTJxJ2nZ4+yT/O3oQkf1yfajQnk=
+		2SDQof6FRdlCuN/K/xjcD63QSDs=
 		</data>
 		<key>Resources/finish_installation.app/Contents/MacOS/finish_installation</key>
 		<data>
-		futwrYGnsTjr/8y506dsUuzJq+A=
+		02J4ThcXBv0aT+Vo6b0WnIq2dFo=
 		</data>
 		<key>Resources/finish_installation.app/Contents/PkgInfo</key>
 		<data>
@@ -330,7 +330,7 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			S2fp6iWSGtLv/FsMalgc4n3HRpk=
+			9eF2ZF4wimpM3hPee2tzn0f1TiA=
 			</data>
 			<key>optional</key>
 			<true/>
@@ -499,7 +499,7 @@
 		</dict>
 		<key>Resources/finish_installation.app/Contents/_CodeSignature/CodeResources</key>
 		<data>
-		HnDqHbWxfi0Nuu57892KjntfvfU=
+		hntpHVNG03qvxze5lshV/7vNbvs=
 		</data>
 		<key>Resources/fr.lproj/SUAutomaticUpdateAlert.nib</key>
 		<dict>
@@ -1218,7 +1218,7 @@
 		</data>
 		<key>Resources/Info.plist</key>
 		<data>
-		cnrinW7/vypqyEW/W/6UNgLwxB8=
+		NNVl+GtcOUp31fsxhHj3gAoYvlo=
 		</data>
 		<key>Resources/License.txt</key>
 		<data>
@@ -1387,11 +1387,11 @@
 		</dict>
 		<key>Resources/dmgExtract.app/Contents/Info.plist</key>
 		<data>
-		vUZXkiYft7p3jn31GcJbC7FkcQY=
+		1gLVt/vw16TjHNKAB67dU5rb2Qo=
 		</data>
 		<key>Resources/dmgExtract.app/Contents/MacOS/dmgExtract</key>
 		<data>
-		Qz9lktiVuIZ/EYln7QYEzEE4tdc=
+		Iy2mDHEiAtc8n0z5S++6ZWTsHRA=
 		</data>
 		<key>Resources/dmgExtract.app/Contents/PkgInfo</key>
 		<data>
@@ -1441,7 +1441,7 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			S2fp6iWSGtLv/FsMalgc4n3HRpk=
+			9eF2ZF4wimpM3hPee2tzn0f1TiA=
 			</data>
 			<key>optional</key>
 			<true/>
@@ -1484,11 +1484,11 @@
 		</dict>
 		<key>Resources/finish_installation.app/Contents/Info.plist</key>
 		<data>
-		vTJxJ2nZ4+yT/O3oQkf1yfajQnk=
+		2SDQof6FRdlCuN/K/xjcD63QSDs=
 		</data>
 		<key>Resources/finish_installation.app/Contents/MacOS/finish_installation</key>
 		<data>
-		futwrYGnsTjr/8y506dsUuzJq+A=
+		02J4ThcXBv0aT+Vo6b0WnIq2dFo=
 		</data>
 		<key>Resources/finish_installation.app/Contents/PkgInfo</key>
 		<data>
@@ -1542,7 +1542,7 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			S2fp6iWSGtLv/FsMalgc4n3HRpk=
+			9eF2ZF4wimpM3hPee2tzn0f1TiA=
 			</data>
 			<key>optional</key>
 			<true/>
@@ -1711,7 +1711,7 @@
 		</dict>
 		<key>Resources/finish_installation.app/Contents/_CodeSignature/CodeResources</key>
 		<data>
-		HnDqHbWxfi0Nuu57892KjntfvfU=
+		hntpHVNG03qvxze5lshV/7vNbvs=
 		</data>
 		<key>Resources/fr.lproj/SUAutomaticUpdateAlert.nib</key>
 		<dict>
