@@ -1,0 +1,19 @@
+# Also install gpgsplit
+
+
+--- a/tools/Makefile.in
++++ b/tools/Makefile.in
+@@ -136,11 +136,11 @@
+ @HAVE_W32_SYSTEM_TRUE@am__append_7 = gpg-connect-agent-w32info.o
+ bin_PROGRAMS = gpgconf$(EXEEXT) gpg-connect-agent$(EXEEXT) \
+ 	gpgkey2ssh$(EXEEXT) $(am__EXEEXT_1) $(am__EXEEXT_2) \
+-	$(am__EXEEXT_3)
++	$(am__EXEEXT_3) gpgsplit$(EXEEXT)
+ @HAVE_W32_SYSTEM_FALSE@am__append_8 = watchgnupg gpgparsemail
+ @DISABLE_REGEX_FALSE@libexec_PROGRAMS = gpg-check-pattern$(EXEEXT)
+ noinst_PROGRAMS = clean-sat$(EXEEXT) mk-tdata$(EXEEXT) \
+-	make-dns-cert$(EXEEXT) gpgsplit$(EXEEXT)
++	make-dns-cert$(EXEEXT)
+ subdir = tools
+ ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
+ am__aclocal_m4_deps = $(top_srcdir)/gl/m4/absolute-header.m4 \
