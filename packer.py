@@ -242,8 +242,8 @@ def main():
     EXCLUDE_FILES = reduce(lambda l1, l2: l1 + l2, (
         # ./bin files to exclude.
         resolve_files(BASE_DIR, prepend_path_component("bin", 
-            ["dumpsexp", "gpgparsemail", "gpgsm", "gpgsm-gencert.sh", 
-             "kbxutil", "gpg-error", "gpgv2", "msg*", "*gettext*", "*-config", 
+            ["dumpsexp", "gpgsm-gencert.sh",
+             "gpg-error", "msg*", "*gettext*", "*-config",
              "recode*", "iconv", "brew", "envsubst", "autopoint", "adns*", "asn1*", "lz*",
              "unlzma", "unxz", "xz*", "aclocal*", "auto*", "ifnames"])),
     

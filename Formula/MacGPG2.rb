@@ -64,7 +64,6 @@ class Macgpg2 < Formula
                           "--with-pinentry-pgm=#{final_install_directory}/libexec/pinentry-mac.app/Contents/MacOS/pinentry-mac",
                           "--with-agent-pgm=#{final_install_directory}/bin/gpg-agent",
                           "--with-scdaemon-pgm=#{final_install_directory}/libexec/scdaemon",
-                          "--disable-gpgsm", # We don't include it in the installation, no need to build it.
                           "--with-dirmngr-pgm=#{final_install_directory}/bin/dirmngr", # It's not possible to disable it, so at least have the right path. 
                           "--with-libgpg-error-prefix=#{HOMEBREW_PREFIX}",
                           "--with-libgcrypt-prefix=#{HOMEBREW_PREFIX}",
