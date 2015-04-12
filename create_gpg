@@ -123,11 +123,23 @@ if [ $step -le 1 ]; then
   echo "Downloading required files"
   mkdir -p $SRC_DIR
   cd $SRC_DIR
-  for l in `cat $BASEDIR/$LIBS_FILE`; do
-    if [ ! -f $(basename $l) ]; then
-      curl -L -o $(basename $l) $l
+  for l in $(cat $BASEDIR/$LIBS_FILE); do
+    libFull=$(echo $l | cut -d '|' -f 1)
+    libF=$(basename $libFull)
+    if [ ! -f $libF ]; then
+      curl -L -o $libF $libFull
     else
-      echo "Skipping $l"
+      echo "Skipping $libFull"
+    fi
+
+    # SHA-1 checksum check
+    shsum1=$(echo $l | cut -d '|' -f 2)
+    shsum2=$(shasum $libF | cut -d ' ' -f 1)
+    if [ "$shsum1" != "$shsum2" ]; then
+      echo "SHA-1 sums of file $libF don't match"
+      echo "expected: $shsum1"
+      echo "obtained: $shsum2"
+      doFail $step
     fi
   done
 fi
@@ -143,8 +155,9 @@ mkdir -p $DIST_DIR
 cd $MAIN_PREFIX
 
 if [ $step -le 8 ]; then
-  for l in `cat $BASEDIR/$LIBS_FILE`; do
-    lib=`basename $l`
+  for l in $(cat $BASEDIR/$LIBS_FILE); do
+    libFull=$(echo $l | cut -d '|' -f 1)
+    lib=`basename $libFull`
     echo "unpacking $lib"
     unpack $SRC_DIR/$lib
   done
@@ -154,14 +167,15 @@ fi
 export PATH=$DIST_DIR/bin:$PATH
 
 cstep=10
-for l in `cat $BASEDIR/$LIBS_FILE`; do
+for l in $(cat $BASEDIR/$LIBS_FILE); do
   if [ $step -le $cstep ]; then
-    lib=`basename $l | sed -E 's/.tar.(gz|bz2|lz)//'`
+    libFull=$(echo $l | cut -d '|' -f 1)
+    lib=$(basename $libFull | sed -E 's/.tar.(gz|bz2|lz)//')
     cd $MAIN_PREFIX/$lib
     make distclean > /dev/null 2>&1
     buildlib $cstep $lib
   fi
-  cstep=`expr $cstep + 1`
+  cstep=$(expr $cstep + 1)
 done
 
 # pinentry
@@ -197,8 +211,6 @@ cd $MAIN_PREFIX/gnupg-$GPGVERSION
 if [ $step -le 30 ]; then
 
   # ld does not support rpath on Mac (see below)
-
-  gl_cv_absolute_stdint_h=${OSX_SDK_PATH}/usr/include/stdint.h
 
   export PATH=$BASE_DIR/bin:$PATH
 
@@ -264,7 +276,6 @@ if [ $step -le 36 ]; then
 
   make install || doFail 36
 fi
-
 
 # Adjust rpath using otool for binaries in bin/
 if [ $step -le 40 ]; then
