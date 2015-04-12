@@ -1,4 +1,4 @@
-gnutls:--without-p11-kit --disable-doc --disable-cxx --disable-rpath --disable-nls
+gnutls:--without-p11-kit --disable-doc --disable-cxx --disable-rpath --disable-nls --with-included-libtasn1 --disable-tests
 nettle:--disable-assembler
 gettext:--disable-java --disable-rpath --disable-c++ --disable-openmp
 pinentry-mac:ignore

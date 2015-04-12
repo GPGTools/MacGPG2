@@ -268,6 +268,9 @@ fi
 
 # Adjust rpath using otool for binaries in bin/
 if [ $step -le 40 ]; then
+  # some files get wrong permissions, let's just fix them ...
+  find $DIST_DIR -type f -exec chmod +w {} +
+
   cd $DIST_DIR/bin
   for f in gpg2 gpgv2 g13 gpg-agent gpg-connect-agent gpg-error gpgconf gpgkey2ssh gpgparsemail gpgsm \
       gpgtar kbxutil watchgnupg dirmngr-client dirmngr; do
