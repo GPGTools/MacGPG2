@@ -8,12 +8,12 @@
 
 /* Begin PBXBuildFile section */
 		1BDEF4AC170509AA005D1FE2 /* MacGPG2.iconset in Resources */ = {isa = PBXBuildFile; fileRef = 1BDEF4AB170509AA005D1FE2 /* MacGPG2.iconset */; };
+		305608EE1AEFB416007FA7B7 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 305608ED1AEFB416007FA7B7 /* MainMenu.xib */; };
 		306B66CC16E8A6A600E976FD /* Sparkle.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 306B66CB16E8A6A600E976FD /* Sparkle.framework */; };
 		306B66CE16E8A6C500E976FD /* Sparkle.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 306B66CB16E8A6A600E976FD /* Sparkle.framework */; };
 		30EE569D16E8A6550075330E /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 30EE569C16E8A6550075330E /* Cocoa.framework */; };
 		30EE56A916E8A6550075330E /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 30EE56A816E8A6550075330E /* main.m */; };
 		30EE56B016E8A6550075330E /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 30EE56AF16E8A6550075330E /* AppDelegate.m */; };
-		30EE56B316E8A6550075330E /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 30EE56B116E8A6550075330E /* MainMenu.xib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -32,6 +32,7 @@
 
 /* Begin PBXFileReference section */
 		1BDEF4AB170509AA005D1FE2 /* MacGPG2.iconset */ = {isa = PBXFileReference; lastKnownFileType = folder.iconset; name = MacGPG2.iconset; path = MacGPG2_Updater/MacGPG2.iconset; sourceTree = "<group>"; };
+		305608ED1AEFB416007FA7B7 /* MainMenu.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MainMenu.xib; sourceTree = "<group>"; };
 		306B66CB16E8A6A600E976FD /* Sparkle.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Sparkle.framework; path = MacGPG2_Updater/Frameworks/Sparkle.framework; sourceTree = "<group>"; };
 		30EE569916E8A6550075330E /* MacGPG2_Updater.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MacGPG2_Updater.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		30EE569C16E8A6550075330E /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
@@ -43,7 +44,6 @@
 		30EE56AA16E8A6550075330E /* MacGPG2_Updater-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MacGPG2_Updater-Prefix.pch"; sourceTree = "<group>"; };
 		30EE56AE16E8A6550075330E /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		30EE56AF16E8A6550075330E /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
-		30EE56B216E8A6550075330E /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/MainMenu.xib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -102,7 +102,7 @@
 			children = (
 				30EE56AE16E8A6550075330E /* AppDelegate.h */,
 				30EE56AF16E8A6550075330E /* AppDelegate.m */,
-				30EE56B116E8A6550075330E /* MainMenu.xib */,
+				305608ED1AEFB416007FA7B7 /* MainMenu.xib */,
 				30EE56A316E8A6550075330E /* Supporting Files */,
 			);
 			path = MacGPG2_Updater;
@@ -131,6 +131,7 @@
 				306B66CD16E8A6B500E976FD /* Copy Frameworks */,
 				306B66E116E9006100E976FD /* Fill Info.plist */,
 				307377831AA4B6390097BCDE /* Copy "How to get the source code" into Resources */,
+				305608F01AEFB421007FA7B7 /* Fix Sub-Bundle localization bug */,
 			);
 			buildRules = (
 			);
@@ -172,14 +173,29 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				30EE56B316E8A6550075330E /* MainMenu.xib in Resources */,
 				1BDEF4AC170509AA005D1FE2 /* MacGPG2.iconset in Resources */,
+				305608EE1AEFB416007FA7B7 /* MainMenu.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		305608F01AEFB421007FA7B7 /* Fix Sub-Bundle localization bug */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Fix Sub-Bundle localization bug";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "cd \"$TARGET_BUILD_DIR/$FRAMEWORKS_FOLDER_PATH/Sparkle.framework/Resources\" || exit 1\nlprojs=(*.lproj) || exit 1\n\ncd \"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\" || exit 1\nmkdir -p \"${lprojs[@]}\" || exit 1\n\n";
+			showEnvVarsInLog = 0;
+		};
 		306B66E116E9006100E976FD /* Fill Info.plist */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -223,17 +239,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXVariantGroup section */
-		30EE56B116E8A6550075330E /* MainMenu.xib */ = {
-			isa = PBXVariantGroup;
-			children = (
-				30EE56B216E8A6550075330E /* en */,
-			);
-			name = MainMenu.xib;
-			sourceTree = "<group>";
-		};
-/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		30EE56B416E8A6550075330E /* Debug */ = {
