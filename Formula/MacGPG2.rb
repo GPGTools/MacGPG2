@@ -54,7 +54,6 @@ class Macgpg2 < Formula
     
     final_install_directory = "/usr/local/MacGPG2"
     
-    inreplace 'g10/keygen.c', 'max=4096', 'max=8192'
         
     system "./configure", "--prefix=#{prefix}",
                           "--disable-maintainer-mode",
