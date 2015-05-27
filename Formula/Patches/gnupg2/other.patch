@@ -1,0 +1,143 @@
+# fix runtime data location
+# http://git.gnupg.org/cgi-bin/gitweb.cgi?p=gnupg.git;a=commitdiff;h=c3f08dc
+
+--- a/common/homedir.c
++++ b/common/homedir.c
+@@ -22,6 +22,11 @@
+ #include <stdlib.h>
+ #include <errno.h>
+ #include <fcntl.h>
++#include <limits.h>
++#include <stdio.h>
++#include <stdint.h>
++#include <string.h>
++#include <sys/stat.h>
+ 
+ #ifdef HAVE_W32_SYSTEM
+ # ifdef HAVE_WINSOCK2_H
+@@ -348,7 +353,7 @@
+     }
+   return name;
+ #else /*!HAVE_W32_SYSTEM*/
+-  return GNUPG_SYSCONFDIR;
++  return "/usr/local/MacGPG2/etc/gnupg";
+ #endif /*!HAVE_W32_SYSTEM*/
+ }
+ 
+@@ -371,7 +376,7 @@
+   else
+     return rdir;
+ #else /*!HAVE_W32_SYSTEM*/
+-  return GNUPG_BINDIR;
++  return "/usr/local/MacGPG2/bin";
+ #endif /*!HAVE_W32_SYSTEM*/
+ }
+ 
+@@ -384,7 +389,7 @@
+ #ifdef HAVE_W32_SYSTEM
+   return gnupg_bindir ();
+ #else /*!HAVE_W32_SYSTEM*/
+-  return GNUPG_LIBEXECDIR;
++  return "/usr/local/MacGPG2/libexec";
+ #endif /*!HAVE_W32_SYSTEM*/
+ }
+ 
+@@ -404,7 +409,7 @@
+     }
+   return name;
+ #else /*!HAVE_W32_SYSTEM*/
+-  return GNUPG_LIBDIR;
++  return "/usr/local/MacGPG2/lib";
+ #endif /*!HAVE_W32_SYSTEM*/
+ }
+ 
+@@ -424,7 +429,7 @@
+     }
+   return name;
+ #else /*!HAVE_W32_SYSTEM*/
+-  return GNUPG_DATADIR;
++  return "/usr/local/MacGPG2/share/gnupg";
+ #endif /*!HAVE_W32_SYSTEM*/
+ }
+ 
+@@ -445,6 +450,37 @@
+     }
+   return name;
+ #else /*!HAVE_W32_SYSTEM*/
++  char path[3096];
++  uint32_t size = sizeof(path);
++  if (_NSGetExecutablePath(path, &size) != 0)
++      printf("buffer too small to get executable path; need size %u\n", size);
++  
++  char actualpath [PATH_MAX];
++  char *ptr;
++  ptr = realpath(path, actualpath);
++  // Find the last / in the path. 
++  char *c = strrchr(ptr, (int)'/');
++  // Set the post to the / in the path.
++  int pos = c - ptr;
++  // Only copy the without the executable name.
++  char *dirname_path = malloc((pos * sizeof(char)) + 1);
++  memcpy(dirname_path, ptr, pos);
++  dirname_path[pos+1] = '\0';
++  /* Check if ../share/locale exists. If so, use that path
++   * otherwise try LOCALEDIR.
++   */
++  char *locale_path = NULL;
++  asprintf(&locale_path, "%s/../share/locale", dirname_path);
++  // The path contains relative parts, so let's make them absolute.
++  char complete_path[PATH_MAX];
++  char *final_dir;
++  final_dir = realpath(locale_path, complete_path);
++  char *real_dir = complete_path == NULL ? final_dir : complete_path;
++  // Test if the locale dir exists.
++  struct stat s;
++  if(stat(real_dir, &s) == 0 && s.st_mode & S_IFDIR)
++      return real_dir;
++  // Not found, return the fixed localedir.
+   return LOCALEDIR;
+ #endif /*!HAVE_W32_SYSTEM*/
+ }
+@@ -472,7 +508,7 @@
+     }
+   return name;
+ #else /*!HAVE_W32_SYSTEM*/
+-  return "/var/run/dirmngr/socket";
++  return "/usr/local/MacGPG2/var/run/dirmngr/socket";
+ #endif /*!HAVE_W32_SYSTEM*/
+ }
+ 
+--- a/common/i18n.c
++++ b/common/i18n.c
+@@ -37,7 +37,7 @@
+ #else
+ # ifdef ENABLE_NLS
+   setlocale (LC_ALL, "" );
+-  bindtextdomain (PACKAGE_GT, LOCALEDIR);
++  bindtextdomain (PACKAGE_GT, gnupg_localedir ());
+   textdomain (PACKAGE_GT);
+ # endif
+ #endif
+--- a/scd/Makefile.in
++++ b/scd/Makefile.in
+@@ -92,7 +92,7 @@
+ DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
+ 	$(top_srcdir)/am/cmacros.am
+ @HAVE_DOSISH_SYSTEM_FALSE@am__append_1 = -DGNUPG_BINDIR="\"$(bindir)\""            \
+-@HAVE_DOSISH_SYSTEM_FALSE@               -DGNUPG_LIBEXECDIR="\"$(libexecdir)\""    \
++@HAVE_DOSISH_SYSTEM_FALSE@               -DGNUPG_LIBEXECDIR="\"/usr/local/MacGPG2/libexec\""    \
+ @HAVE_DOSISH_SYSTEM_FALSE@               -DGNUPG_LIBDIR="\"$(libdir)/@PACKAGE@\""  \
+ @HAVE_DOSISH_SYSTEM_FALSE@               -DGNUPG_DATADIR="\"$(datadir)/@PACKAGE@\"" \
+ @HAVE_DOSISH_SYSTEM_FALSE@               -DGNUPG_SYSCONFDIR="\"$(sysconfdir)/@PACKAGE@\""
+
+--- a/doc/Makefile.in
++++ b/doc/Makefile.in
+@@ -389,7 +389,7 @@
+        howtos.texi howto-create-a-server-cert.texi
+
+ DVIPS = TEXINPUTS="$(srcdir)$(PATH_SEPARATOR)$$TEXINPUTS" dvips
+-AM_MAKEINFOFLAGS = -I $(srcdir) --css-ref=/share/site.css
++AM_MAKEINFOFLAGS = -I $(srcdir) --css-include=/share/site.css
+ YAT2M_OPTIONS = -I $(srcdir) \
+         --release "GnuPG @PACKAGE_VERSION@" --source "GNU Privacy Guard"
+

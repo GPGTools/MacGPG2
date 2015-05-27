@@ -130,6 +130,7 @@
 				30EE569716E8A6550075330E /* Resources */,
 				306B66CD16E8A6B500E976FD /* Copy Frameworks */,
 				306B66E116E9006100E976FD /* Fill Info.plist */,
+				307377831AA4B6390097BCDE /* Copy "How to get the source code" into Resources */,
 			);
 			buildRules = (
 			);
@@ -191,7 +192,23 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "source \"$SRCROOT/Makefile.config\" || exit 1\n\nPLIST=\"$BUILT_PRODUCTS_DIR/$INFOPLIST_PATH\"\n\n/usr/libexec/PlistBuddy -c \"Set CommitHash \\\"$commitHash\\\"\" -c \"Set BuildNumber \\\"$buildNumber\\\"\" -c \"Set CFBundleVersion \\\"$build_version\\\"\" -c \"Set CFBundleShortVersionString \\\"$version\\\"\" \"$PLIST\" || exit 2\n";
+			shellScript = "if [[ -d \"$DEPLOY_RESOURCES_DIR\" ]] ;then\n    source \"$DEPLOY_RESOURCES_DIR/config/versioning.sh\"\nelse\n    source \"$SRCROOT/Version.config\"\nfi\n[[ -n \"$VERSION\" ]] || { echo \"Missing Version!\"; exit 1; }\n\n\n/usr/libexec/PlistBuddy \\\n  -c \"Set CommitHash '${COMMIT_HASH:--}'\" \\\n  -c \"Set BuildNumber '${BUILD_NUMBER:-0}'\" \\\n  -c \"Set CFBundleVersion '${BUILD_VERSION:-0n}'\" \\\n  -c \"Set CFBundleShortVersionString '$VERSION'\" \\\n  \"$BUILT_PRODUCTS_DIR/$INFOPLIST_PATH\" || exit 2\n";
+			showEnvVarsInLog = 0;
+		};
+		307377831AA4B6390097BCDE /* Copy "How to get the source code" into Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Copy \"How to get the source code\" into Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "[[ -d \"$DEPLOY_RESOURCES_DIR\" ]] || exit 0\n \n HOWTO_PATH=\"$DEPLOY_RESOURCES_DIR/resources/How to get the source code\"\n cp \"$HOWTO_PATH\" \"$BUILT_PRODUCTS_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/\"";
+			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -233,6 +250,7 @@
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEPLOY_RESOURCES_DIR = "$(SRCROOT)/Dependencies/DeployResources";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
@@ -246,7 +264,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 			};
@@ -267,13 +285,14 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEPLOY_RESOURCES_DIR = "$(SRCROOT)/Dependencies/DeployResources";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				SDKROOT = macosx;
 			};
 			name = Release;

@@ -1,7 +1,6 @@
-diff -ru agent/gpg-agent.c agent/gpg-agent.c
---- agent/gpg-agent.c	2011-01-09 23:06:14.000000000 +0100
-+++ agent/gpg-agent.c	2011-12-22 12:45:02.000000000 +0100
-@@ -322,7 +332,7 @@
+--- a/agent/gpg-agent.c
++++ b/agent/gpg-agent.c
+@@ -355,7 +355,7 @@
  
    switch (level)
      {
@@ -10,12 +9,9 @@ diff -ru agent/gpg-agent.c agent/gpg-agent.c
        break;
      case 13: p = VERSION; break;
      case 17: p = PRINTABLE_OS_NAME; break;
-
-
-diff -ru agent/preset-passphrase.c agent/preset-passphrase.c
---- agent/preset-passphrase.c	2011-01-09 23:06:14.000000000 +0100
-+++ agent/preset-passphrase.c	2011-12-22 12:45:02.000000000 +0100
-@@ -87,7 +87,7 @@
+--- a/agent/preset-passphrase.c
++++ b/agent/preset-passphrase.c
+@@ -90,7 +90,7 @@
    const char *p;
    switch (level)
      {
@@ -24,11 +20,8 @@ diff -ru agent/preset-passphrase.c agent/preset-passphrase.c
        break;
      case 13: p = VERSION; break;
      case 17: p = PRINTABLE_OS_NAME; break;
-
-
-diff -ru agent/protect-tool.c agent/protect-tool.c
---- agent/protect-tool.c	2011-01-09 23:06:14.000000000 +0100
-+++ agent/protect-tool.c	2011-12-22 12:45:02.000000000 +0100
+--- a/agent/protect-tool.c
++++ b/agent/protect-tool.c
 @@ -156,7 +156,7 @@
    const char *p;
    switch (level)
@@ -38,34 +31,8 @@ diff -ru agent/protect-tool.c agent/protect-tool.c
        break;
      case 13: p = VERSION; break;
      case 17: p = PRINTABLE_OS_NAME; break;
-
-
-diff -ru doc/gnupg.info-1 doc/gnupg.info-1 
---- doc/gnupg.info-1	2012-03-28 02:49:50.000000000 +0200
-+++ doc/gnupg.info-1	2012-03-28 02:42:42.000000000 +0200
-@@ -1283,7 +1283,7 @@
- 3 Invoking GPG
- **************
- 
--`gpg2' is the OpenPGP part of the GNU Privacy Guard (GnuPG). It is a
-+`gpg2' is the OpenPGP part of the GNU Privacy Guard (GnuPG/MacGPG2). It is a
- tool to provide digital encryption and signing services using the
- OpenPGP standard. `gpg2' features complete key management and all bells
- and whistles you can expect from a decent OpenPGP implementation.
-@@ -1759,7 +1759,7 @@
-           file that   will be embedded into the user ID. Note that a
-           very large JPEG will make   for a very large key. Also note
-           that some programs will display your   JPEG unchanged
--          (GnuPG), and some programs will scale it to fit in a   dialog
-+          (GnuPG/MacGPG2), and some programs will scale it to fit in a   dialog
-           box (PGP).
- 
-     showphoto
-
-
-diff -ru doc/gpg.texi doc/gpg.texi 
---- doc/gpg.texi	2012-03-28 02:32:18.000000000 +0200
-+++ doc/gpg.texi	2012-03-28 02:27:12.000000000 +0200
+--- a/doc/gpg.texi
++++ b/doc/gpg.texi
 @@ -65,7 +65,7 @@
  @c Begin GnuPG 2 specific stuff
  
@@ -75,7 +42,7 @@ diff -ru doc/gpg.texi doc/gpg.texi
  is a tool to provide digital encryption and signing services using the
  OpenPGP standard. @command{@gpgname} features complete key management and
  all bells and whistles you can expect from a decent OpenPGP
-@@ -669,7 +669,7 @@
+@@ -677,7 +677,7 @@
    Create a photographic user ID. This will prompt for a JPEG file that
    will be embedded into the user ID. Note that a very large JPEG will make
    for a very large key. Also note that some programs will display your
@@ -84,25 +51,22 @@ diff -ru doc/gpg.texi doc/gpg.texi
    dialog box (PGP).
  
    @item showphoto
-
-diff -ru g10/armor.c g10/armor.c
---- g10/armor.c	2011-01-09 23:06:15.000000000 +0100
-+++ g10/armor.c	2011-12-22 12:45:02.000000000 +0100
+new file mode 100644
+Binary files /dev/null and b/g10/.DS_Store differ
+--- a/g10/armor.c
++++ b/g10/armor.c
 @@ -1078,7 +1078,7 @@
  	    iobuf_writestr(a,afx->eol);
- 	    if( !opt.no_version )
+ 	    if (opt.emit_version)
  	      {
--		iobuf_writestr(a, "Version: GnuPG v"  VERSION " ("
-+		iobuf_writestr(a, "Version: GnuPG/MacGPG2 v"  VERSION " ("
- 			       PRINTABLE_OS_NAME ")" );
- 		iobuf_writestr(a,afx->eol);
- 	      }
-
-
-diff -ru g10/gpg.c g10/gpg.c
---- g10/gpg.c	2011-01-09 23:06:16.000000000 +0100
-+++ g10/gpg.c	2011-12-22 12:45:02.000000000 +0100
-@@ -807,7 +807,7 @@
+-		iobuf_writestr (a, "Version: GnuPG v");
++		iobuf_writestr (a, "Version: GnuPG/MacGPG2 v");
+                 for (s=VERSION; *s && *s != '.'; s++)
+                   iobuf_writebyte (a, *s);
+                 if (opt.emit_version > 1 && *s)
+--- a/g10/gpg.c
++++ b/g10/gpg.c
+@@ -813,7 +813,7 @@
    const char *p;
  
      switch( level ) {
@@ -111,11 +75,8 @@ diff -ru g10/gpg.c g10/gpg.c
  	break;
        case 13: p = VERSION; break;
        case 17: p = PRINTABLE_OS_NAME; break;
-
-
-diff -ru g10/gpgv.c g10/gpgv.c
---- g10/gpgv.c	2011-01-09 23:06:16.000000000 +0100
-+++ g10/gpgv.c	2011-12-22 12:45:02.000000000 +0100
+--- a/g10/gpgv.c
++++ b/g10/gpgv.c
 @@ -107,7 +107,7 @@
  
    switch (level)
@@ -125,11 +86,8 @@ diff -ru g10/gpgv.c g10/gpgv.c
        break;
      case 13: p = VERSION; break;
      case 17: p = PRINTABLE_OS_NAME; break;
-
-
-diff -ru kbx/kbxutil.c kbx/kbxutil.c
---- kbx/kbxutil.c	2011-01-09 23:06:17.000000000 +0100
-+++ kbx/kbxutil.c	2011-12-22 12:45:02.000000000 +0100
+--- a/kbx/kbxutil.c
++++ b/kbx/kbxutil.c
 @@ -106,7 +106,7 @@
  {
      const char *p;
@@ -139,11 +97,8 @@ diff -ru kbx/kbxutil.c kbx/kbxutil.c
  	break;
        case 13: p = VERSION; break;
        case 17: p = PRINTABLE_OS_NAME; break;
-
-
-diff -ru keyserver/gpg2keys_mailto.in keyserver/gpg2keys_mailto.in
---- keyserver/gpg2keys_mailto.in	2011-01-09 23:06:17.000000000 +0100
-+++ keyserver/gpg2keys_mailto.in	2011-12-22 12:45:02.000000000 +0100
+--- a/keyserver/gpg2keys_mailto.in
++++ b/keyserver/gpg2keys_mailto.in
 @@ -25,7 +25,7 @@
  
  sub VERSION_MESSAGE ()
@@ -153,11 +108,8 @@ diff -ru keyserver/gpg2keys_mailto.in keyserver/gpg2keys_mailto.in
  }
  
  sub HELP_MESSAGE ()
-
-
-diff -ru keyserver/gpg2keys_test.in keyserver/gpg2keys_test.in
---- keyserver/gpg2keys_test.in	2011-01-09 23:06:17.000000000 +0100
-+++ keyserver/gpg2keys_test.in	2011-12-22 12:45:02.000000000 +0100
+--- a/keyserver/gpg2keys_test.in
++++ b/keyserver/gpg2keys_test.in
 @@ -24,7 +24,7 @@
  
  sub VERSION_MESSAGE ()
@@ -167,11 +119,8 @@ diff -ru keyserver/gpg2keys_test.in keyserver/gpg2keys_test.in
  }
  
  sub HELP_MESSAGE ()
-
-
-diff -ru keyserver/gpgkeys_curl.c keyserver/gpgkeys_curl.c
---- keyserver/gpgkeys_curl.c	2011-01-09 23:06:17.000000000 +0100
-+++ keyserver/gpgkeys_curl.c	2011-12-22 12:45:02.000000000 +0100
+--- a/keyserver/gpgkeys_curl.c
++++ b/keyserver/gpgkeys_curl.c
 @@ -124,7 +124,7 @@
    /* Kludge to implement standard GNU options.  */
    if (argc > 1 && !strcmp (argv[1], "--version"))
@@ -181,13 +130,9 @@ diff -ru keyserver/gpgkeys_curl.c keyserver/gpgkeys_curl.c
        printf ("Uses: %s\n", curl_version());
        return 0;
      }
-
-
-
-diff -ru keyserver/gpgkeys_finger.c keyserver/gpgkeys_finger.c
---- keyserver/gpgkeys_finger.c	2011-01-09 23:06:17.000000000 +0100
-+++ keyserver/gpgkeys_finger.c	2011-12-22 12:45:02.000000000 +0100
-@@ -337,7 +337,7 @@
+--- a/keyserver/gpgkeys_finger.c
++++ b/keyserver/gpgkeys_finger.c
+@@ -340,7 +340,7 @@
    /* Kludge to implement standard GNU options.  */
    if (argc > 1 && !strcmp (argv[1], "--version"))
      {
@@ -196,12 +141,9 @@ diff -ru keyserver/gpgkeys_finger.c keyserver/gpgkeys_finger.c
        return 0;
      }
    else if (argc > 1 && !strcmp (argv[1], "--help"))
-
-
-diff -ru keyserver/gpgkeys_hkp.c keyserver/gpgkeys_hkp.c
---- keyserver/gpgkeys_hkp.c	2011-01-09 23:06:17.000000000 +0100
-+++ keyserver/gpgkeys_hkp.c	2011-12-22 12:45:02.000000000 +0100
-@@ -565,7 +565,7 @@
+--- a/keyserver/gpgkeys_hkp.c
++++ b/keyserver/gpgkeys_hkp.c
+@@ -717,7 +717,7 @@
    /* Kludge to implement standard GNU options.  */
    if (argc > 1 && !strcmp (argv[1], "--version"))
      {
@@ -210,11 +152,8 @@ diff -ru keyserver/gpgkeys_hkp.c keyserver/gpgkeys_hkp.c
        printf ("Uses: %s\n", curl_version());
        return 0;
      }
-
-
-diff -ru keyserver/gpgkeys_kdns.c keyserver/gpgkeys_kdns.c
---- keyserver/gpgkeys_kdns.c	2011-01-09 23:06:17.000000000 +0100
-+++ keyserver/gpgkeys_kdns.c	2011-12-22 12:45:02.000000000 +0100
+--- a/keyserver/gpgkeys_kdns.c
++++ b/keyserver/gpgkeys_kdns.c
 @@ -188,7 +188,7 @@
  static void 
  show_help (FILE *fp)
@@ -233,12 +172,9 @@ diff -ru keyserver/gpgkeys_kdns.c keyserver/gpgkeys_kdns.c
        return 0;
      }
    else if (argc > 1 && !strcmp (argv[1], "--help"))
-
-
-diff -ru keyserver/gpgkeys_ldap.c keyserver/gpgkeys_ldap.c
---- keyserver/gpgkeys_ldap.c	2011-01-09 23:06:17.000000000 +0100
-+++ keyserver/gpgkeys_ldap.c	2011-12-22 12:45:02.000000000 +0100
-@@ -1794,7 +1794,7 @@
+--- a/keyserver/gpgkeys_ldap.c
++++ b/keyserver/gpgkeys_ldap.c
+@@ -1809,7 +1809,7 @@
    /* Kludge to implement standard GNU options.  */
    if (argc > 1 && !strcmp (argv[1], "--version"))
      {
@@ -247,11 +183,8 @@ diff -ru keyserver/gpgkeys_ldap.c keyserver/gpgkeys_ldap.c
        return 0;
      }
    else if (argc > 1 && !strcmp (argv[1], "--help"))
-
-
-diff -ru scd/pcsc-wrapper.c scd/pcsc-wrapper.c
---- scd/pcsc-wrapper.c	2011-01-09 23:06:17.000000000 +0100
-+++ scd/pcsc-wrapper.c	2011-12-22 12:45:02.000000000 +0100
+--- a/scd/pcsc-wrapper.c
++++ b/scd/pcsc-wrapper.c
 @@ -53,7 +53,7 @@
  
  /* Allow for a standalone build. */
@@ -260,13 +193,10 @@ diff -ru scd/pcsc-wrapper.c scd/pcsc-wrapper.c
 +#define MYVERSION_LINE PGM " (GnuPG/MacGPG2) " VERSION
  #define BUGREPORT_LINE "\nReport bugs to <bug-gnupg@gnu.org>.\n"
  #else
- #define MYVERSION_LINE PGM 
-
-
-diff -ru scd/scdaemon.c scd/scdaemon.c
---- scd/scdaemon.c	2011-01-09 23:06:17.000000000 +0100
-+++ scd/scdaemon.c	2011-12-22 12:45:02.000000000 +0100
-@@ -239,7 +239,7 @@
+ #define MYVERSION_LINE PGM
+--- a/scd/scdaemon.c
++++ b/scd/scdaemon.c
+@@ -247,7 +247,7 @@
  
    switch (level)
      {
@@ -275,11 +205,8 @@ diff -ru scd/scdaemon.c scd/scdaemon.c
        break;
      case 13: p = VERSION; break;
      case 17: p = PRINTABLE_OS_NAME; break;
-
-
-diff -ru sm/gpgsm.c sm/gpgsm.c
---- sm/gpgsm.c	2011-01-09 23:06:17.000000000 +0100
-+++ sm/gpgsm.c	2011-12-22 12:45:02.000000000 +0100
+--- a/sm/gpgsm.c
++++ b/sm/gpgsm.c
 @@ -512,7 +512,7 @@
  
    switch (level)
@@ -289,11 +216,8 @@ diff -ru sm/gpgsm.c sm/gpgsm.c
        break;
      case 13: p = VERSION; break;
      case 17: p = PRINTABLE_OS_NAME; break;
-
-
-diff -ru tools/ccidmon.c tools/ccidmon.c
---- tools/ccidmon.c	2011-01-09 23:06:17.000000000 +0100
-+++ tools/ccidmon.c	2011-12-22 12:45:02.000000000 +0100
+--- a/tools/ccidmon.c
++++ b/tools/ccidmon.c
 @@ -810,7 +810,7 @@
          }
        else if (!strcmp (*argv, "--version"))
@@ -303,11 +227,8 @@ diff -ru tools/ccidmon.c tools/ccidmon.c
            exit (0);
          }
        else if (!strcmp (*argv, "--help"))
-
-
-diff -ru tools/gpg-check-pattern.c tools/gpg-check-pattern.c
---- tools/gpg-check-pattern.c	2011-01-09 23:06:17.000000000 +0100
-+++ tools/gpg-check-pattern.c	2011-12-22 12:45:02.000000000 +0100
+--- a/tools/gpg-check-pattern.c
++++ b/tools/gpg-check-pattern.c
 @@ -134,7 +134,7 @@
    const char *p;
    switch (level)
@@ -317,11 +238,8 @@ diff -ru tools/gpg-check-pattern.c tools/gpg-check-pattern.c
        break;
      case 13: p = VERSION; break;
      case 17: p = PRINTABLE_OS_NAME; break;
-
-
-diff -ru tools/gpg-connect-agent.c tools/gpg-connect-agent.c
---- tools/gpg-connect-agent.c	2011-01-09 23:06:17.000000000 +0100
-+++ tools/gpg-connect-agent.c	2011-12-22 12:45:02.000000000 +0100
+--- a/tools/gpg-connect-agent.c
++++ b/tools/gpg-connect-agent.c
 @@ -174,7 +174,7 @@
  
    switch (level)
@@ -331,11 +249,8 @@ diff -ru tools/gpg-connect-agent.c tools/gpg-connect-agent.c
        break;
      case 13: p = VERSION; break;
      case 17: p = PRINTABLE_OS_NAME; break;
-
-
-diff -ru tools/gpg-zip.in tools/gpg-zip.in
---- tools/gpg-zip.in	2010-12-27 15:54:17.000000000 +0100
-+++ tools/gpg-zip.in	2011-12-22 12:45:02.000000000 +0100
+--- a/tools/gpg-zip.in
++++ b/tools/gpg-zip.in
 @@ -90,7 +90,7 @@
        shift
        ;;
@@ -345,11 +260,8 @@ diff -ru tools/gpg-zip.in tools/gpg-zip.in
        exit 0
        ;;
      --gpg)
-
-
-diff -ru tools/gpgconf.c tools/gpgconf.c
---- tools/gpgconf.c	2011-01-09 23:06:17.000000000 +0100
-+++ tools/gpgconf.c	2011-12-22 12:45:02.000000000 +0100
+--- a/tools/gpgconf.c
++++ b/tools/gpgconf.c
 @@ -95,7 +95,7 @@
  
    switch (level)
@@ -359,11 +271,8 @@ diff -ru tools/gpgconf.c tools/gpgconf.c
        break;
      case 13: p = VERSION; break;
      case 17: p = PRINTABLE_OS_NAME; break;
-
-
-diff -ru tools/gpgsplit.c tools/gpgsplit.c
---- tools/gpgsplit.c	2011-01-09 23:06:17.000000000 +0100
-+++ tools/gpgsplit.c	2011-12-22 12:45:02.000000000 +0100
+--- a/tools/gpgsplit.c
++++ b/tools/gpgsplit.c
 @@ -81,7 +81,7 @@
    const char *p;
    switch (level)
@@ -373,11 +282,8 @@ diff -ru tools/gpgsplit.c tools/gpgsplit.c
        break;
      case 13: p = VERSION; break;
      case 17: p = PRINTABLE_OS_NAME; break;
-
-
-diff -ru tools/gpgtar.c tools/gpgtar.c
---- tools/gpgtar.c	2011-01-11 19:03:12.000000000 +0100
-+++ tools/gpgtar.c	2011-12-22 12:45:02.000000000 +0100
+--- a/tools/gpgtar.c
++++ b/tools/gpgtar.c
 @@ -117,7 +117,7 @@
  
    switch (level)
@@ -387,11 +293,8 @@ diff -ru tools/gpgtar.c tools/gpgtar.c
        break;
      case 13: p = VERSION; break;
      case 17: p = PRINTABLE_OS_NAME; break;
-
-
-diff -ru tools/make-dns-cert.c tools/make-dns-cert.c
---- tools/make-dns-cert.c	2011-01-09 23:06:17.000000000 +0100
-+++ tools/make-dns-cert.c	2011-12-22 12:45:02.000000000 +0100
+--- a/tools/make-dns-cert.c
++++ b/tools/make-dns-cert.c
 @@ -188,7 +188,7 @@
    else if(argc>1 && strcmp(argv[1],"--version")==0)
      {
@@ -401,12 +304,9 @@ diff -ru tools/make-dns-cert.c tools/make-dns-cert.c
  #else
        printf ("make-dns-cert gnupg-svn%d\n", atoi (10+"$Revision$"));
  #endif
-
-
-diff -ru tools/symcryptrun.c tools/symcryptrun.c
---- tools/symcryptrun.c	2011-01-09 23:06:17.000000000 +0100
-+++ tools/symcryptrun.c	2011-12-22 12:45:02.000000000 +0100
-@@ -196,7 +196,7 @@
+--- a/tools/symcryptrun.c
++++ b/tools/symcryptrun.c
+@@ -199,7 +199,7 @@
  
    switch (level)
      {
@@ -415,11 +315,8 @@ diff -ru tools/symcryptrun.c tools/symcryptrun.c
        break;
      case 13: p = VERSION; break;
      case 17: p = PRINTABLE_OS_NAME; break;
-
-
-diff -ru tools/watchgnupg.c tools/watchgnupg.c
---- tools/watchgnupg.c	2011-01-09 23:06:17.000000000 +0100
-+++ tools/watchgnupg.c	2011-12-22 12:45:02.000000000 +0100
+--- a/tools/watchgnupg.c
++++ b/tools/watchgnupg.c
 @@ -37,7 +37,7 @@
  
  /* Allow for a standalone build on most systems. */
@@ -428,4 +325,4 @@ diff -ru tools/watchgnupg.c tools/watchgnupg.c
 +#define MYVERSION_LINE PGM " (GnuPG/MacGPG2) " VERSION
  #define BUGREPORT_LINE "\nReport bugs to <bug-gnupg@gnu.org>.\n"
  #else
- #define MYVERSION_LINE PGM 
+ #define MYVERSION_LINE PGM

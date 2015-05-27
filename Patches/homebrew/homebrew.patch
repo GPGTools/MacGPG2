@@ -1,5 +1,5 @@
 diff --git a/Library/Homebrew/blacklist.rb b/Library/Homebrew/blacklist.rb
-index e012a07..7f4b7bb 100644
+index 692a387..edf4681 100644
 --- a/Library/Homebrew/blacklist.rb
 +++ b/Library/Homebrew/blacklist.rb
 @@ -6,11 +6,6 @@ def blacklisted? name
@@ -11,283 +11,14 @@ index e012a07..7f4b7bb 100644
 -    Some build scripts fail to detect it correctly, please check existing
 -    formulae for solutions.
 -    EOS
-   when 'libxml', 'libxlst' then <<-EOS.undent
-     Apple distributes #{name} with OS X, you can find it in /usr/lib.
-     However not all build scripts look for these hard enough, so you may need
-diff --git a/Library/Homebrew/extend/ARGV.rb b/Library/Homebrew/extend/ARGV.rb
-index 6b4d925..67121b2 100644
---- a/Library/Homebrew/extend/ARGV.rb
-+++ b/Library/Homebrew/extend/ARGV.rb
-@@ -121,6 +121,14 @@ module HomebrewArgvExtension
-   def build_universal?
-     include? '--universal'
-   end
-+  
-+  def build_env
-+    ENV['HOMEBREW_GPGTOOLS_BUILD_ENV'] || HOMEBREW_GPGTOOLS_BUILD_ENV 
-+  end
-+  
-+  def build_ppc?
-+    include? '--with-ppc'
-+  end
- 
-   # Request a 32-bit only build.
-   # This is needed for some use-cases though we prefer to build Universal
-diff --git a/Library/Homebrew/extend/ENV.rb b/Library/Homebrew/extend/ENV.rb
-index 2c01085..57649d9 100644
---- a/Library/Homebrew/extend/ENV.rb
-+++ b/Library/Homebrew/extend/ENV.rb
-@@ -210,7 +210,13 @@ module HomebrewEnvExtension
-       remove 'CMAKE_FRAMEWORK_PATH', "#{sdk}/System/Library/Frameworks"
-     end
-   end
--
-+  
-+  def osx_10_5
-+    self['MACOSX_DEPLOYMENT_TARGET']="10.5"
-+    remove_from_cflags(/ ?-mmacosx-version-min=10\.\d/)
-+    append_to_cflags('-mmacosx-version-min=10.5')
-+  end
-+  
-   def macosxsdk v=MacOS.version
-     # Sets all needed lib and include dirs to CFLAGS, CPPFLAGS, LDFLAGS.
-     remove_macosxsdk
-@@ -307,8 +313,45 @@ module HomebrewEnvExtension
-       # Can't mix "-march" for a 32-bit CPU  with "-arch x86_64"
-       replace_in_cflags(/-march=\S*/, '-Xarch_i386 \0') if Hardware.is_32_bit?
-     end
-+    
-+    # Also build PPC but with local jail containing the compiler.
-+    ARGV.build_ppc? && build_ppc
-+  end
-+  
-+  def build_ppc
-+    # Remove -mssex flag because it isn't supported by ppc cc1.
-+    replace_in_cflags(/-msse\S*/, '')
-+    replace_in_cflags(/-march=\S*/, '')
-+    # Add the arch ppc to compile and linker flags.
-+    append_to_cflags '-arch ppc'
-+    append 'LDFLAGS', '-arch ppc'
-+    # Use the LLVM-CC compiler from the build-env.
-+    self['LD'] = self['CC'] = "#{ARGV.build_env}/usr/bin/llvm-gcc"
-+    # Set the min version to 10.5
-+    osx_10_5
-+    append_to_cflags("-isysroot #{ARGV.build_env}/SDKs/MacOSX10.5.sdk")
-+    append_to_cflags("-isystem #{ARGV.build_env}/SDKs/MacOSX10.5.sdk/include")
-+    append_to_cflags("-DUNIX")
-+  end
-+  
-+  def build_32_bit
-+    %w{ CFLAGS LDFLAGS }.each do |compiler_flag|
-+      remove compiler_flag, "-arch x86_64"
-+      append compiler_flag, "-arch i386"
-+    end
-+    
-+    replace_in_cflags(/-march=\S*/, '')
-+  end
-+  
-+  def build_64_bit
-+    %w{ CFLAGS LDFLAGS }.each do |compiler_flag|
-+      remove compiler_flag, "-arch i386"
-+      append compiler_flag, "-arch x86_64"
-+    end
-+    
-+    replace_in_cflags(/-march=\S*/, '')
-   end
--
-+  
-   def replace_in_cflags before, after
-     cc_flag_vars.each do |key|
-       self[key] = self[key].sub before, after if self[key]
-diff --git a/Library/Homebrew/formula.rb b/Library/Homebrew/formula.rb
-index bf784d0..a4196b3 100644
---- a/Library/Homebrew/formula.rb
-+++ b/Library/Homebrew/formula.rb
-@@ -191,7 +191,13 @@ class Formula
-   def keg_only_reason
-     self.class.keg_only_reason
-   end
--
-+  
-+  # Homebrew fixes the install names per default.
-+  # Use this option to disable it.
-+  def keep_install_names?
-+    self.class.keep_install_names || false
-+  end
-+  
-   def fails_with? cc
-     return false if self.class.cc_failures.nil?
-     cc = Compiler.new(cc) unless cc.is_a? Compiler
-@@ -633,7 +639,7 @@ private
-       end
-     end
- 
--    attr_rw :homepage, :keg_only_reason, :skip_clean_all, :cc_failures
-+    attr_rw :homepage, :keg_only_reason, :skip_clean_all, :cc_failures, :keep_install_names
- 
-     Checksum::TYPES.each do |cksum|
-       class_eval %Q{
-diff --git a/Library/Homebrew/formula_installer.rb b/Library/Homebrew/formula_installer.rb
-index d9cff50..af327f0 100644
---- a/Library/Homebrew/formula_installer.rb
-+++ b/Library/Homebrew/formula_installer.rb
-@@ -187,14 +187,28 @@ class FormulaInstaller
-     end
- 
-     install_plist
--    fix_install_names
--
-+    unless f.keep_install_names?
-+      fix_install_names
-+    else
-+      rpath_install_names
-+    end
-+    
-     ohai "Summary" if ARGV.verbose? or show_summary_heading
-     print "#{f.prefix}: #{f.prefix.abv}"
-     print ", built in #{pretty_duration build_time}" if build_time
-     puts
-   end
- 
-+  def rpath_install_names
-+    Keg.new(f.prefix).rpath_install_names
-+  rescue Exception => e
-+    onoe "Failed to fix install names"
-+    puts "The formula built, but you may encounter issues using it or linking other"
-+    puts "formula against it."
-+    ohai e, e.backtrace if ARGV.debug?
-+    @show_summary_heading = true
-+  end
-+
-   def build_time
-     @build_time ||= Time.now - @start_time unless install_bottle or ARGV.interactive? or @start_time.nil?
-   end
-diff --git a/Library/Homebrew/global.rb b/Library/Homebrew/global.rb
-index 12157b0..f7cdc2d 100644
---- a/Library/Homebrew/global.rb
-+++ b/Library/Homebrew/global.rb
-@@ -58,6 +58,9 @@ else
-   HOMEBREW_REPOSITORY+"Cellar"
- end
- 
-+# GPGTools Homebrew build environment.
-+HOMEBREW_GPGTOOLS_BUILD_ENV = "/"
-+
- HOMEBREW_LOGS = Pathname.new('~/Library/Logs/Homebrew/').expand_path
- 
- if RUBY_PLATFORM =~ /darwin/
-diff --git a/Library/Homebrew/keg.rb b/Library/Homebrew/keg.rb
-index 3bae926..5247ef1 100644
---- a/Library/Homebrew/keg.rb
-+++ b/Library/Homebrew/keg.rb
-@@ -29,7 +29,7 @@ class Keg < Pathname
-   def unlink
-     n=0
- 
--    %w[bin etc lib include sbin share var].map{ |d| self/d }.each do |src|
-+    %w[bin etc lib libexec include sbin share var].map{ |d| self/d }.each do |src|
-       next unless src.exist?
-       src.find do |src|
-         next if src == self
-diff --git a/Library/Homebrew/keg_fix_install_names.rb b/Library/Homebrew/keg_fix_install_names.rb
-index a6d4e68..ea9aa43 100644
---- a/Library/Homebrew/keg_fix_install_names.rb
-+++ b/Library/Homebrew/keg_fix_install_names.rb
-@@ -29,13 +29,71 @@ class Keg
-       end
-     end
-   end
--
-+  
-+  def rpath_install_names
-+    ohai "Fixing libs to use @rpath"
-+    mach_o_files.each do |file|
-+      file.ensure_writable do
-+        if file.dylib?
-+          dylib_name = file.to_s
-+          dylib_basename = Pathname.new(file).relative_path_from(join 'lib')
-+          # Change the absolute path to @rpath/dylib using install_name_tool -id.
-+          system MacOS.locate("install_name_tool"), "-id", "@rpath/#{dylib_basename}", "#{dylib_name}"
-+        end
-+      end
-+    end
-+    
-+    ohai "Adding @rpath to binaries"
-+    lib = join 'lib'
-+    binaries.each do |binary|
-+      absolute_install_names_for binary do |id, absolute_names|
-+        binary.ensure_writable do
-+          system "install_name_tool", "-add_rpath", "@loader_path/../lib", "#{binary}"
-+          system "install_name_tool", "-add_rpath", "#{lib}", "#{binary}"
-+          absolute_names.each do |absolute_name|
-+            dylib_basename = Pathname.new(absolute_name).relative_path_from(lib)
-+            system "install_name_tool", "-change", "#{absolute_name}", "@rpath/#{dylib_basename}", "#{binary}"
-+          end
-+        end
-+      end
-+    end
-+  end
-+  
-+  
-+  
-   private
- 
-   OTOOL_RX = /\t(.*) \(compatibility version (\d+\.)*\d+, current version (\d+\.)*\d+\)/
- 
-   def lib; join 'lib' end
- 
-+  def absolute_install_names_for binary
-+    binary = binary.to_s
-+  
-+    ENV['HOMEBREW_BINARY'] = binary # solves all shell escaping problems
-+    install_names = `otool -L "$HOMEBREW_BINARY"`.split "\n"
-+    
-+    install_names.shift # first line is fluff
-+    install_names.map!{ |s| OTOOL_RX =~ s && $1 }
-+    install_names.compact!
-+    # Only include those dylibs which are point into HOMEBREW_PREFIX
-+    install_names.reject!{ |fn| !(fn =~ /^#{HOMEBREW_PREFIX}/) }
-+    
-+    # the shortpath ensures that library upgrades don’t break installed tools
-+    shortpath = HOMEBREW_PREFIX + Pathname.new(binary).relative_path_from(self)
-+    id = if shortpath.exist? then shortpath else binary end
-+    
-+    yield id, install_names
-+  end
-+  
-+  def binaries
-+    if(bin = join 'bin').directory?
-+      bin.children.select { |pn| not pn.symlink? }
-+    else
-+      []
-+    end
-+  end
-+  
-   def bad_install_names_for file
-     ENV['HOMEBREW_MACH_O_FILE'] = file.to_s # solves all shell escaping problems
-     install_names = `#{MacOS.locate("otool")} -L "$HOMEBREW_MACH_O_FILE"`.split "\n"
-diff --git a/Library/Homebrew/utils.rb b/Library/Homebrew/utils.rb
-index 0970f99..d9d9694 100644
---- a/Library/Homebrew/utils.rb
-+++ b/Library/Homebrew/utils.rb
-@@ -125,7 +125,11 @@ def curl *args
-   args << "--insecure" if MacOS.version < 10.6
-   args << "--verbose" if ENV['HOMEBREW_CURL_VERBOSE']
-   args << "--silent" unless $stdout.tty?
--
-+  
-+  if !$stdout.tty? || ARGV.quieter?
-+    args << "--silent"
-+  end
-+  
-   safe_system curl, *args
- end
- 
+   when 'wxpython' then <<-EOS.undent
+     The Python bindings (import wx) for wxWidgets are installed by:
+         brew install wxwidgets
 diff --git a/Library/Homebrew/download_strategy.rb b/Library/Homebrew/download_strategy.rb
-index 68a91d0..e737cde 100644
+index e7e482e..3d9ac7f 100644
 --- a/Library/Homebrew/download_strategy.rb
 +++ b/Library/Homebrew/download_strategy.rb
-@@ -399,6 +399,37 @@ class GitDownloadStrategy < AbstractDownloadStrategy
+@@ -606,6 +606,36 @@ class GitDownloadStrategy < VCSDownloadStrategy
    end
  end
  
@@ -321,16 +52,380 @@ index 68a91d0..e737cde 100644
 +  end
 +end
 +
-+
- class CVSDownloadStrategy < AbstractDownloadStrategy
-   def initialize name, package
-     super
-@@ -599,6 +630,8 @@ class DownloadStrategyDetector
+ class CVSDownloadStrategy < VCSDownloadStrategy
+   def cvspath
+     @path ||= %W[
+@@ -819,6 +849,8 @@ class DownloadStrategyDetector
      when %r[^http://www.apache.org/dyn/closer.cgi] then CurlApacheMirrorDownloadStrategy
        # Common URL patterns
      when %r[^https?://svn\.] then SubversionDownloadStrategy
 +      # Local directory
 +    when %r[^file://] then FileDownloadStrategy
-     when bottle_native_regex, bottle_regex, old_bottle_regex
+     when bottle_native_regex, bottle_regex
        CurlBottleDownloadStrategy
        # Otherwise just try to download
+diff --git a/Library/Homebrew/extend/ARGV.rb b/Library/Homebrew/extend/ARGV.rb
+index c2e1a9c..d33fac5 100644
+--- a/Library/Homebrew/extend/ARGV.rb
++++ b/Library/Homebrew/extend/ARGV.rb
+@@ -125,6 +125,10 @@ module HomebrewArgvExtension
+   def build_universal?
+     include? '--universal'
+   end
++  
++  def build_env
++    ENV['HOMEBREW_GPGTOOLS_BUILD_ENV'] || HOMEBREW_GPGTOOLS_BUILD_ENV 
++  end
+ 
+   # Request a 32-bit only build.
+   # This is needed for some use-cases though we prefer to build Universal
+diff --git a/Library/Homebrew/extend/ENV/std.rb b/Library/Homebrew/extend/ENV/std.rb
+index 71e89a6..2fcf19f 100644
+--- a/Library/Homebrew/extend/ENV/std.rb
++++ b/Library/Homebrew/extend/ENV/std.rb
+@@ -285,6 +285,24 @@ module Stdenv
+       replace_in_cflags(/-march=\S*/, "-Xarch_#{Hardware::CPU.arch_32_bit} \\0")
+     end
+   end
++  
++  def build_32_bit
++    %w{ CFLAGS LDFLAGS }.each do |compiler_flag|
++      remove compiler_flag, "-arch x86_64"
++      append compiler_flag, "-arch i386"
++    end
++    
++    replace_in_cflags(/-march=\S*/, '')
++  end
++  
++  def build_64_bit
++    %w{ CFLAGS LDFLAGS }.each do |compiler_flag|
++      remove compiler_flag, "-arch i386"
++      append compiler_flag, "-arch x86_64"
++    end
++    
++    replace_in_cflags(/-march=\S*/, '')
++  end
+ 
+   def cxx11
+     if compiler == :clang
+diff --git a/Library/Homebrew/formula.rb b/Library/Homebrew/formula.rb
+index a35b286..af875d9 100644
+--- a/Library/Homebrew/formula.rb
++++ b/Library/Homebrew/formula.rb
+@@ -238,7 +238,13 @@ class Formula
+   def keg_only_reason
+     self.class.keg_only_reason
+   end
+-
++  
++  # Homebrew fixes the install names per default.
++  # Use this option to disable it.
++  def keep_install_names?
++    self.class.keep_install_names || false
++  end
++  
+   def fails_with? cc
+     cc = Compiler.new(cc) unless cc.is_a? Compiler
+     (self.class.cc_failures || []).any? do |failure|
+@@ -668,7 +674,7 @@ class Formula
+   class << self
+ 
+     attr_reader :keg_only_reason, :cc_failures
+-    attr_rw :homepage, :plist_startup, :plist_manual
++    attr_rw :homepage, :plist_startup, :plist_manual, :keep_install_names
+ 
+     def specs
+       @specs ||= [stable, devel, head, bottle].freeze
+diff --git a/Library/Homebrew/formula_installer.rb b/Library/Homebrew/formula_installer.rb
+index 9b2ccce..e06dd51 100644
+--- a/Library/Homebrew/formula_installer.rb
++++ b/Library/Homebrew/formula_installer.rb
+@@ -327,7 +327,11 @@ class FormulaInstaller
+       link
+     end
+ 
+-    fix_install_names if OS.mac?
++    unless f.keep_install_names?
++      fix_install_names
++    else
++      rpath_install_names
++    end
+ 
+     post_install
+ 
+@@ -349,6 +353,16 @@ class FormulaInstaller
+     s
+   end
+ 
++  def rpath_install_names
++    Keg.new(f.prefix).rpath_install_names
++  rescue Exception => e
++    onoe "Failed to fix install names"
++    puts "The formula built, but you may encounter issues using it or linking other"
++    puts "formula against it."
++    ohai e, e.backtrace if ARGV.debug?
++    @show_summary_heading = true
++  end
++
+   def build_time
+     @build_time ||= Time.now - @start_time unless pour_bottle? or ARGV.interactive? or @start_time.nil?
+   end
+diff --git a/Library/Homebrew/global.rb b/Library/Homebrew/global.rb
+index dc2379b..72a2457 100644
+--- a/Library/Homebrew/global.rb
++++ b/Library/Homebrew/global.rb
+@@ -64,6 +64,9 @@ else
+   HOMEBREW_REPOSITORY+"Cellar"
+ end
+ 
++# GPGTools Homebrew build environment.
++HOMEBREW_GPGTOOLS_BUILD_ENV = "/"
++
+ HOMEBREW_LOGS = Pathname.new(ENV['HOMEBREW_LOGS'] || '~/Library/Logs/Homebrew/').expand_path
+ 
+ HOMEBREW_TEMP = Pathname.new(ENV.fetch('HOMEBREW_TEMP', '/tmp'))
+diff --git a/Library/Homebrew/keg.rb b/Library/Homebrew/keg.rb
+index 8ad5ffa..5d3b551 100644
+--- a/Library/Homebrew/keg.rb
++++ b/Library/Homebrew/keg.rb
+@@ -12,8 +12,8 @@ class Keg < Pathname
+   # locale-specific directories have the form language[_territory][.codeset][@modifier]
+   LOCALEDIR_RX = /(locale|man)\/([a-z]{2}|C|POSIX)(_[A-Z]{2})?(\.[a-zA-Z\-0-9]+(@.+)?)?/
+   INFOFILE_RX = %r[info/([^.].*?\.info|dir)$]
+-  TOP_LEVEL_DIRECTORIES = %w[bin etc include lib sbin share var Frameworks]
+-  PRUNEABLE_DIRECTORIES = %w[bin etc include lib sbin share Frameworks LinkedKegs].map do |d|
++  TOP_LEVEL_DIRECTORIES = %w[bin etc libexec include lib sbin share var Frameworks]
++  PRUNEABLE_DIRECTORIES = %w[bin etc libexec include lib sbin share Frameworks LinkedKegs].map do |d|
+     case d when 'LinkedKegs' then HOMEBREW_LIBRARY/d else HOMEBREW_PREFIX/d end
+   end
+ 
+diff --git a/Library/Homebrew/keg_fix_install_names.rb b/Library/Homebrew/keg_fix_install_names.rb
+index 3fc827b..37b4082 100644
+--- a/Library/Homebrew/keg_fix_install_names.rb
++++ b/Library/Homebrew/keg_fix_install_names.rb
+@@ -17,6 +17,35 @@ class Keg
+       end
+     end
+   end
++  
++  def rpath_install_names
++    ohai "Fixing libs to use @rpath"
++    mach_o_files.each do |file|
++      file.ensure_writable do
++        if file.dylib?
++          dylib_name = file.to_s
++          dylib_basename = Pathname.new(file).relative_path_from(join 'lib')
++          # Change the absolute path to @rpath/dylib using install_name_tool -id.
++          system MacOS.locate("install_name_tool"), "-id", "@rpath/#{dylib_basename}", "#{dylib_name}"
++        end
++      end
++    end
++    
++    ohai "Adding @rpath to binaries"
++    lib = join 'lib'
++    binaries.each do |binary|
++      absolute_install_names_for binary do |id, absolute_names|
++        binary.ensure_writable do
++          system "install_name_tool", "-add_rpath", "@loader_path/../lib", "#{binary}"
++          system "install_name_tool", "-add_rpath", "#{lib}", "#{binary}"
++          absolute_names.each do |absolute_name|
++            dylib_basename = Pathname.new(absolute_name).relative_path_from(lib)
++            system "install_name_tool", "-change", "#{absolute_name}", "@rpath/#{dylib_basename}", "#{binary}"
++          end
++        end
++      end
++    end
++  end
+ 
+   def relocate_install_names old_prefix, new_prefix, old_cellar, new_cellar, options={}
+     mach_o_files.each do |file|
+@@ -118,6 +147,33 @@ class Keg
+ 
+   def lib; join 'lib' end
+ 
++  def absolute_install_names_for binary
++    binary = binary.to_s
++  
++    ENV['HOMEBREW_BINARY'] = binary # solves all shell escaping problems
++    install_names = `otool -L "$HOMEBREW_BINARY"`.split "\n"
++    
++    install_names.shift # first line is fluff
++    install_names.map!{ |s| OTOOL_RX =~ s && $1 }
++    install_names.compact!
++    # Only include those dylibs which are point into HOMEBREW_PREFIX
++    install_names.reject!{ |fn| !(fn =~ /^#{HOMEBREW_PREFIX}/) }
++    
++    # the shortpath ensures that library upgrades don’t break installed tools
++    shortpath = HOMEBREW_PREFIX + Pathname.new(binary).relative_path_from(self)
++    id = if shortpath.exist? then shortpath else binary end
++    
++    yield id, install_names
++  end
++
++  def binaries
++    if(bin = join 'bin').directory?
++      bin.children.select { |pn| not pn.symlink? }
++    else
++      []
++    end
++  end
++
+   def each_install_name_for file, &block
+     dylibs = file.dynamically_linked_libraries
+     dylibs.reject! { |fn| fn =~ /^@(loader_|executable_|r)path/ }
+diff --git a/Library/Homebrew/os/mac.rb b/Library/Homebrew/os/mac.rb
+index c42e797..27f9b77 100644
+--- a/Library/Homebrew/os/mac.rb
++++ b/Library/Homebrew/os/mac.rb
+@@ -249,6 +249,10 @@ module OS
+       "5.0"   => { :clang => "5.0", :clang_build => 500 },
+       "5.0.1" => { :clang => "5.0", :clang_build => 500 },
+       "5.0.2" => { :clang => "5.0", :clang_build => 500 },
++      "5.1"   => { :clang => "5.1", :clang_build => 503 },
++      "5.1.1" => { :clang => "5.1", :clang_build => 503 },
++      "6.1" => { :clang => "6.0", :clang_build => 600 },
++      "6.1.1" => { :clang => "6.0", :clang_build => 600 },
+     }
+ 
+     def compilers_standard?
+diff --git a/Library/Homebrew/utils.rb b/Library/Homebrew/utils.rb
+index 2bc7297..dd12f3c 100644
+--- a/Library/Homebrew/utils.rb
++++ b/Library/Homebrew/utils.rb
+@@ -142,6 +142,10 @@ def curl *args
+   args << "--verbose" if ENV['HOMEBREW_CURL_VERBOSE']
+   args << "--silent" unless $stdout.tty?
+ 
++  if !$stdout.tty? || ARGV.quieter?
++    args << "--silent"
++  end
++
+   safe_system curl, *args
+ end
+ 
+diff --git a/Library/Homebrew/extend/ENV/std.rb b/Library/Homebrew/extend/ENV/std.rb
+index 71e89a6..9538752 100644
+--- a/Library/Homebrew/extend/ENV/std.rb
++++ b/Library/Homebrew/extend/ENV/std.rb
+@@ -159,7 +159,7 @@ module Stdenv
+     self.cxx = MacOS.locate("clang++")
+     replace_in_cflags(/-Xarch_#{Hardware::CPU.arch_32_bit} (-march=\S*)/, '\1')
+     # Clang mistakenly enables AES-NI on plain Nehalem
+-    set_cpu_cflags '-march=native', :nehalem => '-march=native -Xclang -target-feature -Xclang -aes'
++    set_cpu_cflags '-march=core2', :nehalem => '-march=core2 -Xclang -target-feature -Xclang -aes'
+     @compiler = :clang
+   end
+
+diff --git a/Library/Homebrew/formula.rb b/Library/Homebrew/formula.rb
+index a35b286..9397fce5 100644
+--- a/Library/Homebrew/formula.rb
++++ b/Library/Homebrew/formula.rb
+@@ -558,7 +558,43 @@ class Formula
+   end
+ 
+   protected
+-
++  
++  def build_variant variant, args, &pre_install_block
++    # Remove all architecture relevant information
++    ENV.remove 'LDFLAGS', "-arch i386"
++    ENV.remove_from_cflags "-arch i386"
++    ENV.remove_from_cflags "-m32"
++    ENV.remove 'LDFLAGS', "-arch x86_64"
++    ENV.remove_from_cflags "-arch x86_64"
++    ENV.remove_from_cflags "-m64"
++    
++    args.delete "ABI=64"
++    args.delete "ABI=32"
++    if variant == "32bit":
++      ENV.m32
++      args << "ABI=32"
++    else
++      ENV.m64
++      args << "ABI=64"
++    end
++    
++    system "./configure", *args
++    system "make"
++    ENV.deparallelize
++    if pre_install_block
++      pre_install_block.call
++    end
++    system "make install"
++  end
++  
++  def combine_archs dylib, alt_arch
++    # Create the universal lib using lipo and combining the two.
++    system "cp #{prefix}/lib/#{dylib} #{prefix}/lib/64bit.#{dylib}" 
++    system "rm #{prefix}/lib/#{dylib}"
++    system "lipo -create #{prefix}/lib/64bit.#{dylib} -create #{prefix}/#{alt_arch}/lib/#{dylib} -output #{prefix}/lib/#{dylib}"
++    system "rm #{prefix}/lib/64bit.#{dylib}"
++  end
++  
+   # Pretty titles the command and buffers stdout/stderr
+   # Throws if there's an error
+   def system cmd, *args
+
+diff --git a/Library/Homebrew/keg_fix_install_names.rb b/Library/Homebrew/keg_fix_install_names.rb
+index 37b4082..4dd15d5 100644
+--- a/Library/Homebrew/keg_fix_install_names.rb
++++ b/Library/Homebrew/keg_fix_install_names.rb
+@@ -27,6 +27,24 @@ class Keg
+           dylib_basename = Pathname.new(file).relative_path_from(join 'lib')
+           # Change the absolute path to @rpath/dylib using install_name_tool -id.
+           system MacOS.locate("install_name_tool"), "-id", "@rpath/#{dylib_basename}", "#{dylib_name}"
++
++          fix_dep_dylib_path = Proc.new { |bad_name, arch|
++            # Don't fix absolute paths unless they are rooted in the build directory
++            next if bad_name.start_with? '/' and not bad_name.start_with? HOMEBREW_PREFIX.to_s
++
++            dep_dylib_basename = Pathname.new(bad_name).relative_path_from(join 'lib').basename
++            new_name = "@rpath/#{dep_dylib_basename}"
++            puts "- Fix rpath in #{dep_dylib_basename} (#{arch})"
++            change_install_name(bad_name, new_name, file) unless new_name == bad_name
++          }
++
++          # Fix path of lib dependencies as well.
++          each_install_name_for file, "x86_64" do |bad_name|
++            fix_dep_dylib_path.call(bad_name, "x86_64")
++          end
++          each_install_name_for file, "i386" do |bad_name|
++            fix_dep_dylib_path.call(bad_name, "i386")
++          end
+         end
+       end
+     end
+@@ -174,8 +192,8 @@ class Keg
+     end
+   end
+ 
+-  def each_install_name_for file, &block
+-    dylibs = file.dynamically_linked_libraries
++  def each_install_name_for file, arch=nil, &block
++    dylibs = file.dynamically_linked_libraries arch
+     dylibs.reject! { |fn| fn =~ /^@(loader_|executable_|r)path/ }
+     dylibs.each(&block)
+   end
+diff --git a/Library/Homebrew/mach.rb b/Library/Homebrew/mach.rb
+index 54e65a0..f90b3de 100644
+--- a/Library/Homebrew/mach.rb
++++ b/Library/Homebrew/mach.rb
+@@ -149,11 +149,16 @@ module MachO
+   # to be absolute paths.
+   # Returns an empty array both for software that links against no libraries,
+   # and for non-mach objects.
+-  def dynamically_linked_libraries
++  def dynamically_linked_libraries arch=nil
+     # Use an environment variable to avoid escaping problems
+     ENV['HOMEBREW_MACH_O_FILE'] = expand_path.to_s
+ 
+-    libs = `#{MacOS.locate("otool")} -L "$HOMEBREW_MACH_O_FILE"`.split("\n")
++    arch_param = ""
++    unless arch.nil?
++      arch_param = "-arch #{arch}"
++    end
++
++    libs = `#{MacOS.locate("otool")} -L #{arch_param} "$HOMEBREW_MACH_O_FILE"`.split("\n")
+ 
+     # First line is the filename
+     libs.shift

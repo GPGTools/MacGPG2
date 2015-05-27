@@ -5,43 +5,17 @@ UPDATER_PROJECT = MacGPG2_Updater
 UPDATER_TARGET = MacGPG2_Updater
 UPDATER_PRODUCT = MacGPG2_Updater.app
 INSTALLED_UPDATER = build/MacGPG2/libexec/$(UPDATER_PRODUCT)
-INSTALLED_FIX = build/MacGPG2/libexec/fixGpgHome
-MAKE_DEFAULT = Dependencies/GPGTools_Core/newBuildSystem/Makefile.default
+SKS_CA_CERT = build/MacGPG2/share/sks-keyservers.netCA.pem
 
-
--include $(MAKE_DEFAULT)
-
-$(MAKE_DEFAULT):
-	@bash -c "$$(curl -fsSL https://raw.github.com/GPGTools/GPGTools_Core/master/newBuildSystem/prepare-core.sh)"
-
-init: $(MAKE_DEFAULT)
+all: $(PRODUCT) $(UPDATER_PRODUCT)
+	rm -rf "$(INSTALLED_UPDATER)"
+	cp -R "build/Release/$(UPDATER_PRODUCT)" "$(INSTALLED_UPDATER)"
 
 $(PRODUCT):
-	@./build.sh
+	./build.sh
 
-updater:
-	@xcodebuild -project $(UPDATER_PROJECT).xcodeproj -target $(UPDATER_TARGET) -configuration $(CONFIG) build $(XCCONFIG)
-
-clean-updater:
-	@xcodebuild -project $(UPDATER_PROJECT).xcodeproj -target $(UPDATER_TARGET) -configuration $(CONFIG) clean > /dev/null
-
+clean:
+	rm -rf "./build"
 
 $(UPDATER_PRODUCT): MacGPG2_Updater/* MacGPG2_Updater/*/* MacGPG2_Updater.xcodeproj
-	@xcodebuild -project $(UPDATER_PROJECT).xcodeproj -target $(UPDATER_TARGET) -configuration $(CONFIG) build $(XCCONFIG)
-
-compile: $(UPDATER_PRODUCT)
-
-$(INSTALLED_UPDATER): $(PRODUCT) $(UPDATER_PRODUCT)
-	rm -rf $(INSTALLED_UPDATER)
-	cp -R build/Release/$(UPDATER_PRODUCT) $(INSTALLED_UPDATER)
-
-$(INSTALLED_FIX):
-	rm -rf $(INSTALLED_FIX)
-	cp -R fixGpgHome/fixGpgHome $(INSTALLED_FIX)
-
-pkg-core: $(INSTALLED_UPDATER) $(INSTALLED_FIX)
-
-install: pkg
-	open -b com.apple.installer build/MacGPG2.pkg
-	
-
+	xcodebuild -project $(UPDATER_PROJECT).xcodeproj -target $(UPDATER_TARGET) -configuration $(CONFIG) build $(XCCONFIG)

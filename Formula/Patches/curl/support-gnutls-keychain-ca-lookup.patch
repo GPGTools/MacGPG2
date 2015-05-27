@@ -1,0 +1,24 @@
+diff --git a/lib/vtls/gtls.c b/lib/vtls/gtls.c
+index 434f872..9a65764 100644
+--- a/lib/vtls/gtls.c
++++ b/lib/vtls/gtls.c
+@@ -461,6 +461,21 @@ gtls_connect_step1(struct connectdata *conn,
+     else
+       infof(data, "found %d certificates in %s\n",
+             rc, data->set.ssl.CAfile);
++
++    /* if the CA cert bundle file wasn't set explicitly, the trusted
++       the default system trust store is added as well.
++       if the CA cert bundle has however been set explicitly,
++       only that bundle is used. */
++    if(!strcmp(data->set.ssl.CAfile, CURL_CA_BUNDLE)) {
++      rc = gnutls_certificate_set_x509_system_trust(conn->ssl[sockindex].cred);
++      if(rc < 0) {
++        infof(data, "error adding CAs from system trust store (%s)\n",
++              gnutls_strerror(rc));
++      }
++      else
++        infof(data, "found %d CA certificate(s) in system trust store\n",
++              rc);
++    }
+   }

@@ -1,9 +1,9 @@
 require 'formula'
 
 class Gettext < Formula
-  url 'http://ftpmirror.gnu.org/gettext/gettext-0.18.2.tar.gz'
-  mirror 'http://ftp.gnu.org/gnu/gettext/gettext-0.18.2.tar.gz'
-  sha256 '516a6370b3b3f46e2fc5a5e222ff5ecd76f3089bc956a7587a6e4f89de17714c'
+  url 'http://ftpmirror.gnu.org/gettext/gettext-0.18.3.1.tar.gz'
+  mirror 'http://ftp.gnu.org/gnu/gettext/gettext-0.18.3.1.tar.gz'
+  sha256 '0d8f9a33531b77776b3dc473e7940019ca19bfca5b4c06db6e96065eeb07245d'
   homepage 'http://www.gnu.org/software/gettext/'
   keep_install_names true
   # keg_only "OS X provides the BSD gettext library and some software gets confused if both are in the library path."
@@ -21,7 +21,7 @@ class Gettext < Formula
     unless ARGV.include? '--with-examples'
       # Use a MacPorts patch to disable building examples at all,
       # rather than build them and remove them afterwards.
-      {:p0 => [ 'https://trac.macports.org/export/102008/trunk/dports/devel/gettext/files/patch-gettext-tools-Makefile.in']}
+      {:p0 => [ "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gettext/patch-gettext-tools-Makefile.in"]}
     end
   end
 

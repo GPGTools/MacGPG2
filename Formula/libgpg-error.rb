@@ -1,11 +1,14 @@
 require 'formula'
 
 class LibgpgError < Formula
-  url 'ftp://ftp.gnupg.org/gcrypt/libgpg-error/libgpg-error-1.12.tar.bz2'
+  url 'ftp://ftp.gnupg.org/gcrypt/libgpg-error/libgpg-error-1.18.tar.bz2'
   homepage 'http://www.gnupg.org/'
-  sha1 '259f359cd1440b21840c3a78e852afd549c709b8'
+  sha1 '7ba54f939da023af8f5b3e7a421a32eb742909c4'
   
   keep_install_names true
+  
+  depends_on "libiconv"
+  depends_on "gettext"
   
   def install
     ENV.j1
@@ -17,8 +20,11 @@ class LibgpgError < Formula
     # programs can't link to libraries using @rpath.
     ENV.prepend 'LDFLAGS', '-headerpad_max_install_names'
     ENV.prepend 'LDFLAGS', "-Wl,-rpath,@loader_path/../lib -Wl,-rpath,#{HOMEBREW_PREFIX}/lib"
+
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
+                          "--with-libiconv-prefix=#{HOMEBREW_PREFIX}",
+                          "--with-libintl-prefix=#{HOMEBREW_PREFIX}",
                           "--enable-static=no", "--disable-maintainer-mode"
     
     system "make check"

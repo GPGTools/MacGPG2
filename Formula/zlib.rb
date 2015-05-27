@@ -2,7 +2,7 @@ require 'formula'
 
 class Zlib < Formula
   url 'http://zlib.net/zlib-1.2.8.tar.gz'
-  homepage ''
+  homepage 'http://www.zlib.net/'
   sha1 'a4d316c404ff54ca545ea71a27af7dbc29817088'
   
   # keg_only :provided_by_osx

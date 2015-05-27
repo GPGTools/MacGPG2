@@ -9,7 +9,7 @@
 	<key>CFBundleExecutable</key>
 	<string>${EXECUTABLE_NAME}</string>
 	<key>CFBundleIconFile</key>
-	<string></string>
+	<string>MacGPG2</string>
 	<key>CFBundleIdentifier</key>
 	<string>org.gpgtools.macgpg2.updater</string>
 	<key>CFBundleInfoDictionaryVersion</key>
@@ -41,9 +41,9 @@
 	<key>CFBundleDisplayName</key>
 	<string>MacGPG2</string>
 	<key>SUFeedURL_nightly</key>
-	<string>https://nightly.gpgtools.org/releases/macgpg2/appcast.xml</string>
+	<string>https://releases.gpgtools.org/nightlies/macgpg2/appcast.xml</string>
 	<key>SUFeedURL_prerelease</key>
-	<string>https://nightly.gpgtools.org/releases/macgpg2/pre-appcast.xml</string>
+	<string>https://gpgtools.org/releases/macgpg2/pre-appcast.xml</string>
 	<key>SUFeedURL</key>
 	<string>https://gpgtools.org/releases/macgpg2/appcast.xml</string>
 </dict>
