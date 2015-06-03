@@ -29,6 +29,7 @@ class Macgpg2 < Formula
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/passphrase-fd.patch",
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/exec_write_stderr.patch",
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/pcsc-wrapper.patch",
+              "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/install_gpgsplit.patch",
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/options.skel.patch"] }
   end
 
@@ -53,7 +54,6 @@ class Macgpg2 < Formula
     
     final_install_directory = "/usr/local/MacGPG2"
     
-    inreplace 'g10/keygen.c', 'max=4096', 'max=8192'
         
     system "./configure", "--prefix=#{prefix}",
                           "--disable-maintainer-mode",
@@ -63,7 +63,6 @@ class Macgpg2 < Formula
                           "--with-pinentry-pgm=#{final_install_directory}/libexec/pinentry-mac.app/Contents/MacOS/pinentry-mac",
                           "--with-agent-pgm=#{final_install_directory}/bin/gpg-agent",
                           "--with-scdaemon-pgm=#{final_install_directory}/libexec/scdaemon",
-                          "--disable-gpgsm", # We don't include it in the installation, no need to build it.
                           "--with-dirmngr-pgm=#{final_install_directory}/bin/dirmngr", # It's not possible to disable it, so at least have the right path. 
                           "--with-libgpg-error-prefix=#{HOMEBREW_PREFIX}",
                           "--with-libgcrypt-prefix=#{HOMEBREW_PREFIX}",
