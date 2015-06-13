@@ -12,8 +12,9 @@ function printUsage {
 
 ABI=64     ## default is 64-bit build
 LIBS_FILE=libs.txt
-GPGVERSION=2.0.26
+GPGVERSION=2.1.5
 PKGVERSION=${GPGVERSION}.0001
+GPGDLPACKAGE=http://mirror.switch.ch/ftp/mirror/gnupg/gnupg/gnupg-${GPGVERSION}.tar.bz2
 
 
 if [ "$1" = "-h" -o "$1" = "--help" ]; then
@@ -142,6 +143,27 @@ if [ $step -le 1 ]; then
       doFail $step
     fi
   done
+fi
+
+if [ $step -le 4 ]; then
+  echo "Downloading GnuPG"
+  cd $SRC_DIR
+  gpgBaseName=$(basename $GPGDLPACKAGE)
+
+  if [ ! -f $gpgBaseName ]; then
+      curl -L -o $gpgBaseName $GPGDLPACKAGE
+  fi
+
+  if [ ! -f ${gpgBaseName}.sig ]; then
+      curl -L -o ${gpgBaseName}.sig ${GPGDLPACKAGE}.sig
+  fi
+
+  stat=$(gpg2 --status-fd 1 --verify ${gpgBaseName}.sig ${gpgBaseName} | grep -c '^\[GNUPG:\] GOODSIG 249B39D24F25E3B6')
+
+  if [ $stat -eq 0 ]; then
+    echo "Could not verify GnuPG package signature"
+    doFail 4
+  fi
 fi
 
 if [ $step -le 5 ]; then
