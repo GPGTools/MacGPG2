@@ -29,6 +29,7 @@ class Macgpg2 < Formula
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/exec_write_stderr.patch",
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/pcsc-wrapper.patch",
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/install_gpgsplit.patch",
+              "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/gpg-zip.patch",
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/options.skel.patch"] }
   end
 

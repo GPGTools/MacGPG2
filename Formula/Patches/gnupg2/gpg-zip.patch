@@ -1,0 +1,15 @@
+# Also install gpg-zip.
+
+--- a/tools/Makefile.in
++++ b/tools/Makefile.in
+@@ -562,8 +562,8 @@
+ AM_CFLAGS = $(GPG_ERROR_CFLAGS) $(LIBGCRYPT_CFLAGS) $(LIBASSUAN_CFLAGS)
+ sbin_SCRIPTS = addgnupghome applygnupgdefaults
+ bin_SCRIPTS = gpgsm-gencert.sh
+-# bin_SCRIPTS += gpg-zip
+-@HAVE_USTAR_TRUE@noinst_SCRIPTS = gpg-zip
++bin_SCRIPTS += gpg-zip
++# @HAVE_USTAR_TRUE@noinst_SCRIPTS = gpg-zip
+ @BUILD_SYMCRYPTRUN_FALSE@symcryptrun = 
+ @BUILD_SYMCRYPTRUN_TRUE@symcryptrun = symcryptrun
+ @BUILD_GPGTAR_FALSE@gpgtar = 
