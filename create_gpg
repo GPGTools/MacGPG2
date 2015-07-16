@@ -34,6 +34,7 @@ fi
 
 . "$1"
 
+
 # internal variables
 PINENTRY=pinentry-mac-0.8.1
 BASEDIR=$(dirname $0)
@@ -146,22 +147,23 @@ if [ $step -le 1 ]; then
 fi
 
 if [ $step -le 4 ]; then
-  echo "Downloading GnuPG"
   cd $SRC_DIR
   gpgBaseName=$(basename $GPGDLPACKAGE)
 
   if [ ! -f $gpgBaseName ]; then
-      curl -L -o $gpgBaseName $GPGDLPACKAGE
+      echo "Downloading GnuPG"
+      curl -L -o $gpgBaseName $GPGDLPACKAGE || doFail "Failed to download gpg"
   fi
 
   if [ ! -f ${gpgBaseName}.sig ]; then
-      curl -L -o ${gpgBaseName}.sig ${GPGDLPACKAGE}.sig
+      curl -L -o ${gpgBaseName}.sig ${GPGDLPACKAGE}.sig  || doFail "Failed to download gpg signature"
   fi
 
   stat=$(gpg2 --status-fd 1 --verify ${gpgBaseName}.sig ${gpgBaseName} | grep -c '^\[GNUPG:\] GOODSIG 249B39D24F25E3B6')
 
   if [ $stat -eq 0 ]; then
     echo "Could not verify GnuPG package signature"
+    echo "Please delete gpg package and signature file before retrying"
     doFail 4
   fi
 fi
