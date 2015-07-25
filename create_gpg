@@ -108,7 +108,7 @@ function buildlib {
   fi
 
 
-  CFLAGS="-arch $ARCH  -m$ABI" \
+  CFLAGS="-arch $ARCH  -m$ABI $ADDITIONAL_CFLAGS" \
     CXXFLAGS="-arch $ARCH" \
     ABI=$ABI \
     LDFLAGS="-L$DIST_DIR/lib -arch $ARCH" \
@@ -238,7 +238,7 @@ if [ $step -le 30 ]; then
 
   export PATH=$BASE_DIR/bin:$PATH
 
-  CFLAGS="-arch $ARCH" \
+  CFLAGS="-arch $ARCH $ADDITIONAL_CFLAGS" \
     CXXFLAGS="-arch $ARCH" \
     ABI=$ABI \
     LDFLAGS="-L$DIST_DIR/lib -arch $ARCH" \
