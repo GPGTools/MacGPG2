@@ -36,7 +36,7 @@ fi
 
 
 # internal variables
-PINENTRY=pinentry-mac-0.8.1
+PINENTRY=0.9.4
 BASEDIR=$(dirname $0)
 NCPU=$(sysctl hw.ncpu | awk '{print $2}')
 
@@ -205,20 +205,20 @@ done
 # pinentry
 
 if [ $step -le 22 ]; then
-  if [ ! -f $SRC_DIR/pinentry-mac-0.8.1.tar.gz ]; then
+  if [ ! -f $SRC_DIR/$PINENTRY ]; then
     cd $SRC_DIR
-    curl -L -o pinentry-mac-0.8.1.tar.gz https://github.com/GPGTools/pinentry-mac/archive/v0.8.1.tar.gz || doFail 22
+    curl -L -o pinentry-mac-${PINENTRY}.tar.gz https://github.com/GPGTools/pinentry-mac/archive/v${PINENTRY}.tar.gz || doFail 22
   fi
 
 fi
 
 if [ $step -le 22 ]; then
   cd $MAIN_PREFIX
-  tar zxf $SRC_DIR/pinentry-mac-0.8.1.tar.gz || doFail 22
+  tar zxf $SRC_DIR/pinentry-mac-${PINENTRY}.tar.gz || doFail 22
 fi
 
 if [ $step -le 24 ]; then
-  cd $MAIN_PREFIX/$PINENTRY
+  cd $MAIN_PREFIX/pinentry-mac-$PINENTRY
   make || doFail 24
 fi
 
