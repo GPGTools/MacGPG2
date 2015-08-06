@@ -34,7 +34,7 @@ activate
 display dialog question buttons {cancel, uninst} default button uninst
 ')
 
-  if [ "x$r" != "x" ]; then
+  if [ $(echo $r | grep -c "Uninstall GPG Tools") -ne 0 ]; then
 
     launchctl stop org.gpgtools.Libmacgpg.xpc
     launchctl stop org.gpgtools.gpgmail.patch-uuid-user
@@ -63,6 +63,5 @@ display dialog question buttons {cancel, uninst} default button uninst
     done
   fi
 fi
-exit
 
 exit 0  # unconditionally exit with "OK"
