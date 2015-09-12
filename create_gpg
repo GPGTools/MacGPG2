@@ -361,7 +361,7 @@ if [ $step -le 45 ]; then
     bin/watchgnupg \
     lib/*dylib libexec share/gnupg share/man | (cd $REL_DIR; tar xf -)
 
-  cd $MAIN_PREFIX/$PINENTRY/build/Release
+  cd $MAIN_PREFIX/pinentry-mac-$PINENTRY/build/Release
   tar cf - pinentry-mac.app | (cd $REL_DIR/bin; tar xf -)
 
   cd $REL_DIR/bin
