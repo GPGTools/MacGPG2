@@ -2,9 +2,9 @@ require "formula"
 
 class Curl < Formula
   homepage "http://curl.haxx.se/"
-  url "http://curl.haxx.se/download/curl-7.39.0.tar.bz2"
-  mirror "ftp://ftp.sunet.se/pub/www/utilities/curl/curl-7.39.0.tar.bz2"
-  sha256 "b222566e7087cd9701b301dd6634b360ae118cc1cbc7697e534dc451102ea4e0"
+  url "http://curl.haxx.se/download/curl-7.44.0.tar.bz2"
+  mirror "ftp://ftp.sunet.se/pub/www/utilities/curl/curl-7.44.0.tar.bz2"
+  sha256 "1e2541bae6582bb697c0fbae49e1d3e6fad5d05d5aa80dbd6f072e0a44341814"
 
   depends_on "pkg-config"
   depends_on "gnutls"
