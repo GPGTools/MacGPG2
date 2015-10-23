@@ -81,6 +81,7 @@ function fixGpgHome {
 	chflags nouchg "$HOME"
 	chmod 755 "$HOME"
 	[[ -e "$GNUPGHOME" ]] || mkdir -m 0700 "$GNUPGHOME"
+	[[ -e "$GNUPGHOME/RevCerts" ]] || mkdir -m 0700 "$GNUPGHOME/RevCerts"
 	chown -R "$ACTUAL_UID:staff" "$GNUPGHOME"
 	chmod -R -N "$GNUPGHOME" 2>/dev/null
 	chmod -R u+rwX,go= "$GNUPGHOME"
