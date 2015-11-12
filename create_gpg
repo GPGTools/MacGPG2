@@ -137,7 +137,7 @@ if [ $step -le 1 ]; then
     # SHA-1 checksum check
     shsum1=$(echo $l | cut -d '|' -f 2)
     shsum2=$(shasum $libF | cut -d ' ' -f 1)
-    if [ "$shsum1" != "$shsum2" ]; then
+    if [ ! -z "$shsum1" -a "$shsum1" != "$shsum2" ]; then
       echo "SHA-1 sums of file $libF don't match"
       echo "expected: $shsum1"
       echo "obtained: $shsum2"
