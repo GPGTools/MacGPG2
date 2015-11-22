@@ -134,14 +134,16 @@ if [ $step -le 1 ]; then
       echo "Skipping $libFull"
     fi
 
-    # SHA-1 checksum check
-    shsum1=$(echo $l | cut -d '|' -f 2)
-    shsum2=$(shasum $libF | cut -d ' ' -f 1)
-    if [ ! -z "$shsum1" -a "$shsum1" != "$shsum2" ]; then
-      echo "SHA-1 sums of file $libF don't match"
-      echo "expected: $shsum1"
-      echo "obtained: $shsum2"
-      doFail $step
+    if [ ! -z "$libF" -a -f "$libF" ]; then
+      # SHA-1 checksum check
+      shsum1=$(echo $l | cut -d '|' -f 2)
+      shsum2=$(shasum $libF | cut -d ' ' -f 1)
+      if [ ! -z "$shsum1" -a "$shsum1" != "$shsum2" ]; then
+        echo "SHA-1 sums of file $libF don't match"
+        echo "expected: $shsum1"
+        echo "obtained: $shsum2"
+        doFail $step
+      fi
     fi
   done
 fi
@@ -182,8 +184,10 @@ if [ $step -le 8 ]; then
   for l in $(cat $BASEDIR/$LIBS_FILE); do
     libFull=$(echo $l | cut -d '|' -f 1)
     lib=`basename $libFull`
-    echo "unpacking $lib"
-    unpack $SRC_DIR/$lib
+    if [ ! -z "$lib" -a -f "$SRC_DIR/$lib" ]; then
+      echo "unpacking $lib"
+      unpack $SRC_DIR/$lib
+    fi
   done
 fi
 
@@ -195,9 +199,11 @@ for l in $(cat $BASEDIR/$LIBS_FILE); do
   if [ $step -le $cstep ]; then
     libFull=$(echo $l | cut -d '|' -f 1)
     lib=$(basename $libFull | sed -E 's/.tar.(gz|bz2|lz)//')
-    cd $MAIN_PREFIX/$lib
-    make distclean > /dev/null 2>&1
-    buildlib $cstep $lib
+    if [ ! -z "$lib" -a -d "$MAIN_PREFIX/$lib" ]; then
+      cd $MAIN_PREFIX/$lib
+      make distclean > /dev/null 2>&1
+      buildlib $cstep $lib
+    fi
   fi
   cstep=$(expr $cstep + 1)
 done
