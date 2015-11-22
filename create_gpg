@@ -182,7 +182,10 @@ cd $MAIN_PREFIX
 
 if [ $step -le 8 ]; then
   for l in $(cat $BASEDIR/$LIBS_FILE); do
-    libFull=$(echo $l | cut -d '|' -f 1)
+    libFull=$(echo $l | cut -d '|' -f 3)
+    if [ -z "$libFull" ]; then
+      libFull=$(echo $l | cut -d '|' -f 1)
+    fi
     lib=`basename $libFull`
     if [ ! -z "$lib" -a -f "$SRC_DIR/$lib" ]; then
       echo "unpacking $lib"
@@ -197,7 +200,10 @@ export PATH=$DIST_DIR/bin:$PATH
 cstep=10
 for l in $(cat $BASEDIR/$LIBS_FILE); do
   if [ $step -le $cstep ]; then
-    libFull=$(echo $l | cut -d '|' -f 1)
+    libFull=$(echo $l | cut -d '|' -f 3)
+    if [ -z "$libFull" ]; then
+      libFull=$(echo $l | cut -d '|' -f 1)
+    fi
     lib=$(basename $libFull | sed -E 's/.tar.(gz|bz2|lz)//')
     if [ ! -z "$lib" -a -d "$MAIN_PREFIX/$lib" ]; then
       cd $MAIN_PREFIX/$lib
