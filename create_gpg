@@ -107,6 +107,9 @@ function buildlib {
     n_cpu=$NCPU
   fi
 
+  if [ ! -f "configure" ]; then
+    ./autogen.sh
+  fi
 
   CFLAGS="-arch $ARCH  -m$ABI $ADDITIONAL_CFLAGS" \
     CXXFLAGS="-arch $ARCH" \
