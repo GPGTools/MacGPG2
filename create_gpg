@@ -277,7 +277,10 @@ if [ $step -le 30 ]; then
     --with-ksba-prefix=$DIST_DIR \
     --with-npth-prefix=$DIST_DIR \
     --with-readline=$DIST_DIR \
+    --with-adns=$DIST_DIR \
+    --enable-tests \
     --with-libiconv-prefix=$DIST_DIR || doFail 30
+    exit
 fi
 
 # tweak Makefiles

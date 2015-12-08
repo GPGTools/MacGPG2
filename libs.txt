@@ -5,8 +5,9 @@ http://mirror.switch.ch/ftp/mirror/gnupg/lsh/nettle-3.1.tar.gz|57ad2aff231ba625c
 http://mirror.switch.ch/ftp/mirror/gnupg/gnutls/v3.4/gnutls-3.4.0.tar.lz|555f47afc7eef95fc2c702238e6bea62a18f23e5
 http://mirror.switch.ch/ftp/mirror/gnupg/libgpg-error/libgpg-error-1.20.tar.bz2|89c961f63469739fe816a56dcdd86c2e1897cace
 http://mirror.switch.ch/ftp/mirror/gnupg/libgcrypt/libgcrypt-1.6.4.tar.gz|da6507d7ba902d7482cc09e1114ccaf3ab495c76
-http://mirror.switch.ch/ftp/mirror/gnupg/libassuan/libassuan-2.4.0.tar.bz2|8b00866b3b0386e996cc6bdcb902c727f0d190a5
+http://mirror.switch.ch/ftp/mirror/gnupg/libassuan/libassuan-2.4.2.tar.bz2|ac1047f9764fd4a4db7dafe47640643164394db9
 http://mirror.switch.ch/ftp/mirror/gnupg/libksba/libksba-1.3.3.tar.bz2|86fe0436f3c8c394d32e142ee410a9f9560173fb
 http://mirror.switch.ch/ftp/mirror/gnu/readline/readline-6.3.tar.gz|017b92dc7fd4e636a2b5c9265a77ccc05798c9e1
 http://mirror.switch.ch/ftp/mirror/gnupg/npth/npth-1.2.tar.bz2|3bfa2a2d7521d6481850e8a611efe5bf5ed75200
+ftp://ftp.g10code.com/g10code/adns/adns-1.4-g10-7.tar.bz2|d2e089d98d3faed6cad009477cc0bc030b35c646
 https://github.com/GPGTools/pinentry-mac/archive/v0.9.4.tar.gz|7f6fdf64b245c32e6965cda0085e51d359023357
