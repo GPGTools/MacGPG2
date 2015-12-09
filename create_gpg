@@ -280,7 +280,6 @@ if [ $step -le 30 ]; then
     --with-adns=$DIST_DIR \
     --enable-tests \
     --with-libiconv-prefix=$DIST_DIR || doFail 30
-    exit
 fi
 
 # tweak Makefiles
