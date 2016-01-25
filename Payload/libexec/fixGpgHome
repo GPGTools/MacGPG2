@@ -195,6 +195,10 @@ if [ "$1" != "" ]; then
     ACTUAL_UID="$1"
     log "Overwrite UID: $ACTUAL_UID"
 fi
+if [[ "$ACTUAL_UID" == "0" ]]; then
+	myEcho "ACTUAL_UID == 0. Exiting to prevent wrong permissions."
+	exit 0
+fi
 if [ "$2" != "" ]; then
     GNUPGHOME=$2
     log "Overwrite GNUPGHOME: $GNUPGHOME"
