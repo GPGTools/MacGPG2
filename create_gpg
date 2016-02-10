@@ -12,7 +12,7 @@ function printUsage {
 
 ABI=64     ## default is 64-bit build
 LIBS_FILE=libs.txt
-GPGVERSION=2.1.5
+GPGVERSION=2.1.10
 PKGVERSION=${GPGVERSION}.0001
 GPGDLPACKAGE=http://mirror.switch.ch/ftp/mirror/gnupg/gnupg/gnupg-${GPGVERSION}.tar.bz2
 
@@ -111,7 +111,12 @@ function buildlib {
     ./autogen.sh
   fi
 
-  CFLAGS="-arch $ARCH  -m$ABI $ADDITIONAL_CFLAGS" \
+  moreCFlags="$ADDITIONAL_CFLAGS"
+  if [ ${libname:0:6} = "sqlite" ]; then
+    moreCFlags=
+  fi
+
+  CFLAGS="-arch $ARCH  -m$ABI $moreCFlags" \
     CXXFLAGS="-arch $ARCH" \
     ABI=$ABI \
     LDFLAGS="-L$DIST_DIR/lib -arch $ARCH" \
@@ -217,29 +222,30 @@ for l in $(cat $BASEDIR/$LIBS_FILE); do
   cstep=$(expr $cstep + 1)
 done
 
+
 # pinentry
 
-if [ $step -le 22 ]; then
+if [ $step -le 25 ]; then
   if [ ! -f $SRC_DIR/$PINENTRY ]; then
     cd $SRC_DIR
-    curl -L -o pinentry-mac-${PINENTRY}.tar.gz https://github.com/GPGTools/pinentry-mac/archive/v${PINENTRY}.tar.gz || doFail 22
+    curl -L -o pinentry-mac-${PINENTRY}.tar.gz https://github.com/GPGTools/pinentry-mac/archive/v${PINENTRY}.tar.gz || doFail 25
   fi
 
 fi
 
-if [ $step -le 22 ]; then
-  cd $MAIN_PREFIX
-  tar zxf $SRC_DIR/pinentry-mac-${PINENTRY}.tar.gz || doFail 22
-fi
-
-if [ $step -le 24 ]; then
-  cd $MAIN_PREFIX/pinentry-mac-$PINENTRY
-  make || doFail 24
-fi
-
 if [ $step -le 26 ]; then
   cd $MAIN_PREFIX
-  tar jxf $SRC_DIR/gnupg-${GPGVERSION}.tar.bz2 || doFail 26
+  tar zxf $SRC_DIR/pinentry-mac-${PINENTRY}.tar.gz || doFail 26
+fi
+
+if [ $step -le 27 ]; then
+  cd $MAIN_PREFIX/pinentry-mac-$PINENTRY
+  make || doFail 27
+fi
+
+if [ $step -le 28 ]; then
+  cd $MAIN_PREFIX
+  tar jxf $SRC_DIR/gnupg-${GPGVERSION}.tar.bz2 || doFail 28
 fi
 
 
@@ -252,6 +258,12 @@ if [ $step -le 30 ]; then
   # ld does not support rpath on Mac (see below)
 
   export PATH=$BASE_DIR/bin:$PATH
+  GPGCONFIGPARAM="--enable-tests"
+
+  if [ ! -f ./configure ]; then
+    GPGCONFIGPARAM="--disable-tests --enable-maintainer-mode --disable-doc"
+    GETTEXT_PREFIX=$DIST_DIR/bin/ ./autogen.sh --force || doFail 30
+  fi
 
   CFLAGS="-arch $ARCH $ADDITIONAL_CFLAGS" \
     CXXFLAGS="-arch $ARCH" \
@@ -278,7 +290,7 @@ if [ $step -le 30 ]; then
     --with-npth-prefix=$DIST_DIR \
     --with-readline=$DIST_DIR \
     --with-adns=$DIST_DIR \
-    --enable-tests \
+    $GPGCONFIGPARAM \
     --with-libiconv-prefix=$DIST_DIR || doFail 30
 fi
 
@@ -452,6 +464,7 @@ if [ $step -le 65 ]; then
 fi
 
 if [ $step -le 70 ]; then
+  cd $BASEDIR
   rm -f $MAIN_DIR/GnuPG-${GPGVERSION}.dmg.sig
   if [ "x$SIGNING_KEY_ID" != "x" ]; then
     gpg2 -o $MAIN_DIR/GnuPG-${GPGVERSION}.dmg.sig -u "$SIGNING_KEY_ID" --detach-sign $MAIN_DIR/GnuPG-${GPGVERSION}.dmg || doFail 70
