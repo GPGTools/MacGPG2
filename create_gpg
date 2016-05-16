@@ -283,6 +283,7 @@ if [ $step -le 30 ]; then
     --with-dirmngr-pgm=/usr/local/gnupg-2.1/bin/dirmngr \
     --with-dirmngr-ldap-pgm=/usr/local/gnupg-2.1/libexec/dirmngr_ldap \
     --with-protect-tool-pgm=/usr/local/gnupg-2.1/libexec/gpg-protect-tool \
+    --enable-gpg2-is-gpg \
     --with-libgpg-error-prefix=$DIST_DIR \
     --with-libgcrypt-prefix=$DIST_DIR \
     --with-libassuan-prefix=$DIST_DIR \
@@ -368,6 +369,17 @@ if [ $step -le 45 ]; then
   rm -rf $REL_DIR >/dev/null 2>&1
   mkdir -p $REL_DIR
   cd $DIST_DIR
+
+  if [ -d bin/gpg ]; then
+    mv bin/gpg/gpg bin/gpg2
+    rmdir  bin/gpg
+  fi
+
+  if [ -d bin/gpgv ]; then
+    mv bin/gpgv/gpgv bin/gpgv2
+    rmdir  bin/gpgv
+  fi
+
   tar cf - \
     bin/dirmngr \
     bin/dirmngr-client \
