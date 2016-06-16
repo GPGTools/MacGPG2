@@ -337,6 +337,18 @@ if [ $step -le 40 ]; then
   find $DIST_DIR -type f -exec chmod +w {} +
 
   cd $DIST_DIR/bin
+
+  if [ -d gpg ]; then
+    mv gpg/gpg gpg2
+    rmdir gpg
+  fi
+
+  if [ -d gpgv ]; then
+    mv gpgv/gpgv gpgv2
+    rmdir gpgv
+  fi
+
+
   for f in gpg2 gpgv2 g13 gpg-agent gpg-connect-agent gpg-error gpgconf gpgkey2ssh gpgparsemail gpgsm \
       gpgtar kbxutil watchgnupg dirmngr-client dirmngr; do
     echo "adapting ld-paths for $f"
@@ -369,16 +381,6 @@ if [ $step -le 45 ]; then
   rm -rf $REL_DIR >/dev/null 2>&1
   mkdir -p $REL_DIR
   cd $DIST_DIR
-
-  if [ -d bin/gpg ]; then
-    mv bin/gpg/gpg bin/gpg2
-    rmdir  bin/gpg
-  fi
-
-  if [ -d bin/gpgv ]; then
-    mv bin/gpgv/gpgv bin/gpgv2
-    rmdir  bin/gpgv
-  fi
 
   tar cf - \
     bin/dirmngr \
