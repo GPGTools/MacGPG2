@@ -79,14 +79,16 @@ function unpack {
 
   case $fn in
   .lz)
-    lunzip -k -c $inFile | tar xf -
+    (lunzip -k -c $inFile | tar xf -) || doFail $inFile
     ;;
   .bz2)
-    tar jxf $inFile
+    (tar jxf $inFile) || doFail $inFile
     ;;
-  .gz)
-    tar zxf $inFile
+  .gz|.xz)
+    (tar zxf $inFile) || doFail $inFile
     ;;
+  *)
+    doFail $inFile
   esac
 }
 
@@ -197,11 +199,10 @@ if [ $step -le 8 ]; then
     lib=`basename $libFull`
     if [ ! -z "$lib" -a -f "$SRC_DIR/$lib" ]; then
       echo "unpacking $lib"
-      unpack $SRC_DIR/$lib
+      unpack $SRC_DIR/$lib || doFail $step
     fi
   done
 fi
-
 
 export PATH=$DIST_DIR/bin:$PATH
 
@@ -212,7 +213,7 @@ for l in $(cat $BASEDIR/$LIBS_FILE); do
     if [ -z "$libFull" ]; then
       libFull=$(echo $l | cut -d '|' -f 1)
     fi
-    lib=$(basename $libFull | sed -E 's/.tar.(gz|bz2|lz)//')
+    lib=$(basename $libFull | sed -E 's/.tar.(gz|bz2|xz|lz)//')
     if [ ! -z "$lib" -a -d "$MAIN_PREFIX/$lib" ]; then
       cd $MAIN_PREFIX/$lib
       make distclean > /dev/null 2>&1
@@ -221,7 +222,6 @@ for l in $(cat $BASEDIR/$LIBS_FILE); do
   fi
   cstep=$(expr $cstep + 1)
 done
-
 
 # pinentry
 
