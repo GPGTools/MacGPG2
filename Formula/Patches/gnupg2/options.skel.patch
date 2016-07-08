@@ -56,4 +56,4 @@
 +personal-digest-preferences SHA512 SHA384 SHA256 SHA224
 +no-emit-version
 +keyserver-options no-honor-keyserver-url
-+
++keyid-format long
