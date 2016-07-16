@@ -258,7 +258,7 @@ if [ $step -le 30 ]; then
   # ld does not support rpath on Mac (see below)
 
   export PATH=$BASE_DIR/bin:$PATH
-  GPGCONFIGPARAM="--enable-tests"
+  GPGCONFIGPARAM="--disable-tests"
 
   if [ ! -f ./configure ]; then
     GPGCONFIGPARAM="--disable-tests --enable-maintainer-mode --disable-doc"
@@ -291,6 +291,7 @@ if [ $step -le 30 ]; then
     --with-npth-prefix=$DIST_DIR \
     --with-readline=$DIST_DIR \
     --with-adns=$DIST_DIR \
+    --with-libintl-prefix=$DIST_DIR \
     $GPGCONFIGPARAM \
     --with-libiconv-prefix=$DIST_DIR || doFail 30
 fi
