@@ -15,6 +15,7 @@ LIBS_FILE=libs.txt
 GPGVERSION=2.1.10
 PKGVERSION=${GPGVERSION}.0001
 GPGDLPACKAGE=http://mirror.switch.ch/ftp/mirror/gnupg/gnupg/gnupg-${GPGVERSION}.tar.bz2
+TARGET_DIR=/usr/local/gnupg-2.1
 
 
 if [ "$1" = "-h" -o "$1" = "--help" ]; then
@@ -258,7 +259,7 @@ if [ $step -le 30 ]; then
   # ld does not support rpath on Mac (see below)
 
   export PATH=$BASE_DIR/bin:$PATH
-  GPGCONFIGPARAM="--disable-tests"
+  GPGCONFIGPARAM="--enable-tests"
 
   if [ ! -f ./configure ]; then
     GPGCONFIGPARAM="--disable-tests --enable-maintainer-mode --disable-doc"
@@ -272,17 +273,17 @@ if [ $step -le 30 ]; then
     CPPFLAGS="-I$DIST_DIR/include -arch $ARCH" \
     PKG_CONFIG_PATH=$DIST_DIR/lib/pkgconfig \
     ./configure \
-    --prefix=/usr/local/gnupg-2.1 \
+    --prefix=${TARGET_DIR} \
     --localstatedir=/var \
-    --sysconfdir=/usr/local/gnupg-2.1/etc \
+    --sysconfdir=${TARGET_DIR}/etc \
     $HOSTSYSTEM \
     --disable-rpath \
-    --with-pinentry-pgm=/usr/local/gnupg-2.1/bin/pinentry-mac.app/Contents/MacOS/pinentry-mac \
-    --with-agent-pgm=/usr/local/gnupg-2.1/bin/gpg-agent \
-    --with-scdaemon-pgm=/usr/local/gnupg-2.1/libexec/scdaemon \
-    --with-dirmngr-pgm=/usr/local/gnupg-2.1/bin/dirmngr \
-    --with-dirmngr-ldap-pgm=/usr/local/gnupg-2.1/libexec/dirmngr_ldap \
-    --with-protect-tool-pgm=/usr/local/gnupg-2.1/libexec/gpg-protect-tool \
+    --with-pinentry-pgm=${TARGET_DIR}/bin/pinentry-mac.app/Contents/MacOS/pinentry-mac \
+    --with-agent-pgm=${TARGET_DIR}/bin/gpg-agent \
+    --with-scdaemon-pgm=${TARGET_DIR}/libexec/scdaemon \
+    --with-dirmngr-pgm=${TARGET_DIR}/bin/dirmngr \
+    --with-dirmngr-ldap-pgm=${TARGET_DIR}/libexec/dirmngr_ldap \
+    --with-protect-tool-pgm=${TARGET_DIR}/libexec/gpg-protect-tool \
     --enable-gpg2-is-gpg \
     --with-libgpg-error-prefix=$DIST_DIR \
     --with-libgcrypt-prefix=$DIST_DIR \
@@ -351,7 +352,7 @@ if [ $step -le 40 ]; then
 
 
   for f in gpg2 gpgv2 g13 gpg-agent gpg-connect-agent gpg-error gpgconf gpgkey2ssh gpgparsemail gpgsm \
-      gpgtar kbxutil watchgnupg dirmngr-client dirmngr; do
+      gpgtar kbxutil watchgnupg dirmngr-client dirmngr mpicalc; do
     echo "adapting ld-paths for $f"
     install_name_tool -add_rpath @loader_path/../lib $f
     for l in `otool -L $f | cut -d' ' -f1`; do
@@ -429,6 +430,26 @@ if [ $step -le 50 ]; then
   done
 fi
 
+# Adjust ids using otool for libraries in lib/
+if [ $step -le 52 ]; then
+  cd $REL_DIR/lib
+  for f in *.dylib; do
+    if [ -f $f ] && [ ! -L $f ]; then
+      echo "Adapting ID for $f"
+      install_name_tool -id ${TARGET_DIR}/lib/$f $f
+    fi
+  done
+fi
+
+# ensure that all executables and libraries have correct lib-path settings
+if [ $step -le 53 ]; then
+  cd $REL_DIR
+
+  otool -L bin/* | grep "$MAIN_DIR" && doFail 53
+  otool -L libexec/* | grep "$MAIN_DIR" && doFail 53
+  otool -L lib/* | grep "$MAIN_DIR" && doFail 53
+fi
+
 if [ $step -le 55 ]; then
 
   echo "Creating GnuPG package"
@@ -438,7 +459,7 @@ if [ $step -le 55 ]; then
   pkgbuild --root $REL_DIR \
     --identifier net.sourceforge.gpgosx \
     --version $PKGVERSION \
-    --install-location /usr/local/gnupg-2.1 \
+    --install-location ${TARGET_DIR} \
     --scripts $BASEDIR/pkg-scripts \
     --component-plist $BASEDIR/pkg-data/install-pkg.plist \
     $DIST_DIR/"GnuPG.pkg" || doFail 55
