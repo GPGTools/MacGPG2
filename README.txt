@@ -8,7 +8,7 @@ PREREQUISITES
 =============
 - Mac OS X 10.7 or newer
 - Xcode 5.0 or newer
-- Installed version of wget
+- Installed version of pkg-config
 
 CONFIGURATION
 =============
