@@ -131,6 +131,12 @@ function buildlib {
   make -j $n_cpu && make install || doFail $1
 }
 
+# check if pkg-config is installed
+if [ -z $(type -p pkg-config) ]; then
+  echo "ERROR: pkg-config is not installed. This script requires pg-config to be available."
+  echo "Please fix your setup and try again."
+  doFail 0
+fi
 
 if [ $step -le 1 ]; then
   echo "Downloading required files"
