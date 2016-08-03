@@ -2,6 +2,9 @@
 
 macgpg=/usr/local/MacGPG2
 
+# create CA trust store for gnutls
+/usr/bin/security find-certificate -a -p /System/Library/Keychains/SystemRootCertificates.keychain > /usr/local/gnupg-2.1/share/ca-certs.crt
+
 # an existsting old link would have been overwritten with preinstall
 
 cd /usr/local/bin
