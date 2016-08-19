@@ -1,4 +1,5 @@
-gnutls:--without-p11-kit --disable-doc --disable-cxx --disable-rpath --disable-nls --with-included-libtasn1 --disable-tests --with-default-trust-store-file=/usr/local/gnupg-2.1/share/ca-certs.crt
+curl:--with-darwinssl --enable-tls-srp
+gnutls:--with-included-libtasn1 --without-p11-kit --disable-doc --disable-cxx --disable-rpath --disable-nls --disable-tests --with-default-trust-store-file=/usr/local/gnupg-2.1/share/ca-certs.crt
 nettle:--disable-assembler
 gettext:--disable-java --disable-rpath --disable-c++ --disable-openmp
 pinentry-mac:ignore

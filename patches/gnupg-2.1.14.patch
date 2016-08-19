@@ -1,0 +1,36 @@
+From: Justus Winter <justus@g10code.com>
+Date: Fri, 15 Jul 2016 10:28:46 +0000 (+0200)
+Subject: gpgscm: Fix linking.
+X-Git-Url: http://git.gnupg.org/cgi-bin/gitweb.cgi?p=gnupg.git;a=commitdiff_plain;h=c49c43d7e4229fd9f1bc55e17fa32fdc334dbef6;hp=d21efa398874be4a15e8283c5fc382fb90f562fd
+
+gpgscm: Fix linking.
+
+* tests/gpgscm/Makefile.am: Add -lintl.
+
+Signed-off-by: Justus Winter <justus@g10code.com>
+---
+
+diff --git a/tests/gpgscm/Makefile.am b/tests/gpgscm/Makefile.am
+index e57a4bb..dad30ed 100644
+--- a/tests/gpgscm/Makefile.am
++++ b/tests/gpgscm/Makefile.am
+@@ -45,7 +45,7 @@ gpgscm_CFLAGS = -imacros scheme-config.h \
+ gpgscm_SOURCES = main.c private.h ffi.c ffi.h ffi-private.h \
+ 	scheme-config.h opdefines.h scheme.c scheme.h scheme-private.h
+ gpgscm_LDADD = $(LDADD) $(common_libs) \
+-	$(NETLIBS) $(LIBICONV) $(LIBREADLINE) \
++	$(NETLIBS) $(LIBICONV) $(LIBREADLINE) $(LIBINTL) \
+ 	$(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS)
+ 
+ t_child_SOURCES = t-child.c
+--- a/tests/gpgscm/Makefile.in	2016-08-05 19:34:19.000000000 +0200
++++ b/tests/gpgscm/Makefile.in	2016-08-05 19:34:53.000000000 +0200
+@@ -457,7 +457,7 @@
+ 	scheme-config.h opdefines.h scheme.c scheme.h scheme-private.h
+ 
+ gpgscm_LDADD = $(LDADD) $(common_libs) \
+-	$(NETLIBS) $(LIBICONV) $(LIBREADLINE) \
++	$(NETLIBS) $(LIBICONV) $(LIBREADLINE) $(LIBINTL) \
+ 	$(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS)
+ 
+ t_child_SOURCES = t-child.c

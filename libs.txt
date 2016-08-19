@@ -3,7 +3,7 @@ http://mirror.switch.ch/ftp/mirror/gnu/gettext/gettext-0.19.5.1.tar.gz|bec084bc9
 http://mirror.switch.ch/ftp/mirror/gnu/gmp/gmp-5.1.3.tar.bz2|b35928e2927b272711fdfbf71b7cfd5f86a6b165
 ftp://ftp.gnupg.org/gcrypt/lsh/nettle-3.1.1.tar.gz|1836601393522124787e029466935408e22dd204
 ftp://ftp.gnupg.org/gcrypt/libgpg-error/libgpg-error-1.24.tar.bz2|c3e5bd0c3ddea647416b429cd8e2ec755bad9d9e
-ftp://ftp.gnupg.org/gcrypt/libgcrypt/libgcrypt-1.7.2.tar.bz2|85a6a936bcab4c3c05f5efbf6ce847f23d35c0c4
+ftp://ftp.gnupg.org/gcrypt/libgcrypt/libgcrypt-1.7.3.tar.bz2|5a034291e7248592605db448481478e6c963aa9c
 http://mirror.switch.ch/ftp/mirror/gnupg/libassuan/libassuan-2.4.3.tar.bz2|27391cf4a820b5350ea789c30661830c9a271518
 ftp://ftp.gnupg.org/gcrypt/libksba/libksba-1.3.4.tar.bz2|bc84945400bd1cabfd7b8ba4e20e71082f32bcc9
 http://mirror.switch.ch/ftp/mirror/gnu/readline/readline-6.3.tar.gz|017b92dc7fd4e636a2b5c9265a77ccc05798c9e1

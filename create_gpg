@@ -128,7 +128,12 @@ function buildlib {
     ./configure --prefix=$DIST_DIR \
     $HOSTSYSTEM $moreParams || doFail $1
 
-  make -j $n_cpu && make install || doFail $1
+  make -j $n_cpu && make install
+  if [ $? -ne 0 ]; then
+    echo ""
+    echo "==> Build of $2 failed"
+    doFail $1
+  fi
 }
 
 # check if pkg-config is installed
@@ -187,7 +192,7 @@ if [ $step -le 4 ]; then
   fi
 fi
 
-if [ $step -le 5 ]; then
+if [ $step -le 6 ]; then
   echo "deleting build and dist directories"
   rm -rf $MAIN_PREFIX $DIST_DIR
 fi
@@ -232,35 +237,42 @@ done
 
 # pinentry
 
-if [ $step -le 25 ]; then
+if [ $step -le 30 ]; then
   if [ ! -f $SRC_DIR/$PINENTRY ]; then
     cd $SRC_DIR
-    curl -L -o pinentry-mac-${PINENTRY}.tar.gz https://github.com/GPGTools/pinentry-mac/archive/v${PINENTRY}.tar.gz || doFail 25
+    curl -L -o pinentry-mac-${PINENTRY}.tar.gz https://github.com/GPGTools/pinentry-mac/archive/v${PINENTRY}.tar.gz || doFail 30
   fi
 
 fi
 
-if [ $step -le 26 ]; then
+if [ $step -le 31 ]; then
   cd $MAIN_PREFIX
-  tar zxf $SRC_DIR/pinentry-mac-${PINENTRY}.tar.gz || doFail 26
+  tar zxf $SRC_DIR/pinentry-mac-${PINENTRY}.tar.gz || doFail 31
 fi
 
-if [ $step -le 27 ]; then
+if [ $step -le 32 ]; then
   cd $MAIN_PREFIX/pinentry-mac-$PINENTRY
-  make || doFail 27
+  make || doFail 32
 fi
 
-if [ $step -le 28 ]; then
+if [ $step -le 33 ]; then
   cd $MAIN_PREFIX
-  tar jxf $SRC_DIR/gnupg-${GPGVERSION}.tar.bz2 || doFail 28
+  tar jxf $SRC_DIR/gnupg-${GPGVERSION}.tar.bz2 || doFail 33
 fi
-
 
 cd $MAIN_PREFIX/gnupg-$GPGVERSION
 
+if [ $step -le 34 ]; then
+  ## apply version-specific patches to make gpg build properly (sometimes required)
+  echo "checking patches"
+  if [ -f ${BASEDIR}/patches/gnupg-${GPGVERSION}.patch ]; then
+    patch -p1 < ${BASEDIR}/patches/gnupg-${GPGVERSION}.patch || doFail 34
+  fi
+fi
+
 ## configure GnuPG
 
-if [ $step -le 30 ]; then
+if [ $step -le 35 ]; then
 
   # ld does not support rpath on Mac (see below)
 
@@ -269,7 +281,7 @@ if [ $step -le 30 ]; then
 
   if [ ! -f ./configure ]; then
     GPGCONFIGPARAM="--disable-tests --enable-maintainer-mode --disable-doc"
-    GETTEXT_PREFIX=$DIST_DIR/bin/ ./autogen.sh --force || doFail 30
+    GETTEXT_PREFIX=$DIST_DIR/bin/ ./autogen.sh --force || doFail 35
   fi
 
   CFLAGS="-arch $ARCH $ADDITIONAL_CFLAGS" \
@@ -300,47 +312,47 @@ if [ $step -le 30 ]; then
     --with-adns=$DIST_DIR \
     --with-libintl-prefix=$DIST_DIR \
     $GPGCONFIGPARAM \
-    --with-libiconv-prefix=$DIST_DIR || doFail 30
+    --with-libiconv-prefix=$DIST_DIR || doFail 35
 fi
 
 # tweak Makefiles
-if [ $step -le 31 ]; then
+if [ $step -le 36 ]; then
   if [ -d build-aux ]; then
     if [ ! -e build-aux/install-sh.orig ]; then
-      mv build-aux/install-sh build-aux/install-sh.orig || doFail 31
+      mv build-aux/install-sh build-aux/install-sh.orig || doFail 36
     fi
 
     dist=$(echo $DIST_DIR | sed 's/\//\\\//g')
-    sed 's/##DISTDIR##/'$dist'/' < $BASEDIR/bin/install-sh-wrapper > build-aux/install-sh || doFail 31
+    sed 's/##DISTDIR##/'$dist'/' < $BASEDIR/bin/install-sh-wrapper > build-aux/install-sh || doFail 36
     chmod +x build-aux/install-sh || doFail 31
   fi
 fi
 
 
-if [ $step -le 32 ]; then
+if [ $step -le 37 ]; then
 
   dist=$(echo $DIST_DIR | sed 's/\//\\\//g')
-  sed 's/##DISTDIR##/'$dist'/' < $BASEDIR/bin/install-wrapper > $DIST_DIR/install-wrapper || doFail 32
-  chmod +x $DIST_DIR/install-wrapper || doFail 32
+  sed 's/##DISTDIR##/'$dist'/' < $BASEDIR/bin/install-wrapper > $DIST_DIR/install-wrapper || doFail 37
+  chmod +x $DIST_DIR/install-wrapper || doFail 37
 
   for f in $(find . -name Makefile); do
-    sed 's/\/usr\/bin\/install/'$dist'\/install-wrapper/' < $f > a || doFail 32
-    sed 's/\/usr\/local\/bin\/ginstall/'$dist'\/install-wrapper/' < $f > a || doFail 32
+    sed 's/\/usr\/bin\/install/'$dist'\/install-wrapper/' < $f > a || doFail 37
+    sed 's/\/usr\/local\/bin\/ginstall/'$dist'\/install-wrapper/' < $f > a || doFail 37
     mv a $f
   done
 fi
 
-if [ $step -le 35 ]; then
-  make -j $NCPU || doFail 35
+if [ $step -le 40 ]; then
+  make -j $NCPU || doFail 40
 fi
 
-if [ $step -le 36 ]; then
+if [ $step -le 42 ]; then
 
-  make install || doFail 36
+  make install || doFail 42
 fi
 
 # Adjust rpath using otool for binaries in bin/
-if [ $step -le 40 ]; then
+if [ $step -le 45 ]; then
   # some files get wrong permissions, let's just fix them ...
   find $DIST_DIR -type f -exec chmod +w {} +
 
@@ -371,7 +383,7 @@ if [ $step -le 40 ]; then
 fi
 
 # Adjust rpath using otool for binaries in libexec/
-if [ $step -le 42 ]; then
+if [ $step -le 47 ]; then
   cd $DIST_DIR/libexec
   for f in dirmngr_ldap gpg-preset-passphrase scdaemon gpg-check-pattern gpg-protect-tool; do
     echo "adapting ld-paths for $f"
@@ -385,7 +397,7 @@ if [ $step -le 42 ]; then
   done
 fi
 
-if [ $step -le 45 ]; then
+if [ $step -le 50 ]; then
   rm -rf $REL_DIR >/dev/null 2>&1
   mkdir -p $REL_DIR
   cd $DIST_DIR
@@ -422,7 +434,7 @@ if [ $step -le 45 ]; then
 fi
 
 # Adjust rpath using otool for libraries in lib/
-if [ $step -le 50 ]; then
+if [ $step -le 51 ]; then
   cd $REL_DIR/lib
   for f in `find . -type f -name "*.dylib"`; do
     echo "adapting ld-paths for $f"
