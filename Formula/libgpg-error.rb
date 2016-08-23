@@ -1,9 +1,9 @@
 require 'formula'
 
 class LibgpgError < Formula
-  url 'ftp://ftp.gnupg.org/gcrypt/libgpg-error/libgpg-error-1.21.tar.bz2'
+  url 'ftp://ftp.gnupg.org/gcrypt/libgpg-error/libgpg-error-1.24.tar.bz2'
   homepage 'http://www.gnupg.org/'
-  sha1 'ef1dfb2f8761f019091180596e9e638d8cc37513'
+  sha256 '9268e1cc487de5e6e4460fca612a06e4f383072ac43ae90603e5e46783d3e540'
   
   keep_install_names true
   
