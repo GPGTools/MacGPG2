@@ -112,7 +112,18 @@ function fixGPGAgent {
 	gpgAgentConf="$GNUPGHOME/gpg-agent.conf"
 	needHup=false
 	myEcho "Fixing '$gpgAgentConf'..."
-	touch "$gpgAgentConf"
+	if [[ "$UID" -eq 0 ]] ;then
+		myEcho "UID = 0"
+		temp_uid=$ACTUAL_UID
+		[[ "$temp_uid" =~ [^0-9] ]] || temp_uid="#$temp_uid"
+		myEcho "touch gpg-agent.conf using uid: '$temp_uid'"
+		sudo -nu "$temp_uid" touch "$gpgAgentConf"
+	else
+		myEcho "UID: '$UID'"
+		touch "$gpgAgentConf"
+	fi
+	
+	
 
 	# Fix pinentry.
 	currentPinetry=$(sed -En '/^[ 	]*pinentry-program "?([^"]*)"?/{s//\1/p;q;}' "$gpgAgentConf")
