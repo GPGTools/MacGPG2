@@ -2,8 +2,8 @@ require 'formula'
 
 class Libgcrypt < Formula
   homepage 'http://gnupg.org/'
-  url 'ftp://ftp.gnupg.org/gcrypt/libgcrypt/libgcrypt-1.7.3.tar.bz2'
-  sha256 'ddac6111077d0a1612247587be238c5294dd0ee4d76dc7ba783cc55fb0337071'
+  url 'ftp://ftp.gnupg.org/gcrypt/libgcrypt/libgcrypt-1.6.6.tar.bz2'
+  sha256 'f9461b4619bb78b273a88d468915750d418e89a3ea3b641bab0563a9af4b04d0'
 
   depends_on 'libgpg-error'
   
