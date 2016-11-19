@@ -1,0 +1,22 @@
+--- a/tools/Makefile.am	2016-11-18 15:23:15.000000000 +0100
++++ b/tools/Makefile.am	2016-11-19 16:43:25.000000000 +0100
+@@ -171,7 +171,7 @@
+ gpg_wks_client_CFLAGS = $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS) $(INCICONV)
+ gpg_wks_client_LDADD = $(libcommon) \
+ 		       $(LIBASSUAN_LIBS) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
+-		       $(LIBICONV)
++		       $(LIBICONV) $(LIBINTL)
+ 
+ 
+ # Make sure that all libs are build before we use them.  This is
+--- a/tools/Makefile.in	2016-11-18 16:53:58.000000000 +0100
++++ b/tools/Makefile.in	2016-11-19 16:40:05.000000000 +0100
+@@ -669,7 +669,7 @@
+ gpg_wks_client_CFLAGS = $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS) $(INCICONV)
+ gpg_wks_client_LDADD = $(libcommon) \
+ 		       $(LIBASSUAN_LIBS) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
+-		       $(LIBICONV)
++		       $(LIBICONV) $(LIBINTL)
+ 
+ all: all-am
+ 

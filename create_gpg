@@ -309,11 +309,13 @@ if [ $step -le 35 ]; then
     --with-ksba-prefix=$DIST_DIR \
     --with-npth-prefix=$DIST_DIR \
     --with-readline=$DIST_DIR \
-    --with-adns=$DIST_DIR \
     --with-libintl-prefix=$DIST_DIR \
+    --with-adns=$DIST_DIR \
     $GPGCONFIGPARAM \
     --with-libiconv-prefix=$DIST_DIR || doFail 35
 fi
+
+
 
 # tweak Makefiles
 if [ $step -le 36 ]; then
@@ -369,7 +371,7 @@ if [ $step -le 45 ]; then
   fi
 
 
-  for f in gpg2 gpgv2 g13 gpg-agent gpg-connect-agent gpg-error gpgconf gpgkey2ssh gpgparsemail gpgsm \
+  for f in gpg2 gpgv2 gpg-agent gpg-connect-agent gpg-error gpgconf gpgparsemail gpgsm \
       gpgtar kbxutil watchgnupg dirmngr-client dirmngr mpicalc; do
     echo "adapting ld-paths for $f"
     install_name_tool -add_rpath @loader_path/../lib $f
@@ -385,7 +387,7 @@ fi
 # Adjust rpath using otool for binaries in libexec/
 if [ $step -le 47 ]; then
   cd $DIST_DIR/libexec
-  for f in dirmngr_ldap gpg-preset-passphrase scdaemon gpg-check-pattern gpg-protect-tool; do
+  for f in dirmngr_ldap gpg-preset-passphrase scdaemon gpg-check-pattern gpg-protect-tool gpg-wks-client; do
     echo "adapting ld-paths for $f"
     install_name_tool -add_rpath @loader_path/../lib $f
     for l in `otool -L $f | cut -d' ' -f1`; do
@@ -406,16 +408,13 @@ if [ $step -le 50 ]; then
     bin/dirmngr \
     bin/dirmngr-client \
     bin/dumpsexp \
-    bin/g13 \
     bin/gpg-agent \
     bin/gpg-connect-agent \
     bin/gpg-error \
     bin/gpg2 \
     bin/gpgconf \
-    bin/gpgkey2ssh \
     bin/gpgparsemail \
     bin/gpgsm \
-    bin/gpgsm-gencert.sh \
     bin/gpgtar \
     bin/gpgv2 \
     bin/hmac256 \
@@ -463,7 +462,7 @@ fi
 if [ $step -le 53 ]; then
   cd $REL_DIR
 
-  otool -L bin/* | grep "$MAIN_DIR" && doFail 53
+  otool -L $(ls -d bin/* | egrep -v '(convert-keyring|pinentry-mac.app)') | grep "$MAIN_DIR" && doFail 53
   otool -L libexec/* | grep "$MAIN_DIR" && doFail 53
   otool -L lib/* | grep "$MAIN_DIR" && doFail 53
 fi
