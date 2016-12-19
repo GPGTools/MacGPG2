@@ -5,7 +5,7 @@ macgpg=/usr/local/MacGPG2
 # create CA trust store for gnutls
 /usr/bin/security find-certificate -a -p /System/Library/Keychains/SystemRootCertificates.keychain > /usr/local/gnupg-2.1/share/ca-certs.crt
 
-# an existsting old link would have been overwritten with preinstall
+# an existing old link would have been overwritten with preinstall
 
 cd /usr/local/bin
 ln -s ../gnupg-2.1/bin/gpg2 gpg2
@@ -30,7 +30,7 @@ killall -kill gpg-agent scdaemon dirmngr
 
 if [ "x$gpgTools" != "x" ]; then
   r=$(osascript -e '
-set question to "Found an installation of GPG Tools (MacGPG2). We recommend you uninstall it to avoid compatibility issues between GnuPG 2.1 and GPGTools.\n\nDo you wan to uninstall GPG Tools?"
+set question to "Found an installation of GPG Tools (MacGPG2). We recommend you uninstall it to avoid compatibility issues between GnuPG 2.1 and GPGTools.\n\nDo you want to uninstall GPG Tools?"
 set cancel to "Ignore"
 set uninst to "Uninstall GPG Tools"
 activate
