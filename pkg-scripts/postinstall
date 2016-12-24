@@ -24,6 +24,11 @@ echo "/usr/local/gnupg-2.1/share/man" > /private/etc/manpaths.d/50-GnuPG-21
 
 gpgTools=$(pkgutil --pkgs | grep '^org.gpgtools')
 
+# dirmng requires that nsswitch.conf exist
+if [ ! -f /private/etc/nsswitch.conf ]; then
+  touch /private/etc/nsswitch.conf
+fi
+
 # kill all potentially pre-existing daemons
 killall -kill gpg-agent scdaemon dirmngr
 
