@@ -119,6 +119,10 @@ function buildlib {
     moreCFlags=
   fi
 
+  if [ ${libname:0:7} = "gettext" ]; then
+    n_cpu=1
+  fi
+
   CFLAGS="-arch $ARCH  -m$ABI $moreCFlags" \
     CXXFLAGS="-arch $ARCH" \
     ABI=$ABI \
@@ -435,6 +439,7 @@ fi
 # Adjust rpath using otool for libraries in lib/
 if [ $step -le 51 ]; then
   cd $REL_DIR/lib
+  rm -f libgettext*
   for f in `find . -type f -name "*.dylib"`; do
     echo "adapting ld-paths for $f"
     install_name_tool -add_rpath @loader_path/../lib $f

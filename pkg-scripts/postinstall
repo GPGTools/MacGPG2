@@ -6,7 +6,7 @@ macgpg=/usr/local/MacGPG2
 /usr/bin/security find-certificate -a -p /System/Library/Keychains/SystemRootCertificates.keychain > /usr/local/gnupg-2.1/share/ca-certs.crt
 
 # an existing old link would have been overwritten with preinstall
-
+mkdir -p /usr/local/bin
 cd /usr/local/bin
 ln -s ../gnupg-2.1/bin/gpg2 gpg2
 ln -s ../gnupg-2.1/bin/gpgsm gpgsm
