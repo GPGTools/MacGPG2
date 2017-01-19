@@ -1,9 +1,9 @@
 require 'formula'
 
 class Libksba < Formula
-  url 'ftp://ftp.gnupg.org/gcrypt/libksba/libksba-1.3.4.tar.bz2'
+  url 'ftp://ftp.gnupg.org/gcrypt/libksba/libksba-1.3.5.tar.bz2'
   homepage 'http://www.gnupg.org/related_software/libksba/index.en.html'
-  sha256 'f6c2883cebec5608692d8730843d87f237c0964d923bbe7aa89c05f20558ad4f'
+  sha256 '41444fd7a6ff73a79ad9728f985e71c9ba8cd3e5e53358e70d5f066d35c1a340'
 
   depends_on 'libgpg-error'
   
