@@ -26,7 +26,10 @@ gpgTools=$(pkgutil --pkgs | grep '^org.gpgtools')
 
 # dirmng requires that nsswitch.conf exist
 if [ ! -f /private/etc/nsswitch.conf ]; then
-  touch /private/etc/nsswitch.conf
+
+  cat > /private/etc/nsswitch.conf <<EOT 
+hosts: files dns
+EOT
 fi
 
 # kill all potentially pre-existing daemons
