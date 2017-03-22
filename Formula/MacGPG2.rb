@@ -24,6 +24,7 @@ class Macgpg2 < Formula
     { :p1 => ["#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/other.patch",
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/socket.patch",
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/gpg-agent.patch",
+              "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/gpg-agent-sha-2.patch",
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/MacGPG2VersionString.patch",
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/passphrase-fd.patch",
               "#{HOMEBREW_PREFIX}/Library/Formula/Patches/gnupg2/exec_write_stderr.patch",
