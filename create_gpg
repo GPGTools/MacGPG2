@@ -12,10 +12,6 @@ function printUsage {
 
 ABI=64     ## default is 64-bit build
 LIBS_FILE=libs.txt
-GPGVERSION=2.1.10
-PKGVERSION=${GPGVERSION}.0001
-GPGDLPACKAGE=http://mirror.switch.ch/ftp/mirror/gnupg/gnupg/gnupg-${GPGVERSION}.tar.bz2
-TARGET_DIR=/usr/local/gnupg-2.1
 
 
 if [ "$1" = "-h" -o "$1" = "--help" ]; then
@@ -33,7 +29,7 @@ if [ ! -f "$1" ]; then
   exit 1
 fi
 
-. "$1"
+source "$1"
 
 
 # internal variables
@@ -183,17 +179,27 @@ if [ $step -le 4 ]; then
       curl -L -o $gpgBaseName $GPGDLPACKAGE || doFail "Failed to download gpg"
   fi
 
-  if [ ! -f ${gpgBaseName}.sig ]; then
-      curl -L -o ${gpgBaseName}.sig ${GPGDLPACKAGE}.sig  || doFail "Failed to download gpg signature"
-  fi
+  if [[ -n "$GPGDL_HASH" ]]; then
+      shsum=$(shasum -a 256 $gpgBaseName | cut -d ' ' -f 1)
+	  if [[ "$GPGDL_HASH" != "$shsum" ]]; then
+          echo "SHA-1 sums of file $gpgBaseName don't match"
+          echo "expected: $GPGDL_HASH"
+          echo "obtained: $shsum"
+		  doFail 4
+	  fi
+  else
+	  if [ ! -f ${gpgBaseName}.sig ]; then
+	      curl -L -o ${gpgBaseName}.sig ${GPGDLPACKAGE}.sig  || doFail "Failed to download gpg signature"
+	  fi
 
-  stat=$(gpg2 --status-fd 1 --verify ${gpgBaseName}.sig ${gpgBaseName} | grep -c '^\[GNUPG:\] GOODSIG 249B39D24F25E3B6')
+	  stat=$(gpg2 --status-fd 1 --verify ${gpgBaseName}.sig ${gpgBaseName} | grep -c '^\[GNUPG:\] GOODSIG 249B39D24F25E3B6')
 
-  if [ $stat -eq 0 ]; then
-    echo "Could not verify GnuPG package signature"
-    echo "Please delete gpg package and signature file before retrying"
-    doFail 4
-  fi
+	  if [ $stat -eq 0 ]; then
+	    echo "Could not verify GnuPG package signature"
+	    echo "Please delete gpg package and signature file before retrying"
+	    doFail 4
+	  fi
+  fi  
 fi
 
 if [ $step -le 6 ]; then
@@ -239,30 +245,12 @@ for l in $(cat $BASEDIR/$LIBS_FILE); do
   cstep=$(expr $cstep + 1)
 done
 
-# pinentry
-
-if [ $step -le 30 ]; then
-  if [ ! -f $SRC_DIR/$PINENTRY ]; then
-    cd $SRC_DIR
-    curl -L -o pinentry-mac-${PINENTRY}.tar.gz https://github.com/GPGTools/pinentry-mac/archive/v${PINENTRY}.tar.gz || doFail 30
-  fi
-
-fi
-
-if [ $step -le 31 ]; then
-  cd $MAIN_PREFIX
-  tar zxf $SRC_DIR/pinentry-mac-${PINENTRY}.tar.gz || doFail 31
-fi
-
-if [ $step -le 32 ]; then
-  cd $MAIN_PREFIX/pinentry-mac-$PINENTRY
-  make || doFail 32
-fi
 
 if [ $step -le 33 ]; then
   cd $MAIN_PREFIX
   tar jxf $SRC_DIR/gnupg-${GPGVERSION}.tar.bz2 || doFail 33
 fi
+
 
 cd $MAIN_PREFIX/gnupg-$GPGVERSION
 
@@ -295,12 +283,12 @@ if [ $step -le 35 ]; then
     CPPFLAGS="-I$DIST_DIR/include -arch $ARCH" \
     PKG_CONFIG_PATH=$DIST_DIR/lib/pkgconfig \
     ./configure \
-    --prefix=${TARGET_DIR} \
+    --prefix=$DIST_DIR \
     --localstatedir=/var \
     --sysconfdir=${TARGET_DIR}/etc \
     $HOSTSYSTEM \
     --disable-rpath \
-    --with-pinentry-pgm=${TARGET_DIR}/bin/pinentry-mac.app/Contents/MacOS/pinentry-mac \
+    --with-pinentry-pgm=${TARGET_DIR}/libexec/pinentry-mac.app/Contents/MacOS/pinentry-mac \
     --with-agent-pgm=${TARGET_DIR}/bin/gpg-agent \
     --with-scdaemon-pgm=${TARGET_DIR}/libexec/scdaemon \
     --with-dirmngr-pgm=${TARGET_DIR}/bin/dirmngr \
@@ -322,38 +310,52 @@ fi
 
 
 # tweak Makefiles
-if [ $step -le 36 ]; then
-  if [ -d build-aux ]; then
-    if [ ! -e build-aux/install-sh.orig ]; then
-      mv build-aux/install-sh build-aux/install-sh.orig || doFail 36
-    fi
+# if [ $step -le 36 ]; then
+#   if [ -d build-aux ]; then
+#     if [ ! -e build-aux/install-sh.orig ]; then
+#       mv build-aux/install-sh build-aux/install-sh.orig || doFail 36
+#     fi
+# 
+# 
+# 	DISTDIR=$(sed 's@/@\\/@g' <<<"$DIST_DIR")
+# 	TARGETDIR=$(sed 's@/@\\/@g' <<<"$TARGET_DIR")
+# 	
+# 
+# 	cat > build-aux/install-sh <<EOT
+# #!/bin/bash
+# param=\$(sed 's@$TARGETDIR@$DISTDIR@g' <<<\$@)
+# \${0%-wrapper}.orig \$param
+# exit \$?
+# EOT
+# 
+# 
+# 
+# 
+#     # dist=$(echo $DIST_DIR | sed 's/\//\\\//g')
+#     # sed 's/##DISTDIR##/'$dist'/' < $BASEDIR/bin/install-sh-wrapper > build-aux/install-sh || doFail 36
+#     chmod +x build-aux/install-sh || doFail 31
+#   fi
+# fi
 
-    dist=$(echo $DIST_DIR | sed 's/\//\\\//g')
-    sed 's/##DISTDIR##/'$dist'/' < $BASEDIR/bin/install-sh-wrapper > build-aux/install-sh || doFail 36
-    chmod +x build-aux/install-sh || doFail 31
-  fi
-fi
 
-
-if [ $step -le 37 ]; then
-
-  dist=$(echo $DIST_DIR | sed 's/\//\\\//g')
-  sed 's/##DISTDIR##/'$dist'/' < $BASEDIR/bin/install-wrapper > $DIST_DIR/install-wrapper || doFail 37
-  chmod +x $DIST_DIR/install-wrapper || doFail 37
-
-  for f in $(find . -name Makefile); do
-    sed 's/\/usr\/bin\/install/'$dist'\/install-wrapper/' < $f > a || doFail 37
-    sed 's/\/usr\/local\/bin\/ginstall/'$dist'\/install-wrapper/' < $f > a || doFail 37
-    mv a $f
-  done
-fi
+# if [ $step -le 37 ]; then
+# 
+#   dist=$(echo $DIST_DIR | sed 's/\//\\\//g')
+#   sed 's/##DISTDIR##/'$dist'/' < $BASEDIR/bin/install-wrapper > $DIST_DIR/install-wrapper || doFail 37
+#   chmod +x $DIST_DIR/install-wrapper || doFail 37
+# 
+#   for f in $(find . -name Makefile); do
+#     sed 's/\/usr\/bin\/install/'$dist'\/install-wrapper/' < $f > a || doFail 37
+#     sed 's/\/usr\/local\/bin\/ginstall/'$dist'\/install-wrapper/' < $f > a || doFail 37
+#     mv a $f
+#   done
+# fi
 
 if [ $step -le 40 ]; then
   make -j $NCPU || doFail 40
 fi
 
 if [ $step -le 42 ]; then
-
   make install || doFail 42
 fi
 
@@ -375,7 +377,7 @@ if [ $step -le 45 ]; then
   fi
 
 
-  for f in gpg2 gpgv2 gpg-agent gpg-connect-agent gpg-error gpgconf gpgparsemail gpgsm \
+  for f in gpg gpgv gpg-agent gpg-connect-agent gpg-error gpgconf gpgparsemail gpgsm \
       gpgtar kbxutil watchgnupg dirmngr-client dirmngr mpicalc; do
     echo "adapting ld-paths for $f"
     install_name_tool -add_rpath @loader_path/../lib $f
@@ -415,26 +417,26 @@ if [ $step -le 50 ]; then
     bin/gpg-agent \
     bin/gpg-connect-agent \
     bin/gpg-error \
-    bin/gpg2 \
+    bin/gpg \
     bin/gpgconf \
     bin/gpgparsemail \
     bin/gpgsm \
     bin/gpgtar \
-    bin/gpgv2 \
+    bin/gpgv \
     bin/hmac256 \
     bin/kbxutil \
     bin/mpicalc \
     bin/watchgnupg \
     lib/*dylib libexec share/gnupg share/man | (cd $REL_DIR; tar xf -)
 
-  cd $MAIN_PREFIX/pinentry-mac-$PINENTRY/build/Release
-  tar cf - pinentry-mac.app | (cd $REL_DIR/bin; tar xf -)
 
   cd $REL_DIR/bin
-  ln -s gpg2 gpg
+  ln -s gpg gpg2
 
   cp $BASEDIR/scripts/convert-keyring .
 fi
+
+
 
 # Adjust rpath using otool for libraries in lib/
 if [ $step -le 51 ]; then
@@ -467,68 +469,11 @@ fi
 if [ $step -le 53 ]; then
   cd $REL_DIR
 
-  otool -L $(ls -d bin/* | egrep -v '(convert-keyring|pinentry-mac.app)') | grep "$MAIN_DIR" && doFail 53
-  otool -L libexec/* | grep "$MAIN_DIR" && doFail 53
-  otool -L lib/* | grep "$MAIN_DIR" && doFail 53
+  otool -L $(ls -d bin/* | egrep -v '(convert-keyring|pinentry-mac.app)') | grep "$MAIN_DIR" && doFail 53.1
+  otool -L libexec/* | grep "$MAIN_DIR" && doFail 53.2
+  otool -L lib/* | grep "$MAIN_DIR" && doFail 53.3
 fi
 
-if [ $step -le 55 ]; then
-
-  echo "Creating GnuPG package"
-
-  rm -f $DIST_DIR/"GnuPG.pkg"
-
-  pkgbuild --root $REL_DIR \
-    --identifier net.sourceforge.gpgosx \
-    --version $PKGVERSION \
-    --install-location ${TARGET_DIR} \
-    --scripts $BASEDIR/pkg-scripts \
-    --component-plist $BASEDIR/pkg-data/install-pkg.plist \
-    $DIST_DIR/"GnuPG.pkg" || doFail 55
-
-fi
-
-if [ $step -le 60 ]; then
-  rm -rf $INSTALL_DIR
-  mkdir -p $INSTALL_DIR
-
-  sed 's/{PKGVERSION}/'${PKGVERSION}'/' $BASEDIR/pkg-data/distro.xml > $DIST_DIR/distro.xml
-
-  if [ "x$PKG_SIGN_CERT" != "x" ]; then
-
-    echo "Creating signed installer package"
-
-    productbuild --distribution $DIST_DIR/distro.xml \
-      --sign "${PKG_SIGN_CERT}" \
-      --package-path $DIST_DIR \
-      $INSTALL_DIR/"Install.pkg" || doFail 60
-
-  else
-
-    echo "Creating unsigned installer package"
-
-    productbuild --distribution $DIST_DIR/distro.xml \
-      --package-path $DIST_DIR \
-      $INSTALL_DIR/"Install.pkg"  || doFail 60
-  fi
-
-fi
-
-if [ $step -le 65 ]; then
-  echo "Creating final .dmg file"
-  cp $BASEDIR/pkg-docs/License.txt $BASEDIR/pkg-docs/"Read Me.rtf" $INSTALL_DIR
-  rm -f $MAIN_DIR/GnuPG-${GPGVERSION}.dmg
-  hdiutil create $MAIN_DIR/GnuPG-${GPGVERSION}.dmg -volname "GnuPG 2.1" -srcfolder $INSTALL_DIR || doFail 65
-fi
-
-if [ $step -le 70 ]; then
-  cd $BASEDIR
-  rm -f $MAIN_DIR/GnuPG-${GPGVERSION}.dmg.sig
-  if [ "x$SIGNING_KEY_ID" != "x" ]; then
-    gpg2 -o $MAIN_DIR/GnuPG-${GPGVERSION}.dmg.sig -u "$SIGNING_KEY_ID" --detach-sign $MAIN_DIR/GnuPG-${GPGVERSION}.dmg || doFail 70
-    echo "Created DMG signature file"
-  fi
-fi
 
 
 
