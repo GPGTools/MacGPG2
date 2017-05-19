@@ -1,0 +1,13 @@
+This patch forces dirmngr to retry with another host, if there is no route to the host.
+This happens when an IPv6 address is selected, but there isn't a working IPv6 connnection to the internet.
+
+--- a/dirmngr/ks-engine-hkp.c
++++ b/dirmngr/ks-engine-hkp.c
+@@ -1283,6 +1283,7 @@
+     case GPG_ERR_ENETDOWN:
+     case GPG_ERR_UNKNOWN_HOST:
+     case GPG_ERR_NETWORK:
++    case GPG_ERR_EHOSTUNREACH:
+       if (mark_host_dead (request) && *tries_left)
+         retry = 1;
+       break;

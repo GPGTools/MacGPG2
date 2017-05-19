@@ -118,6 +118,7 @@ function buildlib {
   if [ ${libname:0:7} = "gettext" ]; then
     n_cpu=1
   fi
+  
 
   CFLAGS="-arch $ARCH  -m$ABI $moreCFlags" \
     CXXFLAGS="-arch $ARCH" \
@@ -221,7 +222,20 @@ if [ $step -le 8 ]; then
     lib=`basename $libFull`
     if [ ! -z "$lib" -a -f "$SRC_DIR/$lib" ]; then
       echo "unpacking $lib"
-      unpack $SRC_DIR/$lib || doFail $step
+      unpack $SRC_DIR/$lib || doFail 8
+	  
+	  
+	  lib=$(basename $libFull | sed -E 's/.tar.(gz|bz2|xz|lz)//')
+	  libname=${lib/-[0-9]*}
+	  patches=( "${BASEDIR}/patches/${libname}/"*.patch )
+	  if [[ -f "$patches" ]]; then
+	      cd "$MAIN_PREFIX/$lib"
+		  for patch in "${patches[@]}"; do
+			  echo "Applying patch '$patch'"
+			  patch -p1 -t -N < "$patch" || doFail 8
+		  done
+	  fi
+	  
     fi
   done
 fi
@@ -257,8 +271,19 @@ cd $MAIN_PREFIX/gnupg-$GPGVERSION
 if [ $step -le 34 ]; then
   ## apply version-specific patches to make gpg build properly (sometimes required)
   echo "checking patches"
-  if [ -f ${BASEDIR}/patches/gnupg-${GPGVERSION}.patch ]; then
-    patch -p1 < ${BASEDIR}/patches/gnupg-${GPGVERSION}.patch || doFail 34
+  patch=${BASEDIR}/patches/gnupg-${GPGVERSION}.patch
+  if [[ -f "$patch" ]]; then
+	echo "Applying patch '$patch'"
+    patch -p1 < "$patch" || doFail 34
+  fi
+  
+  ## apply other patches
+  patches=( "${BASEDIR}/patches/gnupg/"*.patch )
+  if [[ -f "$patches" ]]; then
+	  for patch in "${patches[@]}"; do
+		  echo "Applying patch '$patch'"
+		  patch -p1 -t -N < "$patch" || doFail 34
+	  done
   fi
 fi
 
