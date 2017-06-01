@@ -1,0 +1,13 @@
+This patch is required when building for macOS < 10.12 on macOS >= 10.12,
+because clock_gettime is only available on macOS >= 10.12.
+
+--- npth/configure
++++ npth/configure
+@@ -13662,6 +13662,7 @@
+ int
+ main ()
+ {
++#error No clock_gettime macOS < 10.12!
+ return clock_gettime ();
+   ;
+   return 0;

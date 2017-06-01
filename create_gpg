@@ -129,6 +129,9 @@ function buildlib {
   if [ ${libname:0:7} = "gettext" ]; then
     n_cpu=1
   fi
+  if [ ${libname:0:3} = "gmp" ]; then
+    n_cpu=1
+  fi
   
 
   CFLAGS="-arch $ARCH -m$ABI -ULOCALEDIR -DLOCALEDIR=\\\"${TARGET_DIR}/share/locale\\\" $moreCFlags" \
