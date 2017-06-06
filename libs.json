@@ -1,0 +1,93 @@
+[
+	{
+		"name": "gettext",
+		"url": "https://ftp.gnu.org/pub/gnu/gettext/gettext-${VERSION}.tar.lz",
+		"version": "0.19.8",
+		"sha256": "c42e1ded2f9635d589f58f548c8a1810fb9604747cbb7a9e9be8615cf6a9f165",
+		"configure_args": "--disable-java --disable-rpath --disable-c++ --disable-openmp --with-included-gettext",
+		"n_cpu": 1,
+		"installed_file": "lib/libintl.dylib"
+	},
+	{
+		"name": "gmp",
+		"url": "http://mirror.switch.ch/ftp/mirror/gnu/gmp/gmp-${VERSION}.tar.lz",
+		"version": "6.1.2",
+		"sha256": "12fed0532d440d2dc902e64f016aa89a33af6044b90bd1f7bca7396635105dbb",
+		"configure_args": "--disable-java --disable-rpath --disable-c++ --disable-openmp --with-included-gettext",
+		"n_cpu": 1,
+		"installed_file": "lib/libgmp.dylib"
+	},
+	{
+		"name": "nettle",
+		"url": "ftp://ftp.gnupg.org/gcrypt/lsh/nettle-${VERSION}.tar.gz",
+		"version": "3.1.1",
+		"sha1": "1836601393522124787e029466935408e22dd204",
+		"configure_args": "--disable-assembler",
+		"installed_file": "lib/libnettle.dylib"
+	},
+	{
+		"name": "libgpg-error",
+		"url": "ftp://ftp.gnupg.org/gcrypt/libgpg-error/libgpg-error-${VERSION}.tar.bz2",
+		"version": "1.27",
+		"sha256": "4f93aac6fecb7da2b92871bb9ee33032be6a87b174f54abf8ddf0911a22d29d2",
+		"installed_file": "lib/libgpg-error.dylib"
+	},
+	{
+		"name": "libgcrypt",
+		"url": "ftp://ftp.gnupg.org/gcrypt/libgcrypt/libgcrypt-${VERSION}.tar.bz2",
+		"version": "1.7.6",
+		"sha1": "d2b9e0f413064cfc67188f80d3cbda887c755a62",
+		"installed_file": "lib/libgcrypt.dylib"
+	},
+	{
+		"name": "libassuan",
+		"url": "http://mirror.switch.ch/ftp/mirror/gnupg/libassuan/libassuan-${VERSION}.tar.bz2",
+		"version": "2.4.3",
+		"sha1": "27391cf4a820b5350ea789c30661830c9a271518",
+		"installed_file": "lib/libassuan.dylib"
+	},
+	{
+		"name": "libksba",
+		"url": "ftp://ftp.gnupg.org/gcrypt/libksba/libksba-${VERSION}.tar.bz2",
+		"version": "1.3.5",
+		"sha1": "a98385734a0c3f5b713198e8d6e6e4aeb0b76fde",
+		"installed_file": "lib/libksba.dylib"
+	},
+	{
+		"name": "readline",
+		"url": "http://mirror.switch.ch/ftp/mirror/gnu/readline/readline-${VERSION}.tar.gz",
+		"version": "7.0",
+		"sha1": "d9095fa14a812495052357e1d678b3f2ac635463",
+		"installed_file": "lib/libreadline.dylib"
+	},
+	{
+		"name": "npth",
+		"url": "http://mirror.switch.ch/ftp/mirror/gnupg/npth/npth-${VERSION}.tar.bz2",
+		"version": "1.4",
+		"sha256": "8915141836a3169a502d65c1ebd785fcc6d406cae5ee84474272ebf2fa96f1f2",
+		"configure_args": "--disable-tests --disable-dependency-tracking --enable-static=no",
+		"installed_file": "lib/libnpth.dylib"
+	},
+	{
+		"name": "sqlite",
+		"url": "https://www.sqlite.org/2016/sqlite-autoconf-${VERSION}.tar.gz",
+		"version": "3130000",
+		"sha1": "f6f76e310389e3f510b23826f805850449ae8653",
+		"installed_file": "lib/libsqlite3.dylib"
+	},
+	{
+		"name": "gnutls",
+		"url": "ftp://ftp.gnutls.org/gcrypt/gnutls/v3.5/gnutls-${VERSION}.tar.xz",
+		"version": "3.5.12",
+		"sha256": "63cb39a5eaa029381df2e49a74cfb7be89fc4a592445191818ffe1e66bde57cb",
+		"configure_args": "--with-included-libtasn1 --without-p11-kit --disable-doc --disable-cxx --disable-rpath --disable-nls --disable-tests --with-default-trust-store-file=/usr/local/MacGPG2/share/ca-certs.crt --with-included-unistring",
+		"installed_file": "lib/libgnutls.dylib"
+	},
+	{
+		"name": "gnupg",
+		"url": "http://mirror.switch.ch/ftp/mirror/gnupg/gnupg/gnupg-${VERSION}.tar.bz2",
+		"version": "2.1.21",
+		"sha256": "7aead8a8ba75b69866f583b6c747d91414d523bfdfbe9a8e0fe026b16ba427dd",
+		"installed_file": "bin/gpg"
+	}
+]

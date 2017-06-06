@@ -1,6 +1,0 @@
-curl:--with-darwinssl --enable-tls-srp
-gnutls:--with-included-libtasn1 --without-p11-kit --disable-doc --disable-cxx --disable-rpath --disable-nls --disable-tests --with-default-trust-store-file=/usr/local/gnupg-2.1/share/ca-certs.crt --with-included-unistring
-nettle:--disable-assembler
-gettext:--disable-java --disable-rpath --disable-c++ --disable-openmp --with-included-gettext
-pth:-target=i386-apple-darwin8.0.0 --disable-tests --disable-dependency-tracking --with-mctx-mth=sjlj --with-mctx-dsp=ssjlj --with-mctx-stk=sas --enable-static=no --disable-maintainer-mode:1
-adns:--enable-static --disable-shared
