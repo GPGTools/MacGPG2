@@ -5,7 +5,6 @@
 		"version": "0.19.8",
 		"sha256": "c42e1ded2f9635d589f58f548c8a1810fb9604747cbb7a9e9be8615cf6a9f165",
 		"configure_args": "--disable-java --disable-rpath --disable-c++ --disable-openmp --with-included-gettext",
-		"n_cpu": 1,
 		"installed_file": "lib/libintl.dylib"
 	},
 	{
@@ -14,7 +13,7 @@
 		"version": "6.1.2",
 		"sha256": "12fed0532d440d2dc902e64f016aa89a33af6044b90bd1f7bca7396635105dbb",
 		"configure_args": "--disable-java --disable-rpath --disable-c++ --disable-openmp --with-included-gettext",
-		"n_cpu": 1,
+		"n_cpu": 2,
 		"installed_file": "lib/libgmp.dylib"
 	},
 	{

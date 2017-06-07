@@ -105,11 +105,11 @@ function downloadLib {
 function unpackLib {
 	libDirs=("$BUILD_DIR/$lib_name-"*)
 	if [[ -d "$libDirs" ]]; then
-	    echo "removing dir ${libDirs[@]##*/}"
+		echo "removing dir ${libDirs[@]##*/}"
 		rm -rf "${libDirs[@]}"
 	fi
 	
-    echo "unpacking $archiveName"
+	echo "unpacking $archiveName"
 	suffix=${archiveName##*.tar.}
 	
 	untar="tar -x --exclude gettext-tools"
@@ -147,42 +147,48 @@ function patchLib {
 function buildLib {
 	oldPATH=$PATH
 	export PATH=$DIST_DIR/bin:$PATH
-    pushd $libDirPath >/dev/null
+	pushd $libDirPath >/dev/null
 	
-    echo "building $lib_name"
+	echo "building $lib_name"
 	
 	if [[ "$lib_name" = "gettext" ]]; then
 		cd gettext-runtime
 	fi
 	
-    make distclean &>/dev/null
+	make distclean &>/dev/null
 	
-	n_cpu=${lib_n_cpu:-$NCPU}
-
-    if [[ ! -f "configure" ]]; then
+	if [[ ! -f "configure" ]]; then
 		./autogen.sh
-    fi
+	fi
 	
 
 	moreCFlags="-Ofast"
-	if [ "$lib_name" = "sqlite" ]; then
+	if [[ "$lib_name" = "sqlite" ]]; then
 		echo SQLite no Ofast
 		moreCFlags=
 	fi
   
-    CFLAGS="-arch $ARCH -m$ABI -ULOCALEDIR -DLOCALEDIR='\"${TARGET_DIR}/share/locale\"' $ADDITIONAL_CFLAGS $moreCFlags" \
-    CXXFLAGS="-arch $ARCH" \
-    ABI=$ABI \
-    LDFLAGS="-L$DIST_DIR/lib -arch $ARCH" \
-    CPPFLAGS="-I$DIST_DIR/include -arch $ARCH" \
-    PKG_CONFIG_PATH=$DIST_DIR/lib/pkgconfig \
+	CFLAGS="-arch $ARCH -m$ABI -ULOCALEDIR -DLOCALEDIR='\"${TARGET_DIR}/share/locale\"' $ADDITIONAL_CFLAGS $moreCFlags" \
+	CXXFLAGS="-arch $ARCH" \
+	ABI=$ABI \
+	LDFLAGS="-L$DIST_DIR/lib -arch $ARCH" \
+	CPPFLAGS="-I$DIST_DIR/include -arch $ARCH" \
+	PKG_CONFIG_PATH=$DIST_DIR/lib/pkgconfig \
 	ac_cv_search_clock_gettime=no \
 	ac_cv_func_clock_gettime=no \
-    ./configure --prefix=$DIST_DIR \
-		--cache-file="$WORKING_DIR/config_$lib_name.cache" \
+	./configure --prefix=$DIST_DIR \
+		--enable-static=no \
+		--cache-file="$WORKING_DIR/config.cache" \
 		$lib_configure_args || doFail "buildLib configure"
 
-    make -j $n_cpu || doFail "buildLib make"
+
+	if  [[ -n "$lib_n_cpu" && "$lib_n_cpu" -lt $NCPU ]]; then
+		n_cpu=$lib_n_cpu
+	else 
+		n_cpu=$NCPU
+	fi
+
+	make -j $n_cpu || doFail "buildLib make"
 	make install || doFail "buildLib install"
 
 	popd >/dev/null
@@ -193,50 +199,56 @@ function buildGnuPG {
 	rm -fr "$DIST_DIR/share/man" "$DIST_DIR/share/locale" || doFail "buildGnuPG rm"
 	
 	oldPATH=$PATH
-    export PATH=$BASE_DIR/bin:$PATH
-    pushd $libDirPath >/dev/null
+	export PATH=$BASE_DIR/bin:$PATH
+	pushd $libDirPath >/dev/null
 	
-    GPGCONFIGPARAM=""
-    if [[ ! -f ./configure ]]; then
-      GPGCONFIGPARAM="--enable-maintainer-mode"
-      GETTEXT_PREFIX=$DIST_DIR/bin/ ./autogen.sh --force || doFail "buildGnuPG autogen"
-    fi
+	GPGCONFIGPARAM=""
+	if [[ ! -f ./configure ]]; then
+	  GPGCONFIGPARAM="--enable-maintainer-mode"
+	  GETTEXT_PREFIX=$DIST_DIR/bin/ ./autogen.sh --force || doFail "buildGnuPG autogen"
+	fi
 
 
-    CFLAGS="-arch $ARCH -Ofast $ADDITIONAL_CFLAGS -ULOCALEDIR -DLOCALEDIR='\"${TARGET_DIR}/share/locale\"'" \
-    CXXFLAGS="-arch $ARCH" \
-    ABI=$ABI \
-    LDFLAGS="-L$DIST_DIR/lib -arch $ARCH" \
-    CPPFLAGS="-I$DIST_DIR/include -arch $ARCH" \
-    PKG_CONFIG_PATH=$DIST_DIR/lib/pkgconfig \
+	CFLAGS="-arch $ARCH -Ofast $ADDITIONAL_CFLAGS -ULOCALEDIR -DLOCALEDIR='\"${TARGET_DIR}/share/locale\"'" \
+	CXXFLAGS="-arch $ARCH" \
+	ABI=$ABI \
+	LDFLAGS="-L$DIST_DIR/lib -arch $ARCH" \
+	CPPFLAGS="-I$DIST_DIR/include -arch $ARCH" \
+	PKG_CONFIG_PATH=$DIST_DIR/lib/pkgconfig \
 	ac_cv_search_clock_gettime=no \
 	ac_cv_func_clock_gettime=no \
 	./configure \
-		--cache-file="$WORKING_DIR/config_gnupg.cache" \
-      	--prefix=$DIST_DIR \
-        --localstatedir=/var \
-        --sysconfdir=${TARGET_DIR}/etc \
-        --disable-rpath \
-        --with-pinentry-pgm=${TARGET_DIR}/libexec/pinentry-mac.app/Contents/MacOS/pinentry-mac \
-        --with-agent-pgm=${TARGET_DIR}/bin/gpg-agent \
-        --with-scdaemon-pgm=${TARGET_DIR}/libexec/scdaemon \
-        --with-dirmngr-pgm=${TARGET_DIR}/bin/dirmngr \
-        --with-dirmngr-ldap-pgm=${TARGET_DIR}/libexec/dirmngr_ldap \
-        --with-protect-tool-pgm=${TARGET_DIR}/libexec/gpg-protect-tool \
-        --enable-gpg2-is-gpg \
-        --with-libgpg-error-prefix=$DIST_DIR \
-        --with-libgcrypt-prefix=$DIST_DIR \
-        --with-libassuan-prefix=$DIST_DIR \
-        --with-ksba-prefix=$DIST_DIR \
-        --with-npth-prefix=$DIST_DIR \
-        --with-readline=$DIST_DIR \
-        --with-libintl-prefix=$DIST_DIR \
-        $GPGCONFIGPARAM \
-        --with-libiconv-prefix=$DIST_DIR || doFail "buildGnuPG configure"
+		--cache-file="$WORKING_DIR/config.cache" \
+	  	--prefix=$DIST_DIR \
+		--localstatedir=/var \
+		--sysconfdir=${TARGET_DIR}/etc \
+		--disable-rpath \
+		--with-pinentry-pgm=${TARGET_DIR}/libexec/pinentry-mac.app/Contents/MacOS/pinentry-mac \
+		--with-agent-pgm=${TARGET_DIR}/bin/gpg-agent \
+		--with-scdaemon-pgm=${TARGET_DIR}/libexec/scdaemon \
+		--with-dirmngr-pgm=${TARGET_DIR}/bin/dirmngr \
+		--with-dirmngr-ldap-pgm=${TARGET_DIR}/libexec/dirmngr_ldap \
+		--with-protect-tool-pgm=${TARGET_DIR}/libexec/gpg-protect-tool \
+		--enable-gpg2-is-gpg \
+		--with-libgpg-error-prefix=$DIST_DIR \
+		--with-libgcrypt-prefix=$DIST_DIR \
+		--with-libassuan-prefix=$DIST_DIR \
+		--with-ksba-prefix=$DIST_DIR \
+		--with-npth-prefix=$DIST_DIR \
+		--with-readline=$DIST_DIR \
+		--with-libintl-prefix=$DIST_DIR \
+		$GPGCONFIGPARAM \
+		--with-libiconv-prefix=$DIST_DIR || doFail "buildGnuPG configure"
 	
-	n_cpu=${lib_n_cpu:-$NCPU}
-    make -j $NCPU || doFail "buildGnuPG make"
-    make install || doFail "buildGnuPG install"	
+	
+	if  [[ -n "$lib_n_cpu" && "$lib_n_cpu" -lt $NCPU ]]; then
+		n_cpu=$lib_n_cpu
+	else 
+		n_cpu=$NCPU
+	fi
+	
+	make -j $NCPU || doFail "buildGnuPG make"
+	make install || doFail "buildGnuPG install"	
 
 	
 	PATH=$oldPATH
@@ -248,6 +260,10 @@ if [[ "$(type -t pkg-config)" != "file" ]]; then
 	errExit "ERROR: pkg-config is not installed. This script requires pkg-config to be available.\nPlease fix your setup and try again."
 fi
 
+
+# Prepare config.cache to improve build performance.
+cp -f "$BASE_DIR/resources/config.cache" "$WORKING_DIR/"
+chmod -w "$WORKING_DIR/config.cache"
 
 
 # Read libs.json
@@ -352,7 +368,7 @@ tar -cf - \
 	share/locale | tar -C "$FINAL_DIR" -xf -
 
 ln -s gpg "$FINAL_DIR/bin/gpg2"
-cp "$BASE_DIR/scripts/convert-keyring" "$DIST_DIR/bin/"
+cp "$BASE_DIR/resources/convert-keyring" "$DIST_DIR/bin/"
 
 rm -f "$FINAL_DIR/lib/libgettext"*
 popd >/dev/null
@@ -365,5 +381,8 @@ otool -L $(ls -d bin/* | egrep -v '(convert-keyring)') | grep "$WORKING_DIR" && 
 otool -L libexec/* | grep "$WORKING_DIR" && doFail "otool libexec"
 otool -L lib/* | grep "$WORKING_DIR" && doFail "otool lib"
 popd >/dev/null
+
+
+echo -n "Build ended at "; date
 
 
