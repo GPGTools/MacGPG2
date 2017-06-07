@@ -29,8 +29,7 @@ LIBEXEC_FILES=(dirmngr_ldap gpg-preset-passphrase scdaemon gpg-check-pattern gpg
 ARCH="x86_64"
 ABI="64"
 export MACOSX_DEPLOYMENT_TARGET=10.9
-# Additional flags to add to the CFLAGS parameter
-ADDITIONAL_CFLAGS="-Ofast -mmacosx-version-min=10.9"
+ADDITIONAL_CFLAGS="-mmacosx-version-min=10.9"
 
 
 
@@ -112,20 +111,22 @@ function unpackLib {
 	
     echo "unpacking $archiveName"
 	suffix=${archiveName##*.tar.}
-		
+	
+	untar="tar -x --exclude gettext-tools"
+	
 	case "$suffix" in
 	lz)
 		lunzip=lunzip
 		if ! command -v lunzip &>/dev/null; then
 			lunzip="lzip -d"
 		fi
-		$lunzip -k -c "$archivePath" | tar -C "$BUILD_DIR" -xf - || doFail "$archiveName"
+		$lunzip -k -c "$archivePath" | $untar -C "$BUILD_DIR" -f - || doFail "$archiveName"
 		;;
 	bz2)
-		tar -C "$BUILD_DIR" -jxf "$archivePath" || doFail "$archiveName"
+		$untar -C "$BUILD_DIR" -jf "$archivePath" || doFail "$archiveName"
 		;;
 	gz|xz)
-		tar -C "$BUILD_DIR" -zxf "$archivePath" || doFail "$archiveName"
+		$untar -C "$BUILD_DIR" -zf "$archivePath" || doFail "$archiveName"
 		;;
 	*)
 		doFail "$archiveName"
@@ -150,6 +151,10 @@ function buildLib {
 	
     echo "building $lib_name"
 	
+	if [[ "$lib_name" = "gettext" ]]; then
+		cd gettext-runtime
+	fi
+	
     make distclean &>/dev/null
 	
 	n_cpu=${lib_n_cpu:-$NCPU}
@@ -159,12 +164,13 @@ function buildLib {
     fi
 	
 
-	moreCFlags="$ADDITIONAL_CFLAGS"
-	if [ ${lib_name:0:6} = "sqlite" ]; then
+	moreCFlags="-Ofast"
+	if [ "$lib_name" = "sqlite" ]; then
+		echo SQLite no Ofast
 		moreCFlags=
 	fi
   
-    CFLAGS="-arch $ARCH -m$ABI -ULOCALEDIR -DLOCALEDIR=\\\"${TARGET_DIR}/share/locale\\\" $moreCFlags" \
+    CFLAGS="-arch $ARCH -m$ABI -ULOCALEDIR -DLOCALEDIR='\"${TARGET_DIR}/share/locale\"' $ADDITIONAL_CFLAGS $moreCFlags" \
     CXXFLAGS="-arch $ARCH" \
     ABI=$ABI \
     LDFLAGS="-L$DIST_DIR/lib -arch $ARCH" \
@@ -173,7 +179,8 @@ function buildLib {
 	ac_cv_search_clock_gettime=no \
 	ac_cv_func_clock_gettime=no \
     ./configure --prefix=$DIST_DIR \
-    	$lib_configure_args || doFail "buildLib configure"
+		--cache-file="$WORKING_DIR/config_$lib_name.cache" \
+		$lib_configure_args || doFail "buildLib configure"
 
     make -j $n_cpu || doFail "buildLib make"
 	make install || doFail "buildLib install"
@@ -196,7 +203,7 @@ function buildGnuPG {
     fi
 
 
-    CFLAGS="-arch $ARCH $ADDITIONAL_CFLAGS -ULOCALEDIR -DLOCALEDIR=\\\"${TARGET_DIR}/share/locale\\\"" \
+    CFLAGS="-arch $ARCH -Ofast $ADDITIONAL_CFLAGS -ULOCALEDIR -DLOCALEDIR='\"${TARGET_DIR}/share/locale\"'" \
     CXXFLAGS="-arch $ARCH" \
     ABI=$ABI \
     LDFLAGS="-L$DIST_DIR/lib -arch $ARCH" \
@@ -205,6 +212,7 @@ function buildGnuPG {
 	ac_cv_search_clock_gettime=no \
 	ac_cv_func_clock_gettime=no \
 	./configure \
+		--cache-file="$WORKING_DIR/config_gnupg.cache" \
       	--prefix=$DIST_DIR \
         --localstatedir=/var \
         --sysconfdir=${TARGET_DIR}/etc \
