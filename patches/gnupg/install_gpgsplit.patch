@@ -1,0 +1,21 @@
+# Also install gpgsplit
+
+
+--- a/tools/Makefile.in
++++ b/tools/Makefile.in
+@@ -137,13 +137,13 @@
+ @GNUPG_DIRMNGR_LDAP_PGM_TRUE@am__append_7 = -DGNUPG_DEFAULT_DIRMNGR_LDAP="\"@GNUPG_DIRMNGR_LDAP_PGM@\""
+ @HAVE_W32_SYSTEM_TRUE@am__append_8 = gpg-connect-agent-w32info.o
+ libexec_PROGRAMS = gpg-wks-client$(EXEEXT) $(am__EXEEXT_5)
+-bin_PROGRAMS = gpgconf$(EXEEXT) gpg-connect-agent$(EXEEXT) \
++bin_PROGRAMS = gpgconf$(EXEEXT) gpg-connect-agent$(EXEEXT) gpgsplit$(EXEEXT) \
+ 	$(am__EXEEXT_1) $(am__EXEEXT_3) $(am__EXEEXT_4)
+ @HAVE_W32_SYSTEM_FALSE@am__append_9 = watchgnupg gpgparsemail ${gpg_wks_server}
+ @DISABLE_REGEX_FALSE@am__append_10 = gpg-check-pattern
+ @HAVE_W32CE_SYSTEM_FALSE@noinst_PROGRAMS = clean-sat$(EXEEXT) \
+ @HAVE_W32CE_SYSTEM_FALSE@	make-dns-cert$(EXEEXT) \
+-@HAVE_W32CE_SYSTEM_FALSE@	gpgsplit$(EXEEXT) $(am__EXEEXT_6)
++@HAVE_W32CE_SYSTEM_FALSE@	$(am__EXEEXT_6)
+ @BUILD_GPGTAR_TRUE@@HAVE_W32CE_SYSTEM_FALSE@am__append_11 = gpgtar
+ @BUILD_GPGTAR_FALSE@@HAVE_W32CE_SYSTEM_FALSE@am__append_12 = gpgtar
+ subdir = tools

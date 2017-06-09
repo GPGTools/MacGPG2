@@ -1,0 +1,15 @@
+# Don't add -ggdb3 to CFLAGS.
+# -ggdb3 adds unnecessary debug information and absoulte paths to the build location to the dylib.
+
+
+--- a/configure	
++++ b/configure
+@@ -7660,7 +7660,7 @@
+   if $CC --version | grep '^2\.96$' 1>/dev/null 2>&1; then
+     true
+   else
+-    CFLAGS="$CFLAGS -ggdb3"
++    true
+   fi
+   # FIXME: It would be better to actually test if this option works and/or is needed.
+   # Or perhaps use -funsigned-char.

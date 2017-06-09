@@ -1,0 +1,14 @@
+# This patch prevents a crash in gpg-agent.
+# If gettext isn't used until a fork, it could crash when it is used.
+
+
+--- a/agent/gpg-agent.c
++++ b/agent/gpg-agent.c
+@@ -1284,6 +1284,7 @@ main (int argc, char **argv )
+     }
+ 
+   set_debug ();
++  _("");
+ 
+   if (atexit (cleanup))
+     {

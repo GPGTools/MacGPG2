@@ -19,7 +19,7 @@ TARGET_DIR=/usr/local/MacGPG2
 
 
 # Files in bin and libexec, which are copied to the MacGPG2 dir.
-BIN_FILES=(gpg gpgv gpg-agent gpg-connect-agent gpg-error gpgconf gpgparsemail gpgsm gpgtar kbxutil watchgnupg dirmngr-client dirmngr mpicalc dumpsexp hmac256)
+BIN_FILES=(gpg gpg-agent gpg-connect-agent gpg-error gpgconf gpgparsemail gpgsm gpgsplit gpgtar gpgv kbxutil watchgnupg dirmngr-client dirmngr mpicalc dumpsexp hmac256)
 LIBEXEC_FILES=(dirmngr_ldap gpg-preset-passphrase scdaemon gpg-check-pattern gpg-protect-tool gpg-wks-client)
 
 
@@ -188,13 +188,15 @@ function buildLib {
 		n_cpu=$NCPU
 	fi
 
-	make -j $n_cpu || doFail "buildLib make"
+	make -j $n_cpu localedir="${TARGET_DIR}/share/locale" datarootdir="${TARGET_DIR}/share" || doFail "buildLib make"
 	make install || doFail "buildLib install"
 
 	popd >/dev/null
 	PATH=$oldPATH
 }
 function buildGnuPG {
+	echo "building GnuPG"
+
 	# Remove some unnecessary files.
 	rm -fr "$DIST_DIR/share/man" "$DIST_DIR/share/locale" || doFail "buildGnuPG rm"
 	
@@ -209,7 +211,14 @@ function buildGnuPG {
 	fi
 
 
-	CFLAGS="-arch $ARCH -Ofast $ADDITIONAL_CFLAGS -ULOCALEDIR -DLOCALEDIR='\"${TARGET_DIR}/share/locale\"'" \
+	# CFLAGS="-arch $ARCH -Ofast $ADDITIONAL_CFLAGS \
+	# 	-ULOCALEDIR -DLOCALEDIR='\"${TARGET_DIR}/share/locale\"' \
+	# 	-UGNUPG_SYSCONFDIR -DGNUPG_SYSCONFDIR='\"${TARGET_DIR}/etc/gnupg\"' \
+	# 	-UGNUPG_BINDIR -DGNUPG_BINDIR='\"${TARGET_DIR}/bin\"' \
+	# 	-UGNUPG_LIBEXECDIR -DGNUPG_LIBEXECDIR='\"${TARGET_DIR}/libexec\"' \
+	# 	-UGNUPG_LIBDIR -DGNUPG_LIBDIR='\"${TARGET_DIR}/lib\"' \
+	# 	-UGNUPG_DATADIR -DGNUPG_DATADIR='\"${TARGET_DIR}/share/gnupg\"'" \
+	CFLAGS="-arch $ARCH -Ofast $ADDITIONAL_CFLAGS" \
 	CXXFLAGS="-arch $ARCH" \
 	ABI=$ABI \
 	LDFLAGS="-L$DIST_DIR/lib -arch $ARCH" \
@@ -241,13 +250,17 @@ function buildGnuPG {
 		--with-libiconv-prefix=$DIST_DIR || doFail "buildGnuPG configure"
 	
 	
+	# Change the name from "GnuPG" to "GnuPG/MacGPG2".
+	echo -e "#undef GNUPG_NAME\n#define GNUPG_NAME \"GnuPG/MacGPG2\"" >> config.h
+	
+	
 	if  [[ -n "$lib_n_cpu" && "$lib_n_cpu" -lt $NCPU ]]; then
 		n_cpu=$lib_n_cpu
 	else 
 		n_cpu=$NCPU
 	fi
 	
-	make -j $NCPU || doFail "buildGnuPG make"
+	make -j $NCPU prefix="${TARGET_DIR}" || doFail "buildGnuPG make"
 	make install || doFail "buildGnuPG install"	
 
 	
@@ -359,6 +372,7 @@ rm -rf "$FINAL_DIR" &>/dev/null
 mkdir -p "$FINAL_DIR"
 pushd "$DIST_DIR" >/dev/null
 
+
 tar -cf - \
 	"${BIN_FILES[@]/#/bin/}" \
 	"${LIBEXEC_FILES[@]/#/libexec/}" \
@@ -368,7 +382,9 @@ tar -cf - \
 	share/locale | tar -C "$FINAL_DIR" -xf -
 
 ln -s gpg "$FINAL_DIR/bin/gpg2"
-cp "$BASE_DIR/resources/convert-keyring" "$DIST_DIR/bin/"
+cp "$BASE_DIR/resources/convert-keyring" "$FINAL_DIR/bin/" || doFail "cp convert-keyring"
+cp sbin/gpg-zip "$FINAL_DIR/bin/" || doFail "cp gpg-zip"
+
 
 rm -f "$FINAL_DIR/lib/libgettext"*
 popd >/dev/null
@@ -377,7 +393,7 @@ popd >/dev/null
 
 # ensure that all executables and libraries have correct lib-path settings
 pushd "$FINAL_DIR" >/dev/null
-otool -L $(ls -d bin/* | egrep -v '(convert-keyring)') | grep "$WORKING_DIR" && doFail "otool bin"
+otool -L $(ls -d bin/* | egrep -v '(convert-keyring|gpg-zip)') | grep "$WORKING_DIR" && doFail "otool bin"
 otool -L libexec/* | grep "$WORKING_DIR" && doFail "otool libexec"
 otool -L lib/* | grep "$WORKING_DIR" && doFail "otool lib"
 popd >/dev/null
