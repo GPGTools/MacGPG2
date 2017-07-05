@@ -34,8 +34,8 @@
 	{
 		"name": "libgcrypt",
 		"url": "ftp://ftp.gnupg.org/gcrypt/libgcrypt/libgcrypt-${VERSION}.tar.bz2",
-		"version": "1.7.6",
-		"sha1": "d2b9e0f413064cfc67188f80d3cbda887c755a62",
+		"version": "1.7.8",
+		"sha256": "948276ea47e6ba0244f36a17b51dcdd52cfd1e664b0a1ac3bc82134fb6cec199",
 		"installed_file": "lib/libgcrypt.dylib"
 	},
 	{
