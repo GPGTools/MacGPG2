@@ -1,0 +1,15 @@
+# Fixes an off-by-one-error in optfile_parse.
+
+
+--- a/common/argparse.c
++++ b/common/argparse.c
+@@ -599,8 +599,7 @@ optfile_parse (FILE *fp, const char *filename, unsigned *lineno,
+         c = getc (fp);
+       if (c == '\n' || c== EOF )
+         {
+-          if ( c != EOF )
+-            ++*lineno;
++          ++*lineno;
+           if (state == -1)
+             break;
+           else if (state == 2)
