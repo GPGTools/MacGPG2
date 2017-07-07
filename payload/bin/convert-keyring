@@ -3,6 +3,8 @@
 # Script to convert old (pre GnuPG 2.1) public key files to the new
 # key format.
 
+PATH=/usr/local/MacGPG2/bin:$PATH
+
 if ! gpg --list-config --with-colons | grep -qF cfg:version:2.1; then
 	echo "gpg 2.1 not found! exiting."
 	exit 3

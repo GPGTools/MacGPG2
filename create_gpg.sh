@@ -382,7 +382,7 @@ tar -cf - \
 	share/locale | tar -C "$FINAL_DIR" -xf -
 
 ln -s gpg "$FINAL_DIR/bin/gpg2"
-cp "$BASE_DIR/resources/convert-keyring" "$FINAL_DIR/bin/" || doFail "cp convert-keyring"
+cp -r "$BASE_DIR/payload/" "$FINAL_DIR/" || doFail "cp payload"
 cp sbin/gpg-zip "$FINAL_DIR/bin/" || doFail "cp gpg-zip"
 
 
@@ -393,8 +393,9 @@ popd >/dev/null
 
 # ensure that all executables and libraries have correct lib-path settings
 pushd "$FINAL_DIR" >/dev/null
-otool -L $(ls -d bin/* | egrep -v '(convert-keyring|gpg-zip)') | grep "$WORKING_DIR" && doFail "otool bin"
-otool -L libexec/* | grep "$WORKING_DIR" && doFail "otool libexec"
+shopt -s extglob
+otool -L bin/!(convert-keyring|gpg-zip) | grep "$WORKING_DIR" && doFail "otool bin"
+otool -L libexec/!(fixGpgHome|shutdown-gpg-agent) | grep "$WORKING_DIR" && doFail "otool libexec"
 otool -L lib/* | grep "$WORKING_DIR" && doFail "otool lib"
 popd >/dev/null
 
