@@ -8,19 +8,30 @@
 ################################################################################
 
 LOGFILE="$HOME/Library/Logs/gpg-home-fixer.log"
-SCRIPT_NAME=${0##*/}
-
-function log {
-    current_date=$(date "+%Y-%m-%d %H:%M:%S")
-    echo "$current_date: $1"
-    if [[ "$2" != "" ]]; then
-        echo ""
-    fi
-}
+SCRIPT_NAME="[${0##*/}]"
 
 # Helper functions #############################################################
+function log {
+    current_date=$(date "+%Y-%m-%d %H:%M:%S")
+    echo "$current_date: $SCRIPT_NAME $*"
+}
+function runAsUser {
+	if [[ "$UID" -eq 0 ]] ;then
+		temp_uid=$ACTUAL_UID
+		[[ "$temp_uid" =~ [^0-9] ]] || temp_uid="#$temp_uid"
+		sudo -nu "$temp_uid" "${@}"
+	else
+		"${@}"
+	fi
+}
+
 function logging {
 	# Enables logging into $LOGFILE and to stdout.
+	
+	touch "$LOGFILE"
+	owner=$(stat -f "%u" "${LOGFILE%/*}")
+	[[ -n "$owner" ]] && chown "$owner" "$LOGFILE"
+	
 	tempdir=$(mktemp -d -t org.gpgtools.log)
 	if [[ -d "$tempdir" ]]; then
 		trap "rm -rf '$tempdir'" EXIT
@@ -42,147 +53,56 @@ function errExit {
 	fi
 	exit 1
 }
-function myEcho {
-	log "${SCRIPT_NAME:+[$SCRIPT_NAME] }$*"
-}
-
-
-function isBinaryWorking {
-	# Check if the binary, passed to this function, is working.
-	"$1" --version >&/dev/null
-	return $?
-}
-function findWorkingPinentry {
-	# Pinentry binary
-	PINENTRY_BINARY_PATH="pinentry-mac.app/Contents/MacOS/pinentry-mac"
-	# Pinentry in Libmacgpg
-	PINENTRY_PATHS[1]="/Library/Frameworks/Libmacgpg.framework/Versions/A/Resources"
-	# Pinentry in MacGPG2
-	PINENTRY_PATHS[0]="/usr/local/MacGPG2/libexec"
-
-	for pinentry_path in "${PINENTRY_PATHS[@]}"; do
-		full_pinentry_path="$pinentry_path/$PINENTRY_BINARY_PATH"
-
-		if isBinaryWorking "$full_pinentry_path" ;then
-			echo "$full_pinentry_path"
-			return 0
-		fi
-	done
-	
-	return 1
-}
-
 ################################################################################
 
+
 function fixGpgHome {
-	myEcho "Fixing '$GNUPGHOME'..."
+	log "Fixing '$GNUPGHOME'..."
 
 	# Permissions
 	[[ -e "$GNUPGHOME" ]] || mkdir -m 0700 "$GNUPGHOME"
-	chown -R "$ACTUAL_UID:staff" "$GNUPGHOME"
-	chmod -R -N "$GNUPGHOME" 2>/dev/null
-	chmod -R u+rwX,go= "$GNUPGHOME"
-
-	# Create gpg.conf if needed.
-	if [[ ! -e "$GNUPGHOME/gpg.conf" ]] ;then
-		cp /usr/local/MacGPG2/share/gnupg/gpg-conf.skel "$GNUPGHOME/gpg.conf"
-		chown "$ACTUAL_UID:staff" "$GNUPGHOME/gpg.conf"
-		myEcho "Created gpg.conf"
-	elif ! /usr/local/MacGPG2/bin/gpg2 --gpgconf-test ;then
-		myEcho "Fixing gpg.conf"
-		mv "$GNUPGHOME/gpg.conf" "$GNUPGHOME/gpg.conf.moved-by-gpgtools-fix"
-		cp /usr/local/MacGPG2/share/gnupg/gpg-conf.skel "$GNUPGHOME/gpg.conf"
-		chown "$ACTUAL_UID:staff" "$GNUPGHOME/gpg.conf"
-		myEcho "Replaced gpg.conf"
+	
+	HOME_GROUP=":staff"
+	gnupgGroup=$(stat -f "%Sg" "$GNUPGHOME")
+	if [[ "$gnupgGroup" =~ ^(staff|wheel)$ && "$gnupgGroup" == "$(stat -f "%Sg" "$HOME")" ]]; then
+		# If $GNUPGHOME is owned by another group than staff or wheel
+		# and the same group owns $HOME, the owner group for $GNUPGHOME isn't changed.
+		HOME_GROUP=""
 	fi
 	
+	chmod -RN "$GNUPGHOME" 2>/dev/null # Remove ACL.
+	chown -R "$ACTUAL_UID${HOME_GROUP}" "$GNUPGHOME"
+	chmod -R u+rwX,go= "$GNUPGHOME"
 	
-
-	# Add a keyserver if none exits
-	if ! grep -q '^[ 	]*keyserver ' "$GNUPGHOME/gpg.conf" ;then
-        echo "keyserver hkps://hkps.pool.sks-keyservers.net" >> "$GNUPGHOME/gpg.conf"
-		myEcho "Added a keyserver"
-    fi
-	myEcho "Fixing done"
+	log "Fixing done"
 }
 
 function fixGPGAgent {
-	myEcho "fixGPGAgent started"
+	log "fixGPGAgent started"
 	
 	gpgAgentConf="$GNUPGHOME/gpg-agent.conf"
+	if [[ ! -e "$gpgAgentConf" ]]; then
+		log "gpg-agent.conf doesn't exist."
+		return 0
+	fi
+	
 	needHup=false
-	myEcho "Fixing '$gpgAgentConf'..."
-	if [[ "$UID" -eq 0 ]] ;then
-		myEcho "UID = 0"
-		temp_uid=$ACTUAL_UID
-		[[ "$temp_uid" =~ [^0-9] ]] || temp_uid="#$temp_uid"
-		myEcho "touch gpg-agent.conf using uid: '$temp_uid'"
-		sudo -nu "$temp_uid" touch "$gpgAgentConf"
-	else
-		myEcho "UID: '$UID'"
-		touch "$gpgAgentConf"
-	fi
 	
-	
-
-	# Fix pinentry.
-	currentPinetry=$(sed -En '/^[ 	]*pinentry-program "?([^"]*)"?/{s//\1/p;q;}' "$gpgAgentConf")
-	if ! isBinaryWorking "$currentPinetry" ;then
+	# Remove a bad pinentry option.
+	currentPinetry=$(sed -En '/^[ '$'\t'']*pinentry-program "?([^"]*)"?/{s//\1/p;q;}' "$gpgAgentConf")
+	if [[ -n "$currentPinetry" && ( ! -f "$currentPinetry" || ! -x "$currentPinetry" ) ]] ;then
+		log "Fixing '$gpgAgentConf'..."
 		needHup=true
-		# Let's find a working pinentry.
-		if ! working_pinentry=$(findWorkingPinentry) ;then
-			myEcho "No working pinentry found. Abort!"
-			return 1
-		fi
-		myEcho "Found working pinentry at: $working_pinentry"
-
-		if [[ -n "$currentPinetry" ]] ;then
-			myEcho "Replacing existing pinentry"
-			sed -Ei '' '/^([ 	]*pinentry-program ).*/s@@\1'"$working_pinentry@" "$gpgAgentConf"
-		else
-			myEcho "Add new pinentry"
-			echo "pinentry-program $working_pinentry" >> "$gpgAgentConf"
-		fi
+		log "Remove bad pinentry option"
+		runAsUser sed -Ei '' 's/^[ '$'\t'']*pinentry-program .*//' "$gpgAgentConf"
+	fi
+	
+	if $needHup ;then
+		log "Force gpg-agent.conf reload."
+		killall -HUP gpg-agent 2>/dev/null
 	fi
 
-
-	# "$GNUPGHOME" on NFS volumes
-    # http://gpgtools.lighthouseapp.com/projects/66001-macgpg2/tickets/55
-    if ! grep -Eq '^[       ]*no-use-standard-socket' "$gpgAgentConf" ;then
-		tempFile="$GNUPGHOME/test.tmp"
-		rm -f "$tempFile"
-		if ! mkfifo "$tempFile" >&/dev/null ;then
-			needHup=true
-			echo "no-use-standard-socket" >> "$gpgAgentConf"
-		fi
-		rm -f "$tempFile"
-    fi
-	
-	chown "$ACTUAL_UID:staff" "$gpgAgentConf"
-	
-	# Fix permissions of the central gpg-agent socket dir.
-	[[ -e /tmp/gpg-agent ]] && chmod a+rwx /tmp/gpg-agent
-
-	# Reload gpg-agent.conf or start gpg-agent.
-	if gpg-agent &>/dev/null ;then
-		if $needHup ;then
-			myEcho "Force gpg-agent.conf reload."
-			killall -HUP gpg-agent 2>/dev/null
-		fi
-	else
-		myEcho "Start gpg-agent."
-		if [[ "$UID" -eq 0 ]] ;then
-			myEcho "UID = 0"
-			temp_uid=$ACTUAL_UID
-			[[ "$temp_uid" =~ [^0-9] ]] || temp_uid="#$temp_uid"
-			myEcho "Start gpg-agent using uid: '$temp_uid'"
-			sudo -nu "$temp_uid" /usr/local/MacGPG2/bin/gpg-agent --daemon
-		else
-			myEcho "UID: '$UID'"
-			/usr/local/MacGPG2/bin/gpg-agent --daemon
-		fi
-	fi
-	myEcho "fixGPGAgent done"
+	log "fixGPGAgent done"
 }
 
 
@@ -192,32 +112,33 @@ function fixGPGAgent {
 # Setting up the logfile.
 logging
 
-myEcho "started with arguments: $@"
+log "started with arguments: $@"
 
-GNUPGHOME=${GNUPGHOME:-$HOME/.gnupg}
 
-# Argument 1 contains a potentional USER ID to user and argument 2
-# contains a potentional USER HOME to use.
+# Argument 1 contains a potentional USER ID to user and 
+# argument 2 contains a potentional GNUPGHOME to use.
 ACTUAL_UID=$UID
-if [ "$1" != "" ]; then
+if [[ -n "$1" ]]; then
     ACTUAL_UID="$1"
     log "Overwrite UID: $ACTUAL_UID"
 fi
-if [[ "$ACTUAL_UID" == "0" ]]; then
-	myEcho "ACTUAL_UID == 0. Exiting to prevent wrong permissions."
+if [[ "$ACTUAL_UID" == "0" || "$ACTUAL_UID" == "root" ]]; then
+	log "ACTUAL_UID == 0. Exiting to prevent wrong permissions."
 	exit 0
 fi
-if [ "$2" != "" ]; then
+
+GNUPGHOME=${GNUPGHOME:-$HOME/.gnupg}
+if [[ -n "$2" ]]; then
     GNUPGHOME=$2
     log "Overwrite GNUPGHOME: $GNUPGHOME"
 fi
 
-shasum /usr/local/MacGPG2/bin/gpg2
-shasum /usr/local/MacGPG2/bin/gpg-agent
+
 
 fixGpgHome
 fixGPGAgent
 
-myEcho "done"
+
+log "done"
 
 exit 0
