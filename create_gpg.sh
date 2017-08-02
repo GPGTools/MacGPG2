@@ -85,19 +85,11 @@ function downloadLib {
 		echo "Downloading $archiveName"
 		curl -L -o "$archivePath" "$fullUrl"
 	fi
-	
-	if [[ -n "$lib_sha256" ]]; then
-		hash=$lib_sha256
-		algo=256
-	else
-		hash=$lib_sha1
-		algo=1
-	fi
-	
-	fileHash=$(shasum -a $algo "$archivePath" | cut -d ' ' -f 1)
-	if [[ "$hash" != "$fileHash" ]]; then
-		echo "SHA-$algo sums of file $archiveName don't match" >&2
-		echo "expected: $hash" >&2
+		
+	fileHash=$(shasum -a 256 "$archivePath" | cut -d ' ' -f 1)
+	if [[ "$lib_sha256" != "$fileHash" ]]; then
+		echo "SHA-256 sums of file $archiveName don't match" >&2
+		echo "expected: $lib_sha256" >&2
 		echo "obtained: $fileHash" >&2
 		doFail "downloadLib"
 	fi

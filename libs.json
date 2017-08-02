@@ -9,7 +9,7 @@
 	},
 	{
 		"name": "gmp",
-		"url": "http://mirror.switch.ch/ftp/mirror/gnu/gmp/gmp-${VERSION}.tar.lz",
+		"url": "ftp://mirror.switch.ch/mirror/gnu/gmp/gmp-${VERSION}.tar.lz",
 		"version": "6.1.2",
 		"sha256": "12fed0532d440d2dc902e64f016aa89a33af6044b90bd1f7bca7396635105dbb",
 		"configure_args": "--disable-java --disable-rpath --disable-c++ --disable-openmp --with-included-gettext",
@@ -18,45 +18,45 @@
 	},
 	{
 		"name": "nettle",
-		"url": "ftp://ftp.gnupg.org/gcrypt/lsh/nettle-${VERSION}.tar.gz",
+		"url": "ftp://mirror.switch.ch/mirror/gnupg/lsh/nettle-${VERSION}.tar.gz",
 		"version": "3.1.1",
-		"sha1": "1836601393522124787e029466935408e22dd204",
+		"sha256": "5fd4d25d64d8ddcb85d0d897572af73b05b4d163c6cc49438a5bfbb8ff293d4c",
 		"configure_args": "--disable-assembler",
 		"installed_file": "lib/libnettle.dylib"
 	},
 	{
 		"name": "libgpg-error",
-		"url": "ftp://ftp.gnupg.org/gcrypt/libgpg-error/libgpg-error-${VERSION}.tar.bz2",
+		"url": "ftp://mirror.switch.ch/mirror/gnupg/libgpg-error/libgpg-error-${VERSION}.tar.bz2",
 		"version": "1.27",
 		"sha256": "4f93aac6fecb7da2b92871bb9ee33032be6a87b174f54abf8ddf0911a22d29d2",
 		"installed_file": "lib/libgpg-error.dylib"
 	},
 	{
 		"name": "libgcrypt",
-		"url": "ftp://ftp.gnupg.org/gcrypt/libgcrypt/libgcrypt-${VERSION}.tar.bz2",
+		"url": "ftp://mirror.switch.ch/mirror/gnupg/libgcrypt/libgcrypt-${VERSION}.tar.bz2",
 		"version": "1.8.0",
 		"sha256": "23e49697b87cc4173b03b4757c8df4314e3149058fa18bdc4f82098f103d891b",
 		"installed_file": "lib/libgcrypt.dylib"
 	},
 	{
 		"name": "libassuan",
-		"url": "http://mirror.switch.ch/ftp/mirror/gnupg/libassuan/libassuan-${VERSION}.tar.bz2",
+		"url": "ftp://mirror.switch.ch/mirror/gnupg/libassuan/libassuan-${VERSION}.tar.bz2",
 		"version": "2.4.3",
-		"sha1": "27391cf4a820b5350ea789c30661830c9a271518",
+		"sha256": "22843a3bdb256f59be49842abf24da76700354293a066d82ade8134bb5aa2b71",
 		"installed_file": "lib/libassuan.dylib"
 	},
 	{
 		"name": "libksba",
-		"url": "ftp://ftp.gnupg.org/gcrypt/libksba/libksba-${VERSION}.tar.bz2",
+		"url": "ftp://mirror.switch.ch/mirror/gnupg/libksba/libksba-${VERSION}.tar.bz2",
 		"version": "1.3.5",
-		"sha1": "a98385734a0c3f5b713198e8d6e6e4aeb0b76fde",
+		"sha256": "41444fd7a6ff73a79ad9728f985e71c9ba8cd3e5e53358e70d5f066d35c1a340",
 		"installed_file": "lib/libksba.dylib"
 	},
 	{
 		"name": "readline",
-		"url": "http://mirror.switch.ch/ftp/mirror/gnu/readline/readline-${VERSION}.tar.gz",
+		"url": "ftp://mirror.switch.ch/mirror/gnu/readline/readline-${VERSION}.tar.gz",
 		"version": "7.0",
-		"sha1": "d9095fa14a812495052357e1d678b3f2ac635463",
+		"sha256": "750d437185286f40a369e1e4f4764eda932b9459b5ec9a731628393dd3d32334",
 		"installed_file": "lib/libreadline.dylib"
 	},
 	{
