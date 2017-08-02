@@ -1,9 +1,9 @@
 [
 	{
 		"name": "gettext",
-		"url": "https://ftp.gnu.org/pub/gnu/gettext/gettext-${VERSION}.tar.lz",
-		"version": "0.19.8",
-		"sha256": "c42e1ded2f9635d589f58f548c8a1810fb9604747cbb7a9e9be8615cf6a9f165",
+		"url": "ftp://mirror.switch.ch/mirror/gnu/gettext/gettext-${VERSION}.tar.lz",
+		"version": "0.19.8.1",
+		"sha256": "e462c9fb8b2ccd507452b4e73e51a8268c5d9f0d85e832b0b3e08aec4849a24f",
 		"configure_args": "--disable-java --disable-rpath --disable-c++ --disable-openmp --with-included-gettext",
 		"installed_file": "lib/libintl.dylib"
 	},
@@ -61,32 +61,33 @@
 	},
 	{
 		"name": "npth",
-		"url": "http://mirror.switch.ch/ftp/mirror/gnupg/npth/npth-${VERSION}.tar.bz2",
-		"version": "1.4",
-		"sha256": "8915141836a3169a502d65c1ebd785fcc6d406cae5ee84474272ebf2fa96f1f2",
+		"url": "ftp://mirror.switch.ch/mirror/gnupg/npth/npth-${VERSION}.tar.bz2",
+		"version": "1.5",
+		"sha256": "294a690c1f537b92ed829d867bee537e46be93fbd60b16c04630fbbfcd9db3c2",
 		"configure_args": "--disable-tests --disable-dependency-tracking --enable-static=no",
 		"installed_file": "lib/libnpth.dylib"
 	},
 	{
 		"name": "sqlite",
-		"url": "https://www.sqlite.org/2016/sqlite-autoconf-${VERSION}.tar.gz",
-		"version": "3130000",
-		"sha1": "f6f76e310389e3f510b23826f805850449ae8653",
+		"url": "https://www.sqlite.org/2017/sqlite-autoconf-${VERSION}.tar.gz",
+		"version": "3200000",
+		"sha256": "3814c6f629ff93968b2b37a70497cfe98b366bf587a2261a56a5f750af6ae6a0",
+		"configure_args": "--disable-editline",
 		"installed_file": "lib/libsqlite3.dylib"
 	},
 	{
 		"name": "gnutls",
-		"url": "ftp://ftp.gnutls.org/gcrypt/gnutls/v3.5/gnutls-${VERSION}.tar.xz",
-		"version": "3.5.12",
-		"sha256": "63cb39a5eaa029381df2e49a74cfb7be89fc4a592445191818ffe1e66bde57cb",
+		"url": "ftp://mirror.switch.ch/mirror/gnupg/gnutls/v3.5/gnutls-${VERSION}.tar.xz",
+		"version": "3.5.14",
+		"sha256": "4aa12dec92f42a0434df794aca3d02f6f2a35b47b48c01252de65f355c051bda",
 		"configure_args": "--with-included-libtasn1 --without-p11-kit --disable-doc --disable-cxx --disable-rpath --disable-nls --disable-tests --with-default-trust-store-file=/usr/local/MacGPG2/share/ca-certs.crt --with-included-unistring",
 		"installed_file": "lib/libgnutls.dylib"
 	},
 	{
 		"name": "gnupg",
-		"url": "http://mirror.switch.ch/ftp/mirror/gnupg/gnupg/gnupg-${VERSION}.tar.bz2",
-		"version": "2.1.21",
-		"sha256": "7aead8a8ba75b69866f583b6c747d91414d523bfdfbe9a8e0fe026b16ba427dd",
+		"url": "ftp://mirror.switch.ch/mirror/gnupg/gnupg/gnupg-${VERSION}.tar.bz2",
+		"version": "2.1.22",
+		"sha256": "46716faf9e1b92cfca86609f3bfffbf5bb4b6804df90dc853ff7061cfcfb4ad7",
 		"installed_file": "bin/gpg"
 	}
 ]
