@@ -34,8 +34,8 @@
 	{
 		"name": "libgcrypt",
 		"url": "ftp://mirror.switch.ch/mirror/gnupg/libgcrypt/libgcrypt-${VERSION}.tar.bz2",
-		"version": "1.8.0",
-		"sha256": "23e49697b87cc4173b03b4757c8df4314e3149058fa18bdc4f82098f103d891b",
+		"version": "1.8.1",
+		"sha256": "7a2875f8b1ae0301732e878c0cca2c9664ff09ef71408f085c50e332656a78b3",
 		"installed_file": "lib/libgcrypt.dylib"
 	},
 	{
@@ -86,8 +86,8 @@
 	{
 		"name": "gnupg",
 		"url": "ftp://mirror.switch.ch/mirror/gnupg/gnupg/gnupg-${VERSION}.tar.bz2",
-		"version": "2.1.22",
-		"sha256": "46716faf9e1b92cfca86609f3bfffbf5bb4b6804df90dc853ff7061cfcfb4ad7",
+		"version": "2.2.0",
+		"sha256": "d4514a0be0f7a1ff263193330019eb4b53c82f0f5e230af3c14df371271a45e6",
 		"installed_file": "bin/gpg"
 	}
 ]
