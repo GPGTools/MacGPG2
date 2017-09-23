@@ -9,7 +9,6 @@
  static
  int
  add_system_trust(gnutls_x509_trust_list_t list,
-
 --- a/lib/system/certs.c
 +++ b/lib/system/certs.c
 @@ -291,6 +291,7 @@ static
@@ -38,3 +37,20 @@
  #ifdef DEFAULT_BLACKLIST_FILE
  	ret = gnutls_x509_trust_list_remove_trust_file(list, DEFAULT_BLACKLIST_FILE, GNUTLS_X509_FMT_PEM);
  	if (ret < 0) {
+--- a/lib/system/certs.c
++++ b/lib/system/certs.c
+@@ -293,6 +293,14 @@ int add_system_trust(gnutls_x509_trust_list_t list, unsigned int tl_flags,
+ {
+ 	int ret;
+ 	int r=0;
++#ifdef DEFAULT_TRUST_STORE_FILE
++	const char *crl_file =
++#ifdef DEFAULT_CRL_FILE
++	    DEFAULT_CRL_FILE;
++#else
++	    NULL;
++#endif
++#endif
+ 
+ 	SecTrustSettingsDomain domain[] = { kSecTrustSettingsDomainUser,
+ 					    kSecTrustSettingsDomainAdmin,
