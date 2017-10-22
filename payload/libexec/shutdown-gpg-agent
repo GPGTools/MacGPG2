@@ -1,19 +1,22 @@
-#!/bin/bash
+#!/bin/sh
 
 PROGRAM_NAME="gpg-agent"
 LOGFILE="$HOME/Library/Logs/shutdown-gpg-agent.log"
 AGENT_SOCKET_DEFAULT="$HOME/.gnupg/S.gpg-agent"
 AGENT_SOCKET_ALT="/tmp/gpg-agent/$USER/S.gpg-agent"
 
-function log {
+log() {
     current_date=$(date "+%Y-%m-%d %H:%M:%S")
     echo "$current_date: $1"
-    if [[ "$2" != "" ]]; then
+    if [ "$2" != "" ]; then
         echo ""
     fi
 }
 
-function onExit {
+onExit() {
+    # Ignore future HUP, INT, and TERM signals: do not re-enter `onExit`.
+    trap "" HUP INT TERM
+
     log "* Logout in progress..."
     if ! pid=$(pgrep "$PROGRAM_NAME"); then
         log "* $PROGRAM_NAME not running, no reason to kill it." 1
@@ -38,7 +41,7 @@ function onExit {
         rm -f "${AGENT_SOCKET_ALT}.ssh"
     fi
 
-    if [[ "$RET" != "0" ]]; then
+    if [ "$RET" != "0" ]; then
         log "* Failed to kill $PROGRAM_NAME. Sorry..." 1
     else
         log "* Successfully killed $PROGRAM_NAME. job well done" 1
@@ -53,7 +56,7 @@ exec >> $LOGFILE 2>&1
 log "* Setting up kill event listeners"
 
 # Setup the signals to trap which will invoke the onExit handler.
-trap onExit SIGHUP SIGINT SIGTERM
+trap onExit HUP INT TERM
 
 log "  - successfully setup kill event listeners"
 log "  - waiting for logout..."
