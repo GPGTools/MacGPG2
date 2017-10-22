@@ -16,7 +16,7 @@ function log {
 function onExit {
     log "* Logout in progress..."
     if ! pid=$(pgrep "$PROGRAM_NAME"); then
-        log "* gpg-agent not running, no reason to kill it." 1
+        log "* $PROGRAM_NAME not running, no reason to kill it." 1
         return
     fi
 
@@ -39,9 +39,9 @@ function onExit {
     fi
 
     if [[ "$RET" != "0" ]]; then
-        log "* Failed to kill gpg-agent. Sorry..." 1
+        log "* Failed to kill $PROGRAM_NAME. Sorry..." 1
     else
-        log "* Successfully killed gpg-agent. job well done" 1
+        log "* Successfully killed $PROGRAM_NAME. job well done" 1
     fi
 
     exit 0
