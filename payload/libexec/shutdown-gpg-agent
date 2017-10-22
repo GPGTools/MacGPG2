@@ -19,11 +19,11 @@ onExit() {
 
     log "* Logout in progress..."
     if ! pid=$(pgrep "$PROGRAM_NAME"); then
-        log "* $PROGRAM_NAME not running, no reason to kill it." 1
+        log "* $PROGRAM_NAME not running. Exiting." 1
         return
     fi
 
-    log "  - killing gpg-agent..."
+    log "  - Killing gpg-agent..."
     kill -9 $pid
 
     RET=$?
@@ -37,9 +37,9 @@ onExit() {
     done
 
     if [ "$RET" != "0" ]; then
-        log "* Failed to kill $PROGRAM_NAME. Sorry..." 1
+        log "* Failed to kill $PROGRAM_NAME." 1
     else
-        log "* Successfully killed $PROGRAM_NAME. job well done" 1
+        log "* Successfully killed $PROGRAM_NAME." 1
     fi
 
     exit 0
@@ -53,8 +53,8 @@ log "* Setting up kill event listeners"
 # Setup the signals to trap which will invoke the onExit handler.
 trap onExit HUP INT TERM
 
-log "  - successfully setup kill event listeners"
-log "  - waiting for logout..."
+log "  - Successfully setup kill event listeners"
+log "  - Waiting for logout..."
 # Sleep for approx. a year. Every user should shutdown their computer at
 # least once a year.
 sleep 31536000 &
