@@ -19,39 +19,38 @@ function agentPID {
 
 function onExit {
     log "* Logout in progress..."
-	pid="$(agentPID)"
-	
-	if [[ "$pid" == "" ]]; then
-	    log "* gpg-agent not running, no reason to kill it." 1
-	    return
-	fi
-	
-	log "  - killing gpg-agent..."
-	kill -9 $pid
-	
-	RET=$?
-	
-	# Now remove the S.gpg-agent file
-	if [ -S "$AGENT_SOCKET_DEFAULT" ]; then
-	    log "Removing S.gpg-agent sockets at $AGENT_SOCKET_DEFAULT" 1
-	    rm -f "$AGENT_SOCKET_DEFAULT"
-	    rm -f "${AGENT_SOCKET_DEFAULT}.ssh"
-	fi
-	
-	if [ -S "$AGENT_SOCKET_ALT" ]; then
-	    log "Removing S.gpg-agent sockets at $AGENT_SOCKET_ALT" 1
-	    rm -f "$AGENT_SOCKET_ALT"
-	    rm -f "${AGENT_SOCKET_ALT}.ssh"
-	fi
-	
-	if [[ "$RET" != "0" ]]; then
-	    log "* Failed to kill gpg-agent. Sorry..." 1
-	else
-	    log "* Successfully killed gpg-agent. job well done" 1
-	fi
-	
-	
-	exit 0
+    pid="$(agentPID)"
+
+    if [[ "$pid" == "" ]]; then
+        log "* gpg-agent not running, no reason to kill it." 1
+        return
+    fi
+
+    log "  - killing gpg-agent..."
+    kill -9 $pid
+
+    RET=$?
+
+    # Now remove the S.gpg-agent file
+    if [ -S "$AGENT_SOCKET_DEFAULT" ]; then
+        log "Removing S.gpg-agent sockets at $AGENT_SOCKET_DEFAULT" 1
+        rm -f "$AGENT_SOCKET_DEFAULT"
+        rm -f "${AGENT_SOCKET_DEFAULT}.ssh"
+    fi
+
+    if [ -S "$AGENT_SOCKET_ALT" ]; then
+        log "Removing S.gpg-agent sockets at $AGENT_SOCKET_ALT" 1
+        rm -f "$AGENT_SOCKET_ALT"
+        rm -f "${AGENT_SOCKET_ALT}.ssh"
+    fi
+
+    if [[ "$RET" != "0" ]]; then
+        log "* Failed to kill gpg-agent. Sorry..." 1
+    else
+        log "* Successfully killed gpg-agent. job well done" 1
+    fi
+
+    exit 0
 }
 
 # Setting up the logfile.
@@ -59,13 +58,12 @@ exec >> $LOGFILE 2>&1
 
 log "* Setting up kill event listeners"
 
-# Setup the signals to trap which will invoke
-# the onExit handler.
+# Setup the signals to trap which will invoke the onExit handler.
 trap onExit SIGHUP SIGINT SIGTERM
 
 log "  - successfully setup kill event listeners"
 log "  - waiting for logout..."
-# Sleep for approx. a year. Every user should shutdown there computer at
+# Sleep for approx. a year. Every user should shutdown their computer at
 # least once a year.
 sleep 31536000 &
 wait $!
