@@ -4,6 +4,7 @@ PROGRAM_NAME="gpg-agent"
 LOGFILE="$HOME/Library/Logs/shutdown-gpg-agent.log"
 AGENT_SOCKET_DEFAULT="$HOME/.gnupg/S.gpg-agent"
 AGENT_SOCKET_ALT="/tmp/gpg-agent/$USER/S.gpg-agent"
+SLEEP_PID=
 
 log() {
     current_date=$(date "+%Y-%m-%d %H:%M:%S")
@@ -16,6 +17,10 @@ log() {
 onExit() {
     # Ignore future HUP, INT, and TERM signals: do not re-enter `onExit`.
     trap "" HUP INT TERM
+
+    if [ -n "$SLEEP_PID" ]; then
+        kill $SLEEP_PID
+    fi
 
     log "* Logout in progress..."
     if ! pid=$(pgrep "$PROGRAM_NAME"); then
@@ -58,4 +63,5 @@ log "  - Waiting for logout..."
 # Sleep for approx. a year. Every user should shutdown their computer at
 # least once a year.
 sleep 31536000 &
-wait
+SLEEP_PID=$!
+wait $SLEEP_PID
