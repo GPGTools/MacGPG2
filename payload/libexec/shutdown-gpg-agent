@@ -28,18 +28,13 @@ onExit() {
 
     RET=$?
 
-    # Now remove the S.gpg-agent file
-    if [ -S "$AGENT_SOCKET_DEFAULT" ]; then
-        log "Removing S.gpg-agent sockets at $AGENT_SOCKET_DEFAULT" 1
-        rm -f "$AGENT_SOCKET_DEFAULT"
-        rm -f "${AGENT_SOCKET_DEFAULT}.ssh"
-    fi
-
-    if [ -S "$AGENT_SOCKET_ALT" ]; then
-        log "Removing S.gpg-agent sockets at $AGENT_SOCKET_ALT" 1
-        rm -f "$AGENT_SOCKET_ALT"
-        rm -f "${AGENT_SOCKET_ALT}.ssh"
-    fi
+    # Remove the S.gpg-agent sockets, if present.
+    for socket_path in "$AGENT_SOCKET_DEFAULT" "$AGENT_SOCKET_ALT"; do
+        if [ -S "$socket_path" ]; then
+            log "Removing S.gpg-agent sockets at $socket_path" 1
+            rm -f "$socket_path" "$socket_path.ssh"
+        fi
+    done
 
     if [ "$RET" != "0" ]; then
         log "* Failed to kill $PROGRAM_NAME. Sorry..." 1
