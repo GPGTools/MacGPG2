@@ -41,8 +41,8 @@
 	{
 		"name": "libassuan",
 		"url": "ftp://mirror.switch.ch/mirror/gnupg/libassuan/libassuan-${VERSION}.tar.bz2",
-		"version": "2.4.3",
-		"sha256": "22843a3bdb256f59be49842abf24da76700354293a066d82ade8134bb5aa2b71",
+		"version": "2.4.4",
+		"sha256": "9e69a102272324de0bb56025779f84fd44901afcc6eac51505f6a63ea5737ca1",
 		"installed_file": "lib/libassuan.dylib"
 	},
 	{
@@ -86,8 +86,8 @@
 	{
 		"name": "gnupg",
 		"url": "ftp://mirror.switch.ch/mirror/gnupg/gnupg/gnupg-${VERSION}.tar.bz2",
-		"version": "2.2.0",
-		"sha256": "d4514a0be0f7a1ff263193330019eb4b53c82f0f5e230af3c14df371271a45e6",
+		"version": "2.2.2",
+		"sha256": "bfb62c7412ceb3b9422c6c7134a34ff01a560f98eb981c2d96829c1517c08197",
 		"installed_file": "bin/gpg"
 	}
 ]
