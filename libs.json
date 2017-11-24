@@ -78,16 +78,16 @@
 	{
 		"name": "gnutls",
 		"url": "ftp://mirror.switch.ch/mirror/gnupg/gnutls/v3.5/gnutls-${VERSION}.tar.xz",
-		"version": "3.5.14",
-		"sha256": "4aa12dec92f42a0434df794aca3d02f6f2a35b47b48c01252de65f355c051bda",
+		"version": "3.5.16",
+		"sha256": "0924dec90c37c05f49fec966eba3672dab4d336d879e5c06e06e13325cbfec25",
 		"configure_args": "--with-included-libtasn1 --without-p11-kit --disable-doc --disable-cxx --disable-rpath --disable-nls --disable-tests --with-default-trust-store-file=/usr/local/MacGPG2/share/ca-certs.crt --with-included-unistring",
 		"installed_file": "lib/libgnutls.dylib"
 	},
 	{
 		"name": "gnupg",
 		"url": "ftp://mirror.switch.ch/mirror/gnupg/gnupg/gnupg-${VERSION}.tar.bz2",
-		"version": "2.2.2",
-		"sha256": "bfb62c7412ceb3b9422c6c7134a34ff01a560f98eb981c2d96829c1517c08197",
+		"version": "2.2.3",
+		"sha256": "cbd37105d139f7aa74f92b6f65d136658682094b0e308666b820ae4b984084b4",
 		"installed_file": "bin/gpg"
 	}
 ]
