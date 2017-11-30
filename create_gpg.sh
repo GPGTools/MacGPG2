@@ -325,7 +325,7 @@ popd >/dev/null
 
 
 
-# Adjust rpath using otool for libraries and binaries.
+# Adjust rpath using otool for libraries and binaries and code sign them.
 pushd "$DIST_DIR" >/dev/null
 NL="
 "
@@ -354,6 +354,12 @@ for file in "${BIN_FILES[@]/#/bin/}" "${LIBEXEC_FILES[@]/#/libexec/}" "${dylib_f
 		echo "adding rpath to $file"
 		install_name_tool -add_rpath @loader_path/../lib "$file"
 	fi
+	
+	# Code sign the binary.
+	if [[ -n "$CERT_NAME_APPLICATION" ]]; then
+		codesign --force --sign "$CERT_NAME_APPLICATION" "$file" || doFail "codesign $file"
+	fi
+	
 done
 popd >/dev/null
 
@@ -383,12 +389,21 @@ popd >/dev/null
 
 
 
-# ensure that all executables and libraries have correct lib-path settings
+# ensure that all executables and libraries have correct lib-path settings and are signed correctly
 pushd "$FINAL_DIR" >/dev/null
 shopt -s extglob
 otool -L bin/!(convert-keyring|gpg-zip) | grep "$WORKING_DIR" && doFail "otool bin"
 otool -L libexec/!(fixGpgHome|shutdown-gpg-agent) | grep "$WORKING_DIR" && doFail "otool libexec"
 otool -L lib/* | grep "$WORKING_DIR" && doFail "otool lib"
+
+if [[ -n "$CERT_NAME_APPLICATION" ]]; then
+	find . -print0 | xargs -0 file | grep -F Mach-O | cut -d: -f1 | while read file; do
+		codesign --verify "$file" || doFail "invalid signature at $file"
+	done
+	echo "All binaries are signed correctly."
+else 
+	echo "No code signing certificate specified."
+fi
 popd >/dev/null
 
 
