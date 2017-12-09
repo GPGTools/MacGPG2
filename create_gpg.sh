@@ -356,7 +356,11 @@ for file in "${BIN_FILES[@]/#/bin/}" "${LIBEXEC_FILES[@]/#/libexec/}" "${dylib_f
 	fi
 	
 	# Code sign the binary.
-	if [[ -n "$CERT_NAME_APPLICATION" ]]; then
+	if [[ -n "$CERT_NAME_APPLICATION" && -n "$UNLOCK_PWD" ]]; then
+		KEYCHAIN=$(security find-certificate -c "$CERT_NAME_APPLICATION" | sed -En 's/^keychain: "(.*)"/\1/p')
+		[[ -n "$KEYCHAIN" ]] ||
+			errExit "I require certificate '$CERT_NAME_APPLICATION' but it can't be found.  Aborting."
+		security unlock-keychain -p "$UNLOCK_PWD" "$KEYCHAIN"
 		codesign --force --sign "$CERT_NAME_APPLICATION" "$file" || doFail "codesign $file"
 	fi
 	
