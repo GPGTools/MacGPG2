@@ -34,15 +34,15 @@
 	{
 		"name": "libgcrypt",
 		"url": "ftp://mirror.switch.ch/mirror/gnupg/libgcrypt/libgcrypt-${VERSION}.tar.bz2",
-		"version": "1.8.1",
-		"sha256": "7a2875f8b1ae0301732e878c0cca2c9664ff09ef71408f085c50e332656a78b3",
+		"version": "1.8.2",
+		"sha256": "c8064cae7558144b13ef0eb87093412380efa16c4ee30ad12ecb54886a524c07",
 		"installed_file": "lib/libgcrypt.dylib"
 	},
 	{
 		"name": "libassuan",
 		"url": "ftp://mirror.switch.ch/mirror/gnupg/libassuan/libassuan-${VERSION}.tar.bz2",
-		"version": "2.4.4",
-		"sha256": "9e69a102272324de0bb56025779f84fd44901afcc6eac51505f6a63ea5737ca1",
+		"version": "2.5.1",
+		"sha256": "47f96c37b4f2aac289f0bc1bacfa8bd8b4b209a488d3d15e2229cb6cc9b26449",
 		"installed_file": "lib/libassuan.dylib"
 	},
 	{
@@ -86,8 +86,8 @@
 	{
 		"name": "gnupg",
 		"url": "ftp://mirror.switch.ch/mirror/gnupg/gnupg/gnupg-${VERSION}.tar.bz2",
-		"version": "2.2.3",
-		"sha256": "cbd37105d139f7aa74f92b6f65d136658682094b0e308666b820ae4b984084b4",
+		"version": "2.2.4",
+		"sha256": "401a3e64780fdfa6d7670de0880aa5c9d589b3db7a7098979d7606cec546f2ec",
 		"installed_file": "bin/gpg"
 	}
 ]

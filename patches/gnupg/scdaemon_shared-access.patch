@@ -20,8 +20,8 @@
    oDisableApplication,
    oEnablePinpadVarlen,
 +  oSharedAccess,
+   oListenBacklog
  };
- 
  
 @@ -157,6 +158,8 @@ static ARGPARSE_OPTS opts[] = {
                  N_("use variable length input for pinpad")),
