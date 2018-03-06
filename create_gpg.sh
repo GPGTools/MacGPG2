@@ -29,7 +29,7 @@ LIBEXEC_FILES=(dirmngr_ldap gpg-preset-passphrase scdaemon gpg-check-pattern gpg
 ARCH="x86_64"
 ABI="64"
 export MACOSX_DEPLOYMENT_TARGET=10.9
-ADDITIONAL_CFLAGS="-mmacosx-version-min=10.9"
+ADDITIONAL_CFLAGS="-mmacosx-version-min=10.9 -march=core2"
 
 
 
@@ -160,6 +160,16 @@ function buildLib {
 		moreCFlags=
 	fi
   
+	CACHE_FILE="$WORKING_DIR/config.cache"
+	if [[ "$lib_name" = "sqlite" ]]; then
+		CACHE_FILE="$WORKING_DIR/config.$lib_name.cache"
+	fi
+	# GMP by default produces assembly which is only compatible
+	# with the CPU the lib is built on or newer.
+	# --disable-assembly might have to be added as well.
+	# By defining host_alias, gmp will build for a generic 64bit CPU.
+	host_alias="x86_64-apple-darwin$(uname -r)" \
+	build_alias="x86_64-apple-darwin$(uname -r)" \
 	CFLAGS="-arch $ARCH -m$ABI -ULOCALEDIR -DLOCALEDIR='\"${TARGET_DIR}/share/locale\"' $ADDITIONAL_CFLAGS $moreCFlags" \
 	CXXFLAGS="-arch $ARCH" \
 	ABI=$ABI \
@@ -170,7 +180,7 @@ function buildLib {
 	ac_cv_func_clock_gettime=no \
 	./configure --prefix=$DIST_DIR \
 		--enable-static=no \
-		--cache-file="$WORKING_DIR/config.cache" \
+		--cache-file="$CACHE_FILE" \
 		$lib_configure_args || doFail "buildLib configure"
 
 
@@ -219,7 +229,7 @@ function buildGnuPG {
 	ac_cv_search_clock_gettime=no \
 	ac_cv_func_clock_gettime=no \
 	./configure \
-		--cache-file="$WORKING_DIR/config.cache" \
+		--cache-file="$WORKING_DIR/config.gnupg.cache" \
 	  	--prefix=$DIST_DIR \
 		--localstatedir=/var \
 		--sysconfdir=${TARGET_DIR}/etc \
@@ -264,11 +274,6 @@ function buildGnuPG {
 if [[ "$(type -t pkg-config)" != "file" ]]; then
 	errExit "ERROR: pkg-config is not installed. This script requires pkg-config to be available.\nPlease fix your setup and try again."
 fi
-
-
-# Prepare config.cache to improve build performance.
-cp -f "$BASE_DIR/resources/config.cache" "$WORKING_DIR/"
-chmod -w "$WORKING_DIR/config.cache"
 
 
 # Read libs.json
