@@ -220,11 +220,11 @@ function buildGnuPG {
 	# 	-UGNUPG_LIBEXECDIR -DGNUPG_LIBEXECDIR='\"${TARGET_DIR}/libexec\"' \
 	# 	-UGNUPG_LIBDIR -DGNUPG_LIBDIR='\"${TARGET_DIR}/lib\"' \
 	# 	-UGNUPG_DATADIR -DGNUPG_DATADIR='\"${TARGET_DIR}/share/gnupg\"'" \
-	CFLAGS="-arch $ARCH -Ofast $ADDITIONAL_CFLAGS" \
-	CXXFLAGS="-arch $ARCH" \
+	CFLAGS="-arch $ARCH -Ofast -I$DIST_DIR/include -I$DIST_DIR/include/libusb-1.0/ $ADDITIONAL_CFLAGS" \
+	CXXFLAGS="-arch $ARCH -I$DIST_DIR/include/libusb-1.0/" \
 	ABI=$ABI \
 	LDFLAGS="-L$DIST_DIR/lib -arch $ARCH" \
-	CPPFLAGS="-I$DIST_DIR/include -arch $ARCH" \
+	CPPFLAGS="-I$DIST_DIR/include -I$DIST_DIR/include/libusb-1.0/ -arch $ARCH" \
 	PKG_CONFIG_PATH=$DIST_DIR/lib/pkgconfig \
 	ac_cv_search_clock_gettime=no \
 	ac_cv_func_clock_gettime=no \
@@ -241,6 +241,7 @@ function buildGnuPG {
 		--with-dirmngr-ldap-pgm=${TARGET_DIR}/libexec/dirmngr_ldap \
 		--with-protect-tool-pgm=${TARGET_DIR}/libexec/gpg-protect-tool \
 		--enable-gpg2-is-gpg \
+		--enable-ccid-driver \
 		--with-libgpg-error-prefix=$DIST_DIR \
 		--with-libgcrypt-prefix=$DIST_DIR \
 		--with-libassuan-prefix=$DIST_DIR \
