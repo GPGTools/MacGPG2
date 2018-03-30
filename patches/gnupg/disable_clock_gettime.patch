@@ -1,0 +1,19 @@
+# When building GnuPG on High Sierra clock_gettime is available.
+# Unfortunately it's not available on macOS <= 10.11 and thus causes
+# the gpg-agent to crash.
+
+--- a/agent/protect.c
++++ b/agent/protect.c
+@@ -105,12 +105,6 @@ calibrate_get_time (struct calibrate_time_s *data)
+                    &data->creation_time, &data->exit_time,
+                    &data->kernel_time, &data->user_time);
+ # endif
+-#elif defined (CLOCK_THREAD_CPUTIME_ID)
+-  struct timespec tmp;
+-
+-  clock_gettime (CLOCK_THREAD_CPUTIME_ID, &tmp);
+-  data->ticks = (clock_t)(((unsigned long long)tmp.tv_sec * 1000000000 +
+-                           tmp.tv_nsec) * CLOCKS_PER_SEC / 1000000000);
+ #else
+   data->ticks = clock ();
+ #endif
