@@ -1,0 +1,80 @@
+# Add support for HTTP Basic Auth in keyserver URI's (GnuPG T3730)
+
+diff --git a/dirmngr/ks-engine-hkp.c b/dirmngr/ks-engine-hkp.c
+index a9bb936..b772a09 100644
+--- a/dirmngr/ks-engine-hkp.c
++++ b/dirmngr/ks-engine-hkp.c
+@@ -1001,7 +1001,7 @@ ks_hkp_help (ctrl_t ctrl, parsed_uri_t uri)
+ static gpg_error_t
+ make_host_part (ctrl_t ctrl,
+                 const char *scheme, const char *host, unsigned short port,
+-                int force_reselect, int no_srv,
++                int force_reselect, int no_srv, const char *auth,
+                 char **r_hostport, unsigned int *r_httpflags, char **r_httphost)
+ {
+   gpg_error_t err;
+@@ -1044,10 +1044,17 @@ make_host_part (ctrl_t ctrl,
+   else
+     strcpy (portstr, "11371");
+ 
++  r_hostport = strconcat (scheme, "://", NULL);
++
++  /* If basic auth is requested, add the auth part to the URI. */
++  if (auth) {
++    *r_hostport = strconcat (*r_hostport, auth, "@", NULL);
++  }
++
+   if (*hostname != '[' && is_ip_address (hostname) == 6)
+-    *r_hostport = strconcat (scheme, "://[", hostname, "]:", portstr, NULL);
++    *r_hostport = strconcat (*r_hostport, "[", hostname, "]:", portstr, NULL);
+   else
+-    *r_hostport = strconcat (scheme, "://", hostname, ":", portstr, NULL);
++    *r_hostport = strconcat (*r_hostport, hostname, ":", portstr, NULL);
+   xfree (hostname);
+   if (!*r_hostport)
+     {
+@@ -1075,7 +1082,7 @@ ks_hkp_resolve (ctrl_t ctrl, parsed_uri_t uri)
+    * service record because that might be in conflict with the port
+    * from such a service record.  */
+   err = make_host_part (ctrl, uri->scheme, uri->host, uri->port,
+-                        1, uri->explicit_port,
++                        1, uri->explicit_port, uri->auth,
+                         &hostport, NULL, NULL);
+   if (err)
+     {
+@@ -1186,7 +1193,7 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
+                    post_cb? HTTP_REQ_POST : HTTP_REQ_GET,
+                    request,
+                    httphost,
+-                   /* fixme: AUTH */ NULL,
++                   uri->auth,
+                    (httpflags
+                     |(opt.honor_http_proxy? HTTP_FLAG_TRY_PROXY:0)
+                     |(dirmngr_use_tor ()? HTTP_FLAG_FORCE_TOR:0)
+@@ -1459,7 +1466,7 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
+     xfree (hostport); hostport = NULL;
+     xfree (httphost); httphost = NULL;
+     err = make_host_part (ctrl, uri->scheme, uri->host, uri->port,
+-                          reselect, uri->explicit_port,
++                          reselect, uri->explicit_port, uri->auth,
+                           &hostport, &httpflags, &httphost);
+     if (err)
+       goto leave;
+@@ -1602,7 +1609,7 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
+   xfree (hostport); hostport = NULL;
+   xfree (httphost); httphost = NULL;
+   err = make_host_part (ctrl, uri->scheme, uri->host, uri->port,
+-                        reselect, uri->explicit_port,
++                        reselect, uri->explicit_port, uri->auth,
+                         &hostport, &httpflags, &httphost);
+   if (err)
+     goto leave;
+@@ -1715,7 +1722,7 @@ ks_hkp_put (ctrl_t ctrl, parsed_uri_t uri, const void *data, size_t datalen)
+   xfree (hostport); hostport = NULL;
+   xfree (httphost); httphost = NULL;
+   err = make_host_part (ctrl, uri->scheme, uri->host, uri->port,
+-                        reselect, uri->explicit_port,
++                        reselect, uri->explicit_port, uri->auth,
+                         &hostport, &httpflags, &httphost);
+   if (err)
+     goto leave;
