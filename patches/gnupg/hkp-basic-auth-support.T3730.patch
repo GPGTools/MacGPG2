@@ -17,7 +17,7 @@ index a9bb936..b772a09 100644
    else
      strcpy (portstr, "11371");
  
-+  r_hostport = strconcat (scheme, "://", NULL);
++  *r_hostport = strconcat (scheme, "://", NULL);
 +
 +  /* If basic auth is requested, add the auth part to the URI. */
 +  if (auth) {
