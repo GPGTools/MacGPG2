@@ -27,8 +27,8 @@
 	{
 		"name": "libgpg-error",
 		"url": "ftp://mirror.switch.ch/mirror/gnupg/libgpg-error/libgpg-error-${VERSION}.tar.bz2",
-		"version": "1.29",
-		"sha256": "ece926fa5719d17a7ad8da618712cfa2f8a796ab2f2af9d544c5bb093383b1ea",
+		"version": "1.31",
+		"sha256": "40d0a823c9329478063903192a1f82496083b277265904878f4bc09e0db7a4ef",
 		"installed_file": "lib/libgpg-error.dylib"
 	},
 	{
@@ -92,8 +92,8 @@
 	{
 		"name": "gnupg",
 		"url": "ftp://mirror.switch.ch/mirror/gnupg/gnupg/gnupg-${VERSION}.tar.bz2",
-		"version": "2.2.6",
-		"sha256": "e64d8c5fa2d05938a5080cb784a98ac21be0812f2a26f844b18f0d6a0e711984",
+		"version": "2.2.7",
+		"sha256": "d95b361ee6ef7eff86af40c8c72bf9313736ac9f7010d6604d78bf83818e976e",
 		"installed_file": "bin/gpg"
 	}
 ]
