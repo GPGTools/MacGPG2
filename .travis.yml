@@ -1,0 +1,3 @@
+os: osx
+install: brew bundle
+script: make
