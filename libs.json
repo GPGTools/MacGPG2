@@ -33,7 +33,7 @@
 	},
 	{
 		"name": "libgcrypt",
-		"url": "ftp://mirror.switch.ch/mirror/gnupg/libgcrypt/libgcrypt-${VERSION}.tar.bz2",
+		"url": "https://gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-${VERSION}.tar.bz2",
 		"version": "1.8.3",
 		"sha256": "66ec90be036747602f2b48f98312361a9180c97c68a690a5f376fa0f67d0af7c",
 		"installed_file": "lib/libgcrypt.dylib"
