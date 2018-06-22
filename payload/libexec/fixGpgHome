@@ -105,6 +105,16 @@ function fixGPGAgent {
 	log "fixGPGAgent done"
 }
 
+function addDefaultConfig() {
+	cd /usr/local/MacGPG2/etc/skel/.gnupg || return 1
+	
+	for config in *.conf; do
+		if [[ ! -e "$GNUPGHOME/$config" ]]; then
+			log "Copying $config from skeleton"
+			runAsUser cp "$config" "$GNUPGHOME/"
+		fi
+	done
+}
 
 
 ################################################################################
@@ -137,6 +147,8 @@ fi
 
 fixGpgHome
 fixGPGAgent
+
+addDefaultConfig
 
 
 log "done"
