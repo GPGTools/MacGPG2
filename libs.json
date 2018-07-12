@@ -92,8 +92,8 @@
 	{
 		"name": "gnupg",
 		"url": "ftp://mirror.switch.ch/mirror/gnupg/gnupg/gnupg-${VERSION}.tar.bz2",
-		"version": "2.2.8",
-		"sha256": "777b4cb8ced21965a5053d4fa20fe11484f0a478f3d011cef508a1a49db50dcd",
+		"version": "2.2.9",
+		"sha256": "6278eaabffa1ebc9fa2ceb3dc53eea9a1505ab02a668a86dd6fec06951af2164",
 		"installed_file": "bin/gpg"
 	}
 ]
