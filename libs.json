@@ -27,8 +27,8 @@
 	{
 		"name": "libgpg-error",
 		"url": "ftp://mirror.switch.ch/mirror/gnupg/libgpg-error/libgpg-error-${VERSION}.tar.bz2",
-		"version": "1.31",
-		"sha256": "40d0a823c9329478063903192a1f82496083b277265904878f4bc09e0db7a4ef",
+		"version": "1.32",
+		"sha256": "c345c5e73cc2332f8d50db84a2280abfb1d8f6d4f1858b9daa30404db44540ca",
 		"installed_file": "lib/libgpg-error.dylib"
 	},
 	{
@@ -62,8 +62,8 @@
 	{
 		"name": "npth",
 		"url": "ftp://mirror.switch.ch/mirror/gnupg/npth/npth-${VERSION}.tar.bz2",
-		"version": "1.5",
-		"sha256": "294a690c1f537b92ed829d867bee537e46be93fbd60b16c04630fbbfcd9db3c2",
+		"version": "1.6",
+		"sha256": "1393abd9adcf0762d34798dc34fdcf4d0d22a8410721e76f1e3afcd1daa4e2d1",
 		"configure_args": "--disable-tests --disable-dependency-tracking --enable-static=no",
 		"installed_file": "lib/libnpth.dylib"
 	},
@@ -84,16 +84,16 @@
 	{
 		"name": "gnutls",
 		"url": "ftp://mirror.switch.ch/mirror/gnupg/gnutls/v3.5/gnutls-${VERSION}.tar.xz",
-		"version": "3.5.18",
-		"sha256": "ae2248d9e78747cf9c469dde81ff8f90b56838b707a0637f3f7d4eee90e80234",
+		"version": "3.5.19",
+		"sha256": "1936eb64f03aaefd6eb16cef0567457777618573826b94d03376bb6a4afadc44",
 		"configure_args": "--with-included-libtasn1 --without-p11-kit --disable-doc --disable-cxx --disable-rpath --disable-nls --disable-tests --with-default-trust-store-file=/usr/local/MacGPG2/share/ca-certs.crt --with-included-unistring",
 		"installed_file": "lib/libgnutls.dylib"
 	},
 	{
 		"name": "gnupg",
 		"url": "https://gnupg.org/ftp/gcrypt/gnupg/gnupg-${VERSION}.tar.bz2",
-		"version": "2.2.9",
-		"sha256": "6278eaabffa1ebc9fa2ceb3dc53eea9a1505ab02a668a86dd6fec06951af2164",
+		"version": "2.2.10",
+		"sha256": "799dd37a86a1448732e339bd20440f4f5ee6e69755f6fd7a73ee8af30840c915",
 		"installed_file": "bin/gpg"
 	}
 ]
