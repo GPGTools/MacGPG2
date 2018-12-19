@@ -1,7 +1,7 @@
 [
 	{
 		"name": "gettext",
-		"url": "ftp://mirror.switch.ch/mirror/gnu/gettext/gettext-${VERSION}.tar.lz",
+		"url": "https://mirror.kumi.systems/gnu/gettext/gettext-${VERSION}.tar.lz",
 		"version": "0.19.8.1",
 		"sha256": "e462c9fb8b2ccd507452b4e73e51a8268c5d9f0d85e832b0b3e08aec4849a24f",
 		"configure_args": "--disable-java --disable-rpath --disable-c++ --disable-openmp --with-included-gettext",
@@ -9,7 +9,7 @@
 	},
 	{
 		"name": "gmp",
-		"url": "ftp://mirror.switch.ch/mirror/gnu/gmp/gmp-${VERSION}.tar.lz",
+		"url": "https://mirror.kumi.systems/gnu/gmp/gmp-${VERSION}.tar.lz",
 		"version": "6.1.2",
 		"sha256": "12fed0532d440d2dc902e64f016aa89a33af6044b90bd1f7bca7396635105dbb",
 		"configure_args": "--disable-java --disable-rpath --disable-c++ --disable-openmp --with-included-gettext",
@@ -18,7 +18,7 @@
 	},
 	{
 		"name": "nettle",
-		"url": "ftp://mirror.switch.ch/mirror/gnupg/lsh/nettle-${VERSION}.tar.gz",
+		"url": "https://gnupg.org/ftp/gcrypt/lsh/nettle-${VERSION}.tar.gz",
 		"version": "3.1.1",
 		"sha256": "5fd4d25d64d8ddcb85d0d897572af73b05b4d163c6cc49438a5bfbb8ff293d4c",
 		"configure_args": "--disable-assembler",
@@ -26,7 +26,7 @@
 	},
 	{
 		"name": "libgpg-error",
-		"url": "ftp://mirror.switch.ch/mirror/gnupg/libgpg-error/libgpg-error-${VERSION}.tar.bz2",
+		"url": "https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-${VERSION}.tar.bz2",
 		"version": "1.33",
 		"sha256": "5d38826656e746c936e7742d9cde072b50baa3c4c49daa168a56813612bf03ff",
 		"installed_file": "lib/libgpg-error.dylib"
@@ -40,28 +40,28 @@
 	},
 	{
 		"name": "libassuan",
-		"url": "ftp://mirror.switch.ch/mirror/gnupg/libassuan/libassuan-${VERSION}.tar.bz2",
+		"url": "https://gnupg.org/ftp/gcrypt/libassuan/libassuan-${VERSION}.tar.bz2",
 		"version": "2.5.2",
 		"sha256": "986b1bf277e375f7a960450fbb8ffbd45294d06598916ad4ebf79aee0cb788e7",
 		"installed_file": "lib/libassuan.dylib"
 	},
 	{
 		"name": "libksba",
-		"url": "ftp://mirror.switch.ch/mirror/gnupg/libksba/libksba-${VERSION}.tar.bz2",
+		"url": "https://gnupg.org/ftp/gcrypt/libksba/libksba-${VERSION}.tar.bz2",
 		"version": "1.3.5",
 		"sha256": "41444fd7a6ff73a79ad9728f985e71c9ba8cd3e5e53358e70d5f066d35c1a340",
 		"installed_file": "lib/libksba.dylib"
 	},
 	{
 		"name": "readline",
-		"url": "ftp://mirror.switch.ch/mirror/gnu/readline/readline-${VERSION}.tar.gz",
+		"url": "https://mirror.kumi.systems/gnu/readline/readline-${VERSION}.tar.gz",
 		"version": "7.0",
 		"sha256": "750d437185286f40a369e1e4f4764eda932b9459b5ec9a731628393dd3d32334",
 		"installed_file": "lib/libreadline.dylib"
 	},
 	{
 		"name": "npth",
-		"url": "ftp://mirror.switch.ch/mirror/gnupg/npth/npth-${VERSION}.tar.bz2",
+		"url": "https://gnupg.org/ftp/gcrypt/npth/npth-${VERSION}.tar.bz2",
 		"version": "1.6",
 		"sha256": "1393abd9adcf0762d34798dc34fdcf4d0d22a8410721e76f1e3afcd1daa4e2d1",
 		"configure_args": "--disable-tests --disable-dependency-tracking --enable-static=no",
@@ -77,13 +77,13 @@
 	},
 	{
 		"name": "libusb",
-		"url": "https://github.com/libusb/libusb/releases/download/v1.0.21/libusb-1.0.21.tar.bz2",
-		"sha256": "7dce9cce9a81194b7065ee912bcd55eeffebab694ea403ffb91b67db66b1824b",
+		"url": "https://github.com/libusb/libusb/releases/download/v1.0.22/libusb-1.0.22.tar.bz2",
+		"sha256": "75aeb9d59a4fdb800d329a545c2e6799f732362193b465ea198f2aa275518157",
 		"installed_file": "lib/libusb-1.0.dylib"
 	},
 	{
 		"name": "gnutls",
-		"url": "ftp://mirror.switch.ch/mirror/gnupg/gnutls/v3.5/gnutls-${VERSION}.tar.xz",
+		"url": "https://gnupg.org/ftp/gcrypt/gnutls/v3.5/gnutls-${VERSION}.tar.xz",
 		"version": "3.5.19",
 		"sha256": "1936eb64f03aaefd6eb16cef0567457777618573826b94d03376bb6a4afadc44",
 		"configure_args": "--with-included-libtasn1 --without-p11-kit --disable-doc --disable-cxx --disable-rpath --disable-nls --disable-tests --with-default-trust-store-file=/usr/local/MacGPG2/share/ca-certs.crt --with-included-unistring",
