@@ -18,17 +18,17 @@
 	},
 	{
 		"name": "nettle",
-		"url": "https://gnupg.org/ftp/gcrypt/lsh/nettle-${VERSION}.tar.gz",
-		"version": "3.1.1",
-		"sha256": "5fd4d25d64d8ddcb85d0d897572af73b05b4d163c6cc49438a5bfbb8ff293d4c",
+		"url": "https://ftp.gnu.org/gnu/nettle/nettle-${VERSION}.tar.gz",
+		"version": "3.4.1",
+		"sha256": "f941cf1535cd5d1819be5ccae5babef01f6db611f9b5a777bae9c7604b8a92ad",
 		"configure_args": "--disable-assembler",
 		"installed_file": "lib/libnettle.dylib"
 	},
 	{
 		"name": "libgpg-error",
 		"url": "https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-${VERSION}.tar.bz2",
-		"version": "1.33",
-		"sha256": "5d38826656e746c936e7742d9cde072b50baa3c4c49daa168a56813612bf03ff",
+		"version": "1.35",
+		"sha256": "cbd5ee62a8a8c88d48c158fff4fc9ead4132aacd1b4a56eb791f9f997d07e067",
 		"installed_file": "lib/libgpg-error.dylib"
 	},
 	{
@@ -41,8 +41,8 @@
 	{
 		"name": "libassuan",
 		"url": "https://gnupg.org/ftp/gcrypt/libassuan/libassuan-${VERSION}.tar.bz2",
-		"version": "2.5.2",
-		"sha256": "986b1bf277e375f7a960450fbb8ffbd45294d06598916ad4ebf79aee0cb788e7",
+		"version": "2.5.3",
+		"sha256": "91bcb0403866b4e7c4bc1cc52ed4c364a9b5414b3994f718c70303f7f765e702",
 		"installed_file": "lib/libassuan.dylib"
 	},
 	{
@@ -83,17 +83,17 @@
 	},
 	{
 		"name": "gnutls",
-		"url": "https://gnupg.org/ftp/gcrypt/gnutls/v3.5/gnutls-${VERSION}.tar.xz",
-		"version": "3.5.19",
-		"sha256": "1936eb64f03aaefd6eb16cef0567457777618573826b94d03376bb6a4afadc44",
+		"url": "https://gnupg.org/ftp/gcrypt/gnutls/v3.6/gnutls-${VERSION}.tar.xz",
+		"version": "3.6.6",
+		"sha256": "bb9acab8af2ac430edf45faaaa4ed2c51f86e57cb57689be6701aceef4732ca7",
 		"configure_args": "--with-included-libtasn1 --without-p11-kit --disable-doc --disable-cxx --disable-rpath --disable-nls --disable-tests --with-default-trust-store-file=/usr/local/MacGPG2/share/ca-certs.crt --with-included-unistring",
 		"installed_file": "lib/libgnutls.dylib"
 	},
 	{
 		"name": "gnupg",
 		"url": "https://gnupg.org/ftp/gcrypt/gnupg/gnupg-${VERSION}.tar.bz2",
-		"version": "2.2.12",
-		"sha256": "db030f8b4c98640e91300d36d516f1f4f8fe09514a94ea9fc7411ee1a34082cb",
+		"version": "2.2.13",
+		"sha256": "76c787a955f9e6e0ead47c9be700bfb9d454f955a7b7c7e697aa719bac7b11d8",
 		"installed_file": "bin/gpg"
 	}
 ]
