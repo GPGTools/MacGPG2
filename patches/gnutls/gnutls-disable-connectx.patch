@@ -1,5 +1,5 @@
---- lib/system/fastopen.c	2017-12-26 18:00:54.041282870 +0100
-+++ lib/system/fastopen.c.new	2017-12-26 18:00:09.209281540 +0100
+--- a/lib/system/fastopen.c	2017-12-26 18:00:54.041282870 +0100
++++ b/lib/system/fastopen.c	2017-12-26 18:00:09.209281540 +0100
 @@ -36,7 +36,8 @@
  #endif
  
