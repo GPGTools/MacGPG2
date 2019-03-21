@@ -27,8 +27,8 @@
 	{
 		"name": "libgpg-error",
 		"url": "https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-${VERSION}.tar.bz2",
-		"version": "1.35",
-		"sha256": "cbd5ee62a8a8c88d48c158fff4fc9ead4132aacd1b4a56eb791f9f997d07e067",
+		"version": "1.36",
+		"sha256": "babd98437208c163175c29453f8681094bcaf92968a15cafb1a276076b33c97c",
 		"installed_file": "lib/libgpg-error.dylib"
 	},
 	{
@@ -92,8 +92,8 @@
 	{
 		"name": "gnupg",
 		"url": "https://gnupg.org/ftp/gcrypt/gnupg/gnupg-${VERSION}.tar.bz2",
-		"version": "2.2.13",
-		"sha256": "76c787a955f9e6e0ead47c9be700bfb9d454f955a7b7c7e697aa719bac7b11d8",
+		"version": "2.2.14",
+		"sha256": "1bf9ed46dc1ec5d8cfa13ba1ad47f94981f3b6a7ec16ad9123cc2549c4cbf87b",
 		"installed_file": "bin/gpg"
 	}
 ]
