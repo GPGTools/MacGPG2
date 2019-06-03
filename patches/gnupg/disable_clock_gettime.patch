@@ -4,7 +4,7 @@
 
 --- a/agent/protect.c
 +++ b/agent/protect.c
-@@ -105,12 +105,6 @@ calibrate_get_time (struct calibrate_time_s *data)
+@@ -112,12 +112,6 @@ calibrate_get_time (struct calibrate_time_s *data)
                     &data->creation_time, &data->exit_time,
                     &data->kernel_time, &data->user_time);
  # endif

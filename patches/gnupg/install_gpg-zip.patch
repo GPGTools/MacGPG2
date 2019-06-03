@@ -3,7 +3,7 @@
 
 --- a/tools/Makefile.in
 +++ b/tools/Makefile.in
-@@ -582,8 +582,8 @@
+@@ -594,8 +594,8 @@
  AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS) $(LIBASSUAN_CFLAGS)
  sbin_SCRIPTS = addgnupghome applygnupgdefaults
  

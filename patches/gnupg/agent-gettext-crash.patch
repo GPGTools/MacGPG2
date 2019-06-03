@@ -4,7 +4,7 @@
 
 --- a/agent/gpg-agent.c
 +++ b/agent/gpg-agent.c
-@@ -1284,6 +1284,7 @@ main (int argc, char **argv )
+@@ -1355,6 +1355,7 @@ main (int argc, char **argv )
      }
  
    set_debug ();

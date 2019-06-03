@@ -4,7 +4,7 @@
 
 --- a/dirmngr/ks-engine-hkp.c
 +++ b/dirmngr/ks-engine-hkp.c
-@@ -1284,6 +1284,7 @@
+@@ -1330,6 +1330,7 @@
        /*FALLTHRU*/
      case GPG_ERR_ENETUNREACH:
      case GPG_ERR_ENETDOWN:

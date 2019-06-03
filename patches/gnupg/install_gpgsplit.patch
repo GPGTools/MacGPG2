@@ -3,7 +3,7 @@
 
 --- a/tools/Makefile.in
 +++ b/tools/Makefile.in
-@@ -137,13 +137,13 @@
+@@ -144,13 +144,13 @@
  @GNUPG_DIRMNGR_LDAP_PGM_TRUE@am__append_7 = -DGNUPG_DEFAULT_DIRMNGR_LDAP="\"@GNUPG_DIRMNGR_LDAP_PGM@\""
  @HAVE_W32_SYSTEM_TRUE@am__append_8 = gpg-connect-agent-w32info.o
  libexec_PROGRAMS = gpg-wks-client$(EXEEXT) $(am__EXEEXT_5)

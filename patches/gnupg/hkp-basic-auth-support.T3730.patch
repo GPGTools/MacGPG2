@@ -42,7 +42,7 @@ index a9bb936..b772a09 100644
                          &hostport, NULL, NULL);
    if (err)
      {
-@@ -1186,7 +1193,7 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
+@@ -1189,7 +1196,7 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
                     post_cb? HTTP_REQ_POST : HTTP_REQ_GET,
                     request,
                     httphost,
@@ -51,7 +51,7 @@ index a9bb936..b772a09 100644
                     (httpflags
                      |(opt.honor_http_proxy? HTTP_FLAG_TRY_PROXY:0)
                      |(dirmngr_use_tor ()? HTTP_FLAG_FORCE_TOR:0)
-@@ -1459,7 +1466,7 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
+@@ -1462,7 +1469,7 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
      xfree (hostport); hostport = NULL;
      xfree (httphost); httphost = NULL;
      err = make_host_part (ctrl, uri->scheme, uri->host, uri->port,
@@ -60,7 +60,7 @@ index a9bb936..b772a09 100644
                            &hostport, &httpflags, &httphost);
      if (err)
        goto leave;
-@@ -1602,7 +1609,7 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
+@@ -1612,7 +1619,7 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
    xfree (hostport); hostport = NULL;
    xfree (httphost); httphost = NULL;
    err = make_host_part (ctrl, uri->scheme, uri->host, uri->port,
@@ -69,7 +69,7 @@ index a9bb936..b772a09 100644
                          &hostport, &httpflags, &httphost);
    if (err)
      goto leave;
-@@ -1715,7 +1722,7 @@ ks_hkp_put (ctrl_t ctrl, parsed_uri_t uri, const void *data, size_t datalen)
+@@ -1730,7 +1737,7 @@ ks_hkp_put (ctrl_t ctrl, parsed_uri_t uri, const void *data, size_t datalen)
    xfree (hostport); hostport = NULL;
    xfree (httphost); httphost = NULL;
    err = make_host_part (ctrl, uri->scheme, uri->host, uri->port,
