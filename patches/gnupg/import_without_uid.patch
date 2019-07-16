@@ -1,0 +1,242 @@
+# Original patch from Vincent Breitmoser (branch fix-4393)
+# See: https://dev.gnupg.org/T4393
+# Modified by Mento to work with version 2.2.17
+
+--- a/g10/import.c
++++ b/g10/import.c
+@@ -1788,7 +1788,6 @@ import_one_real (ctrl_t ctrl,
+   size_t an;
+   char pkstrbuf[PUBKEY_STRING_SIZE];
+   int merge_keys_done = 0;
+-  int any_filter = 0;
+   KEYDB_HANDLE hd = NULL;
+ 
+   if (r_valid)
+@@ -1826,13 +1825,6 @@ import_one_real (ctrl_t ctrl,
+     }
+ 
+ 
+-  if (!uidnode )
+-    {
+-      if (!silent)
+-        log_error( _("key %s: no user ID\n"), keystr_from_pk(pk));
+-      return 0;
+-    }
+-
+   if (screener && screener (keyblock, screener_arg))
+     {
+       log_error (_("key %s: %s\n"), keystr_from_pk (pk),
+@@ -1907,17 +1899,10 @@ import_one_real (ctrl_t ctrl,
+ 	  }
+     }
+ 
+-  if (!delete_inv_parts (ctrl, keyblock, keyid, options ) )
+-    {
+-      if (!silent)
+-        {
+-          log_error( _("key %s: no valid user IDs\n"), keystr_from_pk(pk));
+-          if (!opt.quiet )
+-            log_info(_("this may be caused by a missing self-signature\n"));
+-        }
+-      stats->no_user_id++;
+-      return 0;
+-    }
++  /* Delete invalid parts, and note if we have any valid ones left.
++   * We will later abort import if this key is new but contains
++   * no valid uids.  */
++  delete_inv_parts (ctrl, keyblock, keyid, options);
+ 
+   /* Get rid of deleted nodes.  */
+   commit_kbnode (&keyblock);
+@@ -1927,24 +1912,11 @@ import_one_real (ctrl_t ctrl,
+     {
+       apply_keep_uid_filter (ctrl, keyblock, import_filter.keep_uid);
+       commit_kbnode (&keyblock);
+-      any_filter = 1;
+     }
+   if (import_filter.drop_sig)
+     {
+       apply_drop_sig_filter (ctrl, keyblock, import_filter.drop_sig);
+       commit_kbnode (&keyblock);
+-      any_filter = 1;
+-    }
+-
+-  /* If we ran any filter we need to check that at least one user id
+-   * is left in the keyring.  Note that we do not use log_error in
+-   * this case. */
+-  if (any_filter && !any_uid_left (keyblock))
+-    {
+-      if (!opt.quiet )
+-        log_info ( _("key %s: no valid user IDs\n"), keystr_from_pk (pk));
+-      stats->no_user_id++;
+-      return 0;
+     }
+ 
+   /* The keyblock is valid and ready for real import.  */
+@@ -2002,6 +1974,13 @@ import_one_real (ctrl_t ctrl,
+       err = 0;
+       stats->skipped_new_keys++;
+     }
++  else if (err && !any_uid_left (keyblock) )
++    {
++      if (!silent)
++        log_info( _("key %s: new key but contains no user ID - skipped\n"), keystr(keyid));
++      err = 0;
++      stats->no_user_id++;
++    }
+   else if (err)  /* Insert this key. */
+     {
+       /* Note: ERR can only be NO_PUBKEY or UNUSABLE_PUBKEY.  */
+@@ -3624,6 +3603,7 @@ chk_self_sigs (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid, int *non_self)
+                   /* It's valid, so is it newer? */
+                   if (sig->timestamp >= rsdate)
+                     {
++                      knode->flag |= NODE_GOOD_SELFSIG; /* Subkey is valid.  */
+                       if (rsnode)
+                         {
+                           /* Delete the last revocation sig since
+--- a/tests/openpgp/Makefile.am
++++ b/tests/openpgp/Makefile.am
+@@ -78,6 +78,7 @@ XTESTS = \
+ 	gpgv-forged-keyring.scm \
+ 	armor.scm \
+ 	import.scm \
++	import-incomplete.scm \
+ 	import-revocation-certificate.scm \
+ 	ecc.scm \
+ 	4gb-packet.scm \
+--- /dev/null
++++ b/tests/openpgp/import-incomplete.scm
+@@ -0,0 +1,68 @@
++#!/usr/bin/env gpgscm
++
++;; Copyright (C) 2016 g10 Code GmbH
++;;
++;; This file is part of GnuPG.
++;;
++;; GnuPG is free software; you can redistribute it and/or modify
++;; it under the terms of the GNU General Public License as published by
++;; the Free Software Foundation; either version 3 of the License, or
++;; (at your option) any later version.
++;;
++;; GnuPG is distributed in the hope that it will be useful,
++;; but WITHOUT ANY WARRANTY; without even the implied warranty of
++;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++;; GNU General Public License for more details.
++;;
++;; You should have received a copy of the GNU General Public License
++;; along with this program; if not, see <http://www.gnu.org/licenses/>.
++
++(load (in-srcdir "tests" "openpgp" "defs.scm"))
++(setup-environment)
++
++(call-check `(,(tool 'gpg) --import ,(in-srcdir "tests" "openpgp" "import-incomplete" "primary+uid.asc")))
++
++(info "Test import of new subkey, from a certificate without uid")
++(define keyid "573EA710367356BB")
++(call-check `(,(tool 'gpg) --import ,(in-srcdir "tests" "openpgp" "import-incomplete" "primary+subkey+sub-sig.asc")))
++(tr:do
++ (tr:pipe-do
++  (pipe:gpg `(--list-keys --with-colons ,keyid)))
++ (tr:call-with-content
++  (lambda (c)
++    ;; XXX we do not have a regexp library
++    (unless (any (lambda (line)
++		   (and (string-prefix? line "sub:")
++			(string-contains? line "573EA710367356BB")))
++		 (string-split-newlines c))
++	    (exit 1)))))
++
++(info "Test import of a subkey revocation, from a certificate without uid")
++(define keyid "573EA710367356BB")
++(call-check `(,(tool 'gpg) --import ,(in-srcdir "tests" "openpgp" "import-incomplete" "primary+subkey+sub-revocation.asc")))
++(tr:do
++ (tr:pipe-do
++  (pipe:gpg `(--list-keys --with-colons ,keyid)))
++ (tr:call-with-content
++  (lambda (c)
++    ;; XXX we do not have a regexp library
++    (unless (any (lambda (line)
++		   (and (string-prefix? line "sub:r:")
++			(string-contains? line "573EA710367356BB")))
++		 (string-split-newlines c))
++	    (exit 1)))))
++
++(info "Test import of revocation, from a certificate without uid")
++(call-check `(,(tool 'gpg) --import ,(in-srcdir "tests" "openpgp" "import-incomplete" "primary+revocation.asc")))
++(tr:do
++ (tr:pipe-do
++  (pipe:gpg `(--list-keys --with-colons ,keyid)))
++ (tr:call-with-content
++  (lambda (c)
++    ;; XXX we do not have a regexp library
++    (unless (any (lambda (line)
++		   (and (string-prefix? line "pub:r:")
++			(string-contains? line "0843DA969AA8DAFB")))
++		 (string-split-newlines c))
++	    (exit 1)))))
++
+--- /dev/null
++++ b/tests/openpgp/import-incomplete/primary+revocation.asc
+@@ -0,0 +1,9 @@
++-----BEGIN PGP PUBLIC KEY BLOCK-----
++Comment: [E] primary key, revocation signature over primary (no user ID)
++
++mDMEXNmUGRYJKwYBBAHaRw8BAQdA75R8VlchvmEd2Iz/8l07RoKUaUPDB71Ao1zZ
++631VAN2IeAQgFggAIBYhBLRpj5W82H/gSMzKKQhD2paaqNr7BQJc2ZQZAh0AAAoJ
++EAhD2paaqNr7qAwA/2jBUpnN0BxwRO/4CrxvrLIsL+C9aSXJUOTv8XkP4lvtAQD3
++XsDFfFNgEueiTfF7HtOGt5LPmRqVvUpQSMVgJJW6CQ==
++=tM90
++-----END PGP PUBLIC KEY BLOCK-----
+--- /dev/null
++++ b/tests/openpgp/import-incomplete/primary+subkey+sub-revocation.asc
+@@ -0,0 +1,10 @@
++-----BEGIN PGP PUBLIC KEY BLOCK-----
++Comment: [D] primary key, subkey, subkey revocation (no user ID)
++
++mDMEXNmUGRYJKwYBBAHaRw8BAQdA75R8VlchvmEd2Iz/8l07RoKUaUPDB71Ao1zZ
++631VAN24OARc2ZQhEgorBgEEAZdVAQUBAQdABsd5ha0AWXdXcSmfeiWIfrNcGqQK
++j++lwwWDAOlkVicDAQgHiHgEKBYIACAWIQS0aY+VvNh/4EjMyikIQ9qWmqja+wUC
++XNmnkAIdAgAKCRAIQ9qWmqja+ylaAQDmIKf86BJEq4OpDqU+V9D+wn2cyuxbyWVQ
++3r9LiL9qNwD/QAjyrhSN8L3Mfq+wdTHo5i0yB9ZCCpHLXSbhCqfWZwQ=
++=dwx2
++-----END PGP PUBLIC KEY BLOCK-----
+--- /dev/null
++++ b/tests/openpgp/import-incomplete/primary+subkey+sub-sig.asc
+@@ -0,0 +1,10 @@
++-----BEGIN PGP PUBLIC KEY BLOCK-----
++Comment: [B] primary key, subkey, subkey binding sig (no user ID)
++
++mDMEXNmUGRYJKwYBBAHaRw8BAQdA75R8VlchvmEd2Iz/8l07RoKUaUPDB71Ao1zZ
++631VAN24OARc2ZQhEgorBgEEAZdVAQUBAQdABsd5ha0AWXdXcSmfeiWIfrNcGqQK
++j++lwwWDAOlkVicDAQgHiHgEGBYIACAWIQS0aY+VvNh/4EjMyikIQ9qWmqja+wUC
++XNmUIQIbDAAKCRAIQ9qWmqja++vFAP98G1L+1/rWTGbsnxOAV2RocBYIroAvsbkR
++Ly6FdP8YNwEA7jOgT05CoKIe37MstpOz23mM80AK369Ca3JMmKKCQgg=
++=xuDu
++-----END PGP PUBLIC KEY BLOCK-----
+--- /dev/null
++++ b/tests/openpgp/import-incomplete/primary+uid-sig.asc
+@@ -0,0 +1,10 @@
++-----BEGIN PGP PUBLIC KEY BLOCK-----
++Comment: [C] primary key and self-sig expiring in 2024 (no user ID)
++
++mDMEXNmUGRYJKwYBBAHaRw8BAQdA75R8VlchvmEd2Iz/8l07RoKUaUPDB71Ao1zZ
++631VAN2IlgQTFggAPgIbAwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBLRpj5W8
++2H/gSMzKKQhD2paaqNr7BQJc2ZR1BQkJZgHcAAoJEAhD2paaqNr79soA/0lWkUsu
++3NLwgbni6EzJxnTzgeNMpljqNpipHAwfix9hAP93AVtFdC8g7hdUZxawobl9lnSN
++9ohXOEBWvdJgVv2YAg==
++=KWIK
++-----END PGP PUBLIC KEY BLOCK-----
+--- /dev/null
++++ b/tests/openpgp/import-incomplete/primary+uid.asc
+@@ -0,0 +1,10 @@
++-----BEGIN PGP PUBLIC KEY BLOCK-----
++Comment: [A] primary key, user ID, and self-sig expiring in 2021
++
++mDMEXNmUGRYJKwYBBAHaRw8BAQdA75R8VlchvmEd2Iz/8l07RoKUaUPDB71Ao1zZ
++631VAN20CHRlc3Qga2V5iJYEExYIAD4WIQS0aY+VvNh/4EjMyikIQ9qWmqja+wUC
++XNmUGQIbAwUJA8JnAAULCQgHAgYVCgkICwIEFgIDAQIeAQIXgAAKCRAIQ9qWmqja
+++0G1AQDdQiwhXxjXLMqoth+D4SigVHTJK8ORwifzsy3UE7mPGwD/aZ67XbAF/lgI
++kv2O1Jo0u9BL9RNNF+L0DM7rAFbfMAs=
++=1eII
++-----END PGP PUBLIC KEY BLOCK-----
