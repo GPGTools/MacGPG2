@@ -1,0 +1,35 @@
+# This patch is a workaround for a bug in gpg-agent when a wrong password from the cache is returned by pinentry.
+# Without this patch, the agent would let pinentry remove the password from the cache and return a BAD_PASSPHRASE error.
+# With this patch, the agent asks pinentry again to get a password from the user.
+
+
+--- a/agent/call-pinentry.c
++++ b/agent/call-pinentry.c
+@@ -1065,10 +1065,10 @@ agent_askpin (ctrl_t ctrl,
+         pininfo->with_repeat = 0; /* Pinentry does not support it.  */
+     }
+   pininfo->repeat_okay = 0;
+-  pininfo->status = 0;
+ 
+   for (;pininfo->failed_tries < pininfo->max_tries; pininfo->failed_tries++)
+     {
++      pininfo->status = 0; // Reset the status or PINENTRY_STATUS_PASSWORD_FROM_CACHE could stay as status.
+       memset (&parm, 0, sizeof parm);
+       parm.size = pininfo->max_length;
+       *pininfo->pin = 0; /* Reset the PIN. */
+@@ -1143,7 +1143,14 @@ agent_askpin (ctrl_t ctrl,
+           /* When pinentry cache causes an error, return now.  */
+           if (rc
+               && (pininfo->status & PINENTRY_STATUS_PASSWORD_FROM_CACHE))
+-            return unlock_pinentry (ctrl, rc);
++			if (gpg_err_code (rc) == GPG_ERR_BAD_PASSPHRASE) {
++				/* The password was read from the cache.  Don't count this
++				against the retry count.  */
++				pininfo->failed_tries --;
++				continue;
++			} else {
++				return unlock_pinentry (ctrl, rc);
++			}
+ 
+           if (gpg_err_code (rc) == GPG_ERR_BAD_PASSPHRASE)
+             {
