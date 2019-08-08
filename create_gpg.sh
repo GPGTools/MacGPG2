@@ -369,7 +369,7 @@ for file in "${BIN_FILES[@]/#/bin/}" "${LIBEXEC_FILES[@]/#/libexec/}" "${dylib_f
 		if [[ -n "$UNLOCK_PWD" ]]; then
 			security unlock-keychain -p "$UNLOCK_PWD" "$KEYCHAIN"
 		fi
-		codesign --force --sign "$CERT_NAME_APPLICATION" "$file" || doFail "codesign $file"
+		codesign --force --timestamp -o runtime --sign "$CERT_NAME_APPLICATION" "$file" || doFail "codesign $file"
 	fi
 	
 done
