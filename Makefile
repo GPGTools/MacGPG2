@@ -10,3 +10,6 @@ $(PRODUCT):
 
 clean:
 	rm -rf "./build"
+
+install:
+	./create_gpg.sh install
