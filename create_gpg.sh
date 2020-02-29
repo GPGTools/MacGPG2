@@ -16,6 +16,17 @@ FINAL_DIR=$WORKING_DIR/MacGPG2
 TARGET_DIR=/usr/local/MacGPG2
 
 
+if [ "$1" ];then
+  	if [ -d /usr/local/MacGPG2 ]; then
+  	    echo "old MacGPG2 folder removed";
+        sudo rm -Rf /usr/local/MacGPG2;
+        sync
+    fi;
+    sudo cp -Rf build/MacGPG2 /usr/local/MacGPG2;
+    sync;
+    echo "MacGPG2 sucessfull installed";
+    exit;
+fi
 
 
 # Files in bin and libexec, which are copied to the MacGPG2 dir.
