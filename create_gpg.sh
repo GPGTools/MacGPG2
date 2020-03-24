@@ -285,7 +285,9 @@ count=$(pycmd "print(len(c))") || doFail "process libs.json"
 for (( i=0; i<count; i++ )); do
 	# Set the variables lib_name, lib_url, etc.
 	unset $(compgen -A variable | grep "^lib_") 
-	eval $(pycmd "for k, v in c[$i].iteritems(): print('lib_%s=\'%s\'' % (k, v))")
+	eval $(pycmd "for k, v in c[$i].items(): print('lib_%s=\'%s\'' % (k, v))")
+	
+	[[ -n "$lib_url" ]] || errExit 'Variable $lib_url not set!'
 	
 	fullUrl=${lib_url/\$\{VERSION\}/$lib_version}
 	archiveName=${fullUrl##*/}
