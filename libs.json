@@ -27,15 +27,15 @@
 	{
 		"name": "libgpg-error",
 		"url": "https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-${VERSION}.tar.bz2",
-		"version": "1.37",
-		"sha256": "b32d6ff72a73cf79797f7f2d039e95e9c6f92f0c1450215410840ab62aea9763",
+		"version": "1.38",
+		"sha256": "d8988275aa69d7149f931c10442e9e34c0242674249e171592b430ff7b3afd02",
 		"installed_file": "lib/libgpg-error.dylib"
 	},
 	{
 		"name": "libgcrypt",
 		"url": "https://gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-${VERSION}.tar.bz2",
-		"version": "1.8.5",
-		"sha256": "3b4a2a94cb637eff5bdebbcaf46f4d95c4f25206f459809339cdada0eb577ac3",
+		"version": "1.8.6",
+		"sha256": "0cba2700617b99fc33864a0c16b1fa7fdf9781d9ed3509f5d767178e5fd7b975",
 		"installed_file": "lib/libgcrypt.dylib"
 	},
 	{
@@ -48,8 +48,8 @@
 	{
 		"name": "libksba",
 		"url": "https://gnupg.org/ftp/gcrypt/libksba/libksba-${VERSION}.tar.bz2",
-		"version": "1.3.5",
-		"sha256": "41444fd7a6ff73a79ad9728f985e71c9ba8cd3e5e53358e70d5f066d35c1a340",
+		"version": "1.4.0",
+		"sha256": "bfe6a8e91ff0f54d8a329514db406667000cb207238eded49b599761bfca41b6",
 		"installed_file": "lib/libksba.dylib"
 	},
 	{
@@ -92,8 +92,8 @@
 	{
 		"name": "gnupg",
 		"url": "https://gnupg.org/ftp/gcrypt/gnupg/gnupg-${VERSION}.tar.bz2",
-		"version": "2.2.20",
-		"sha256": "04a7c9d48b74c399168ee8270e548588ddbe52218c337703d7f06373d326ca30",
+		"version": "2.2.21",
+		"sha256": "61e83278fb5fa7336658a8b73ab26f379d41275bb1c7c6e694dd9f9a6e8e76ec",
 		"installed_file": "bin/gpg"
 	}
 ]
