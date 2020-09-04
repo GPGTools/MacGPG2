@@ -17,6 +17,26 @@ function pycmd {
 $1"
 }
 
+# Get a value:
+arrayGet() { 
+    local array=$1 index=$2
+    local i="${array}_$index"
+    printf '%s' "${!i}"
+}
+
+
+
+
+# Get list of newest versions from gnupg.org
+html=$(curl "https://gnupg.org/download/index.html")
+
+
+
+
+
+
+
+
 
 # Read libs.json
 config=$(python -c "import sys,json; print(json.loads(sys.stdin.read()))" < "$BASE_DIR/libs.json" 2>/dev/null) || doFail "read libs.json"
