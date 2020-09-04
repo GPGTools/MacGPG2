@@ -1,29 +1,6 @@
 # This patch fixes the openpgp tests.
-# On some systems PATH contains spaces, so use quotes.
 # The version contains the string "MacGPG2".
 
---- a/tests/openpgp/Makefile.am
-+++ b/tests/openpgp/Makefile.am	
-@@ -35,7 +35,7 @@
- 
- TESTS_ENVIRONMENT = LC_ALL=C \
- 	EXEEXT=$(EXEEXT) \
--	PATH=../gpgscm:$(PATH) \
-+	PATH="../gpgscm:$(PATH)" \
- 	abs_top_srcdir=$(abs_top_srcdir) \
- 	objdir=$(abs_top_builddir) \
- 	GPGSCM_PATH=$(abs_top_srcdir)/tests/gpgscm
---- a/tests/openpgp/Makefile.in
-+++ b/tests/openpgp/Makefile.in	
-@@ -445,7 +445,7 @@
- fake_pinentry_SOURCES = fake-pinentry.c
- TESTS_ENVIRONMENT = LC_ALL=C \
- 	EXEEXT=$(EXEEXT) \
--	PATH=../gpgscm:$(PATH) \
-+	PATH="../gpgscm:$(PATH)" \
- 	abs_top_srcdir=$(abs_top_srcdir) \
- 	objdir=$(abs_top_builddir) \
- 	GPGSCM_PATH=$(abs_top_srcdir)/tests/gpgscm
 --- a/tests/openpgp/version.scm
 +++ b/tests/openpgp/version.scm	
 @@ -22,4 +22,4 @@
