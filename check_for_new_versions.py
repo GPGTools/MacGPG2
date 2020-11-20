@@ -66,8 +66,9 @@ for lib in libs:
 						sha256.update(block)
 				hashString = sha256.hexdigest()
 				
-				print ('New version of', name, latestLib['version'])
-				print ('Hash:', hashString)
+				print ('New version of', name)
+				print ('"version": "{}",'.format(latestLib['version']))
+				print ('"sha256": "{}",'.format(hashString))
 				print ()
 
 
