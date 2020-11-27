@@ -92,8 +92,8 @@
 	{
 		"name": "gnupg",
 		"url": "https://gnupg.org/ftp/gcrypt/gnupg/gnupg-${VERSION}.tar.bz2",
-		"version": "2.2.24",
-		"sha256": "9090b400faae34f08469d78000cfec1cee5b9c553ce11347cc96ef16eab98c46",
+		"version": "2.2.25",
+		"sha256": "c55307b247af4b6f44d2916a25ffd1fb64ce2e509c3c3d028dbe7fbf309dc30a",
 		"installed_file": "bin/gpg"
 	}
 ]
