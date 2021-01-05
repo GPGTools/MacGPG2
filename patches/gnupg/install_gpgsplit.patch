@@ -9,6 +9,6 @@
  libexec_PROGRAMS = gpg-wks-client$(EXEEXT) gpg-check-pattern$(EXEEXT)
 -bin_PROGRAMS = gpgconf$(EXEEXT) gpg-connect-agent$(EXEEXT) \
 +bin_PROGRAMS = gpgconf$(EXEEXT) gpg-connect-agent$(EXEEXT) gpgsplit$(EXEEXT) \
- 	$(am__EXEEXT_1) $(am__EXEEXT_3) $(am__EXEEXT_4) \
- 	$(am__EXEEXT_5)
+ 	$(am__EXEEXT_2) $(am__EXEEXT_3) $(am__EXEEXT_4)
  @HAVE_W32_SYSTEM_FALSE@am__append_8 = watchgnupg gpgparsemail ${gpg_wks_server} gpgsplit
+ @HAVE_W32_SYSTEM_TRUE@am__append_9 = gpgconf-w32

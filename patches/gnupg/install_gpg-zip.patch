@@ -3,7 +3,7 @@
 
 --- a/tools/Makefile.in
 +++ b/tools/Makefile.in
-@@ -594,8 +594,8 @@
+@@ -653,8 +653,8 @@ libcommontlsnpth = ../common/libcommontlsnpth.a
  AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS) $(LIBASSUAN_CFLAGS)
  sbin_SCRIPTS = addgnupghome applygnupgdefaults
  
@@ -11,6 +11,6 @@
 -@HAVE_USTAR_TRUE@noinst_SCRIPTS = gpg-zip
 +sbin_SCRIPTS += gpg-zip
 +# @HAVE_USTAR_TRUE@noinst_SCRIPTS = gpg-zip
- @BUILD_SYMCRYPTRUN_FALSE@symcryptrun = 
- @BUILD_SYMCRYPTRUN_TRUE@symcryptrun = symcryptrun
  @BUILD_WKS_TOOLS_FALSE@gpg_wks_server = 
+ @BUILD_WKS_TOOLS_TRUE@gpg_wks_server = gpg-wks-server
+ common_libs = $(libcommon)
