@@ -11,7 +11,7 @@ The latest releases of MacGPG can be found on our [official website](https://gpg
 
 For the latest news and updates check our [Twitter](https://twitter.com/gpgtools).
 
-Visit our [support page](https://gpgtools.tenderapp.com) if you have questions or need help setting up your system and using MacGPG.
+Visit our [support page](https://support.gpgtools.org) if you have questions or need help setting up your system and using MacGPG.
 
 
 Build
