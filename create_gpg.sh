@@ -5,33 +5,22 @@
 #
 # Usage: ./create_gpg
 
-
-
 BASE_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd -P)
 CACHE_DIR=${CACHE_DIR:-$BASE_DIR/../Caches}
 WORKING_DIR=$BASE_DIR/build
 BUILD_DIR=$WORKING_DIR/build
 DIST_DIR=$WORKING_DIR/dist
+UNIVERSAL_DIST_DIR=${DIST_DIR}/universal
 FINAL_DIR=$WORKING_DIR/MacGPG2
 TARGET_DIR=/usr/local/MacGPG2
-
-
-
+TOOL="$1"
 
 # Files in bin and libexec, which are copied to the MacGPG2 dir.
 BIN_FILES=(gpg gpg-agent gpg-connect-agent gpg-error gpgconf gpgparsemail gpgsm gpgsplit gpgtar gpgv kbxutil watchgnupg dirmngr-client dirmngr mpicalc dumpsexp hmac256)
 LIBEXEC_FILES=(dirmngr_ldap gpg-preset-passphrase scdaemon gpg-check-pattern gpg-protect-tool gpg-wks-client)
 
-
-
-
-# Some build parameters.
-ARCH="x86_64"
-ABI="64"
-export MACOSX_DEPLOYMENT_TARGET=10.9
-ADDITIONAL_CFLAGS="-mmacosx-version-min=10.9 -march=core2"
-
-
+export MACOSX_DEPLOYMENT_TARGET=10.12
+MACOS_MIN_VERSION="-mmacosx-version-min=10.12"
 
 # Prepare logging.
 mkdir -p "$WORKING_DIR" "$BUILD_DIR" "$DIST_DIR" "$CACHE_DIR"
@@ -43,17 +32,18 @@ else
 	exec &> >(tee -a "$WORKING_DIR/create_gpg.log")
 fi
 
-echo -n "Build started at "; date
-
-
 set -o pipefail
-NCPU=$(sysctl hw.ncpu | awk '{print $2}')
 
+# Turn on glob extensions. They are used in the verify function.
+# But *must* be turned on, before the function is parsed.
+shopt -s extglob
 
-
+if [[ "$(type -t pkg-config)" != "file" ]]; then
+	err_exit "ERROR: pkg-config is not installed. This script requires pkg-config to be available.\nPlease fix your setup and try again."
+fi
 
 # Helper functions.
-function errExit {
+function err_exit {
 	msg="$* (${BASH_SOURCE[1]##*/}: line ${BASH_LINENO[0]})"
 	if [[ "$HAVE_TERMINAL" == "1" ]] ;then
 		echo -e "\033[1;31m$msg\033[0m" >&2
@@ -62,7 +52,7 @@ function errExit {
 	fi
 	exit 1
 }
-function doFail {
+function do_fail {
 	msg="\n** ERROR at $* ** - build failed (${BASH_SOURCE[1]##*/}: line ${BASH_LINENO[0]})"
 	if [[ "$HAVE_TERMINAL" == "1" ]] ;then
 		echo -e "\033[1;31m$msg\033[0m" >&2
@@ -76,161 +66,107 @@ function pycmd {
 $1"
 }
 
-
 # Functions for the real work.
-function downloadLib {
-	if [[ -f "$archivePath" ]]; then
-		echo "Skipping $archiveName"
+function download {
+	if [[ -f "$archive_path" ]]; then
+		echo "  - Skipping download $archive_name"
 	else
-		echo "Downloading $archiveName"
-		curl -L -o "$archivePath" "$fullUrl"
+		echo "  - Downloading $archive_name"
+		curl -L -o "$archive_path" "$full_url"
 	fi
-		
-	fileHash=$(shasum -a 256 "$archivePath" | cut -d ' ' -f 1)
-	if [[ "$lib_sha256" != "$fileHash" ]]; then
-		echo "SHA-256 sums of file $archiveName don't match" >&2
+
+	file_hash=$(shasum -a 256 "$archive_path" | cut -d ' ' -f 1)
+	if [[ "${lib_sha256:?}" != "$file_hash" ]]; then
+		echo "SHA-256 sums of file $archive_name don't match" >&2
 		echo "expected: $lib_sha256" >&2
-		echo "obtained: $fileHash" >&2
-		doFail "downloadLib"
+		echo "obtained: $file_hash" >&2
+		do_fail "download: failed to download $archive_name from $full_url"
 	fi
 }
-function unpackLib {
-	libDirs=("$BUILD_DIR/$lib_name-"*)
-	if [[ -d "$libDirs" ]]; then
-		echo "removing dir ${libDirs[@]##*/}"
-		rm -rf "${libDirs[@]}"
+function unpack {
+	local dirs=("$BUILD_DIR/$lib_name-"*)
+	if [[ -d "${dirs[0]}" ]]; then
+		echo "  - Removing dir ${dirs[@]##*/}"
+		rm -rf "${dirs[@]}"
 	fi
-	
-	echo "unpacking $archiveName"
-	suffix=${archiveName##*.tar.}
-	
+
+	echo "  - unpacking $archive_name"
+	suffix=${archive_name##*.tar.}
+
 	untar="tar -x --exclude gettext-tools"
-	
+
 	case "$suffix" in
 	lz)
 		lunzip=lunzip
 		if ! command -v lunzip &>/dev/null; then
 			lunzip="lzip -d"
 		fi
-		$lunzip -k -c "$archivePath" | $untar -C "$BUILD_DIR" -f - || doFail "$archiveName"
+		$lunzip -k -c "$archive_path" | $untar -C "$BUILD_DIR" -f - || do_fail "unpack: failed to unpack $archive_name"
 		;;
 	bz2)
-		$untar -C "$BUILD_DIR" -jf "$archivePath" || doFail "$archiveName"
+		$untar -C "$BUILD_DIR" -jf "$archive_path" || do_fail "unpack: failed to unpack $archive_name"
 		;;
 	gz|xz)
-		$untar -C "$BUILD_DIR" -zf "$archivePath" || doFail "$archiveName"
+		$untar -C "$BUILD_DIR" -zf "$archive_path" || do_fail "unpack: failed to unpack $archive_name"
 		;;
 	*)
-		doFail "$archiveName"
-	esac	
+		do_fail "unpack: failed to unpack $archive_name"
+	esac
 }
-function patchLib {
+function apply_patches {
 	patches=("$BASE_DIR/patches/$lib_name/"*.patch)
-  
-	if [[ -f "$patches" ]]; then
-		echo "patching $libDirName"
+
+	if [[ -f "${patches[0]}" ]]; then
+		echo "  - Applying patches"
 		for patch in "${patches[@]}"; do
-			echo "Applying patch $patch"
-			patch -d "$libDirPath" -p1 -t -N < "$patch" || doFail "patchLib"
+			echo "    - Applying patch $patch"
+			patch -d "$dir_path" -p1 -t -N < "$patch" || do_fail "patch: failed to apply patch $patch"
 		done
 	fi
-	
 }
-function buildLib {
-	oldPATH=$PATH
-	export PATH=$DIST_DIR/bin:$PATH
-	pushd $libDirPath >/dev/null
-	
-	echo "building $lib_name"
-	
-	if [[ "$lib_name" = "gettext" ]]; then
-		cd gettext-runtime
-	fi
-	
-	make distclean &>/dev/null
-	
-	if [[ ! -f "configure" ]]; then
-		./autogen.sh
-	fi
-	
 
-	moreCFlags="-Ofast"
-	if [[ "$lib_name" = "sqlite" ]]; then
-		echo SQLite no Ofast
-		moreCFlags=
-	fi
-  
-	CACHE_FILE="$WORKING_DIR/config.cache"
-	if [[ "$lib_name" = "sqlite" ]]; then
-		CACHE_FILE="$WORKING_DIR/config.$lib_name.cache"
-	fi
-	# GMP by default produces assembly which is only compatible
-	# with the CPU the lib is built on or newer.
-	# --disable-assembly might have to be added as well.
-	# By defining host_alias, gmp will build for a generic 64bit CPU.
-	host_alias="x86_64-apple-darwin$(uname -r)" \
-	build_alias="x86_64-apple-darwin$(uname -r)" \
-	CFLAGS="-arch $ARCH -m$ABI -ULOCALEDIR -DLOCALEDIR='\"${TARGET_DIR}/share/locale\"' $ADDITIONAL_CFLAGS $moreCFlags" \
-	CXXFLAGS="-arch $ARCH" \
-	ABI=$ABI \
-	LDFLAGS="-L$DIST_DIR/lib -arch $ARCH" \
-	CPPFLAGS="-I$DIST_DIR/include -arch $ARCH" \
-	PKG_CONFIG_PATH=$DIST_DIR/lib/pkgconfig \
-	ac_cv_search_clock_gettime=no \
-	ac_cv_func_clock_gettime=no \
-	./configure --prefix=$DIST_DIR \
-		--enable-static=no \
-		--cache-file="$CACHE_FILE" \
-		$lib_configure_args || doFail "buildLib configure"
+function define_build_vars {
+	dest_arch="${1:-x86_64}"
+	build_cflags="${MACOS_MIN_VERSION} -ULOCALEDIR -DLOCALEDIR='\"${TARGET_DIR}/share/locale\"'"
+	# For some reason, many configure based libraries test for aarch64 instead of arm64,
+	# so replace arm64 with aarch64.
+	build_alias="${dest_arch/arm64/aarch64}-apple-darwin"
+	host_alias="${build_alias}"
 
-
-	if  [[ -n "$lib_n_cpu" && "$lib_n_cpu" -lt $NCPU ]]; then
-		n_cpu=$lib_n_cpu
-	else 
-		n_cpu=$NCPU
+	build_arch_flags=""
+	if [[ "$dest_arch" == "arm64" ]]; then
+		build_arch_flags="${build_arch_flags} -m64 -target ${build_alias} -arch ${dest_arch}"
+	else
+		build_arch_flags="${build_arch_flags} -march=core2 -arch ${dest_arch} -target ${build_alias}"
 	fi
 
-	make -j $n_cpu localedir="${TARGET_DIR}/share/locale" datarootdir="${TARGET_DIR}/share" || doFail "buildLib make"
-	make install || doFail "buildLib install"
-
-	popd >/dev/null
-	PATH=$oldPATH
+	build_cflags="${build_cflags} -I${arch_dist_dir}/include ${build_arch_flags}"
+	build_ldflags="-L${arch_dist_dir}/lib ${build_arch_flags}"
+	build_cxxflags="${build_cflags}"
+	build_cppflags="${build_cflags}"
 }
-function buildGnuPG {
-	echo "building GnuPG"
 
-	# Remove some unnecessary files.
-	rm -fr "$DIST_DIR/share/man" "$DIST_DIR/share/locale" || doFail "buildGnuPG rm"
-	
-	oldPATH=$PATH
-	export PATH=$BASE_DIR/bin:$PATH
-	pushd $libDirPath >/dev/null
-	
-	GPGCONFIGPARAM=""
-	if [[ ! -f ./configure ]]; then
-	  GPGCONFIGPARAM="--enable-maintainer-mode"
-	  GETTEXT_PREFIX=$DIST_DIR/bin/ ./autogen.sh --force || doFail "buildGnuPG autogen"
+function customize_build_for_libksba {
+	configure_args="$configure_args --with-libgpg-error-prefix=${arch_dist_dir}"
+}
+
+function customize_build_for_sqlite {
+	cache_file="$WORKING_DIR/config.${dest_arch}.sqlite.cache"
+}
+
+function customize_build_for_libgcrypt {
+	if [[ "$1" = "arm64" ]]; then
+		configure_args="$configure_args --disable-asm"
 	fi
+}
 
+function customize_build_for_gnupg {
+	build_cflags="${build_cflags} -I${arch_dist_dir}/include -I${arch_dist_dir}/include/libusb-1.0/"
+	build_cxxflags="${build_cflags}"
+	build_cppflags="${build_cflags}"
+	cache_file="${WORKING_DIR}/config.${dest_arch}.gnupg.cache"
 
-	# CFLAGS="-arch $ARCH -Ofast $ADDITIONAL_CFLAGS \
-	# 	-ULOCALEDIR -DLOCALEDIR='\"${TARGET_DIR}/share/locale\"' \
-	# 	-UGNUPG_SYSCONFDIR -DGNUPG_SYSCONFDIR='\"${TARGET_DIR}/etc/gnupg\"' \
-	# 	-UGNUPG_BINDIR -DGNUPG_BINDIR='\"${TARGET_DIR}/bin\"' \
-	# 	-UGNUPG_LIBEXECDIR -DGNUPG_LIBEXECDIR='\"${TARGET_DIR}/libexec\"' \
-	# 	-UGNUPG_LIBDIR -DGNUPG_LIBDIR='\"${TARGET_DIR}/lib\"' \
-	# 	-UGNUPG_DATADIR -DGNUPG_DATADIR='\"${TARGET_DIR}/share/gnupg\"'" \
-	CFLAGS="-arch $ARCH -Ofast -I$DIST_DIR/include -I$DIST_DIR/include/libusb-1.0/ $ADDITIONAL_CFLAGS" \
-	CXXFLAGS="-arch $ARCH -I$DIST_DIR/include/libusb-1.0/" \
-	ABI=$ABI \
-	LDFLAGS="-L$DIST_DIR/lib -arch $ARCH" \
-	CPPFLAGS="-I$DIST_DIR/include -I$DIST_DIR/include/libusb-1.0/ -arch $ARCH" \
-	PKG_CONFIG_PATH=$DIST_DIR/lib/pkgconfig \
-	ac_cv_search_clock_gettime=no \
-	ac_cv_func_clock_gettime=no \
-	./configure \
-		--cache-file="$WORKING_DIR/config.gnupg.cache" \
-	  	--prefix=$DIST_DIR \
+	configure_args="$configure_args \
 		--localstatedir=/var \
 		--sysconfdir=${TARGET_DIR}/etc \
 		--disable-rpath \
@@ -240,187 +176,305 @@ function buildGnuPG {
 		--with-dirmngr-pgm=${TARGET_DIR}/bin/dirmngr \
 		--with-dirmngr-ldap-pgm=${TARGET_DIR}/libexec/dirmngr_ldap \
 		--with-protect-tool-pgm=${TARGET_DIR}/libexec/gpg-protect-tool \
-		--enable-gpg2-is-gpg \
-		--enable-ccid-driver \
-		--with-libgpg-error-prefix=$DIST_DIR \
-		--with-libgcrypt-prefix=$DIST_DIR \
-		--with-libassuan-prefix=$DIST_DIR \
-		--with-ksba-prefix=$DIST_DIR \
-		--with-npth-prefix=$DIST_DIR \
-		--with-readline=$DIST_DIR \
-		--with-libintl-prefix=$DIST_DIR \
-		$GPGCONFIGPARAM \
-		--with-libiconv-prefix=$DIST_DIR || doFail "buildGnuPG configure"
-	
-	
-	# Change the name from "GnuPG" to "GnuPG/MacGPG2".
-	echo -e "#undef GNUPG_NAME\n#define GNUPG_NAME \"GnuPG/MacGPG2\"" >> config.h
-	
-	
-	if  [[ -n "$lib_n_cpu" && "$lib_n_cpu" -lt $NCPU ]]; then
-		n_cpu=$lib_n_cpu
-	else 
-		n_cpu=$NCPU
-	fi
-	
-	make -j $NCPU prefix="${TARGET_DIR}" || doFail "buildGnuPG make"
-	make install || doFail "buildGnuPG install"	
-
-	
-	PATH=$oldPATH
+		--with-libassuan-prefix=${arch_dist_dir} \
+		--with-ksba-prefix=${arch_dist_dir} \
+		--with-npth-prefix=${arch_dist_dir} \
+		--with-readline=${arch_dist_dir} \
+		--with-libintl-prefix=${arch_dist_dir} \
+		--with-libiconv-prefix=${arch_dist_dir}"
 }
 
+function pre_build {
+	if [[ "$lib_name" = "gettext" ]]; then
+		pushd gettext-runtime || exit
+	fi
 
+	make distclean &>/dev/null
 
-if [[ "$(type -t pkg-config)" != "file" ]]; then
-	errExit "ERROR: pkg-config is not installed. This script requires pkg-config to be available.\nPlease fix your setup and try again."
-fi
+	if [[ ! -f "configure" ]]; then
+		./autogen.sh
+	fi
+}
 
+function post_build {
+	if [[ "$lib_name" = "gettext" ]]; then
+		popd || exit
+	fi
+}
+
+function post_configure {
+	if [[ "$lib_name" = "gnupg" ]]; then
+		# Change the name from "GnuPG" to "GnuPG/MacGPG2".
+		echo -e "#undef GNUPG_NAME\n#define GNUPG_NAME \"GnuPG/MacGPG2\"" >> config.h
+	fi
+}
+
+function customize_build {
+	if [[ "${lib_name}" != "sqlite" ]]; then
+		build_cflags="${build_cflags} -Ofast"
+	else
+		echo SQLite no Ofast
+	fi
+}
+
+function build {
+	pushd "$dir_path" >/dev/null || exit
+
+	local dest_arch="${1:-x86_64}"
+	arch_dist_dir="${DIST_DIR}/${dest_arch}"
+
+	echo "  - building $lib_name for ${dest_arch}"
+
+	define_build_vars "${dest_arch}"
+
+	pre_build
+
+	configure_args="$lib_configure_args"
+
+	cache_file="${WORKING_DIR}/config.${dest_arch}.cache"
+
+	# Call the general customize function.
+	customize_build
+
+	# Check if any tool based functions are configured.
+	customize_func="customize_build_for_${lib_name//-/_}"
+	if [[ "$(type -t "${customize_func}")" == "function" ]]; then
+		${customize_func} "${dest_arch}"
+	fi
+
+	# GMP by default produces assembly which is only compatible
+	# with the CPU the lib is built on or newer.
+	# --disable-assembly might have to be added as well.
+	# By defining host_alias, gmp will build for a generic 64bit CPU.
+	configure_args="$configure_args --host=${host_alias} --target=${build_alias}"
+	# 1. SYSROOT so libraries such as libgpg-error are automatically detected.
+	# 2. Define the build flags to pass to configure.
+	# 3. ABI is always 64-bit
+	# 4. Define ac_cv_* to work around a bug on macOS where this check failed (caused a runtime segfault.)
+	SYSROOT="${arch_dist_dir}" \
+	CFLAGS="$build_cflags" CXXFLAGS="$build_cxxflags" \
+	LDFLAGS="$build_ldflags" CPPFLAGS="$build_cppflags" \
+	PKG_CONFIG_PATH="${arch_dist_dir}/lib/pkgconfig" \
+	ABI=64 \
+	ac_cv_search_clock_gettime=no ac_cv_func_clock_gettime=no \
+	./configure \
+		--prefix="${arch_dist_dir:?}" \
+		--enable-static=no \
+		--cache-file="${cache_file:?}" \
+		$configure_args || \
+	do_fail "build: ${lib_name} (${dest_arch}) configure"
+
+	post_configure
+
+	make localedir="${TARGET_DIR}/share/locale" datarootdir="${TARGET_DIR}/share" || do_fail "build: ${lib_name} (${dest_arch}) make"
+	make install || do_fail "build: ${lib_name} (${dest_arch}) install"
+
+	post_build
+
+	popd >/dev/null || exit
+}
+
+function prepare_for_packaging {
+	# some files get wrong permissions, let's just fix them ...
+	echo "- Fix permissions"
+	find "$DIST_DIR" -type f -exec chmod +w {} +
+
+	echo "- Copy share folder to universal build"
+	mkdir -p "${UNIVERSAL_DIST_DIR:?}/share"
+	cp -R "${DIST_DIR}/arm64/share/"* "${UNIVERSAL_DIST_DIR:?}/share/"
+
+	# Walk through the files and copy non-binary files as is and
+	# perform necessary fixups (adjusting library ids, rpaths)
+	# and combining variants into one universal binary.
+	echo "- Fix up executables and create universal binaries."
+	pushd "$DIST_DIR" || exit
+		for dir in "lib" "bin" "sbin" "libexec"; do
+			# Create the directory if it does not exist yet.
+			if [[ ! -d "${UNIVERSAL_DIST_DIR}/${dir}" ]]; then
+				mkdir -p "${UNIVERSAL_DIST_DIR}/${dir}"
+			fi
+
+			for item in "x86_64/${dir}/"*; do
+				filename=${item##*/}
+				executable=$(file "$item" | grep "64-bit")
+				item_arm=${item/x86_64/arm64}
+				item_without_arch=${item/x86_64\//}
+
+				# Not a executable, simply copy the file.
+				if [[ -z "$executable" || -L "$item" ]]; then
+					echo "  - Copy non-executable or symlink $item"
+					cp -R "$item" "${UNIVERSAL_DIST_DIR}/${dir}/"
+					continue;
+				fi
+
+				echo "  - Fix dylib paths $item (x86_64)"
+				fixup_lib_paths "$item"
+				echo "  - Fix dylib paths $item (arm64)"
+				fixup_lib_paths "$item_arm"
+
+				echo "  - Combine variants into universal binary $item_without_arch"
+				create_universal_binary "$item_without_arch"
+				codesign_binary "${UNIVERSAL_DIST_DIR}/${item_without_arch}"
+			done
+		done
+	popd || exit
+}
+
+function fixup_lib_paths {
+	local path="$1"
+	local filename="$(basename "$path")"
+
+	# If this is an dylib adjust the ID.
+	if [[ "${filename##*.}" = "dylib" ]]; then
+		echo "    - Adjusting ID for ${path}"
+		install_name_tool -id "${TARGET_DIR}/lib/${filename}" "${path}"
+	fi
+
+	# Check if rpaths need to be adjusted.
+	libs=$(otool -L "$path" | cut -d' ' -f1 | tr -d "\t" | tail -n +2)
+	need_rpath=0
+	for lib in $libs; do
+		if [[ "$lib" =~ $DIST_DIR ]]; then
+			need_rpath=1
+			rpath="@rpath/${lib##*/}"
+			echo "    - Change $lib to relative path $rpath"
+			install_name_tool -change "$lib" "$rpath" "$path"
+		fi
+	done
+
+	# Add the rpath if necessary and a loader rpath doesn't already exist.
+	loader_path_rpath="$(otool -l "$path" | grep -A2 "cmd LC_RPATH" | grep -E "path\s@loader_path")"
+	if [[ $need_rpath -eq 1 && -z "$loader_path_rpath" ]]; then
+		echo "    - Adding @loader_path as rpath to $path"
+		install_name_tool -add_rpath "@loader_path/../lib" "$path"
+	fi
+}
+
+function create_universal_binary {
+	local path="$1"
+
+	echo "    - Combine x86_64/${path} with arm64/${path} -> ${path}"
+	lipo -create -output "${UNIVERSAL_DIST_DIR}/${path}" "x86_64/${path}" "arm64/${path}"
+}
+
+function codesign_binary {
+	local path="$1"
+
+	if [[ -z "$CERT_NAME_APPLICATION" ]]; then
+		echo "  - *DO NOT* code sign universal binary $item_without_arch"
+
+		return
+	else
+		echo "  - Code sign universal binary $item_without_arch"
+	fi
+
+	KEYCHAIN=$(security find-certificate -c "$CERT_NAME_APPLICATION" | sed -En 's/^keychain: "(.*)"/\1/p')
+	[[ -n "$KEYCHAIN" ]] || err_exit "I require certificate '$CERT_NAME_APPLICATION' but it can't be found.  Aborting."
+
+	if [[ -n "$UNLOCK_PWD" ]]; then
+		security unlock-keychain -p "$UNLOCK_PWD" "$KEYCHAIN"
+	fi
+
+	codesign --force --timestamp -o runtime --sign "$CERT_NAME_APPLICATION" "$path" || do_fail "codesign_binary - failed to sign binary $path"
+}
+
+function copy_to_final_destination {
+	echo "* Copying files to final destination ${FINAL_DIR##*/}"
+	rm -rf "$FINAL_DIR" &>/dev/null
+	mkdir -p "$FINAL_DIR"
+
+	pushd "${UNIVERSAL_DIST_DIR}" >/dev/null || exit
+		tar -cf - \
+			"${BIN_FILES[@]/#/bin/}" \
+			"${LIBEXEC_FILES[@]/#/libexec/}" \
+			lib/*dylib \
+			share/gnupg \
+			share/man \
+			share/locale | tar -C "$FINAL_DIR" -xf -
+
+		ln -s gpg "${FINAL_DIR}/bin/gpg2"
+		cp -r "${BASE_DIR}/payload/" "${FINAL_DIR}/" || do_fail "copy_to_final_destination: failed to copy payload files."
+		cp sbin/gpg-zip "$FINAL_DIR/bin/" || do_fail "copy_to_final_destination: failed to copy gpg-zip"
+
+		# Remove any libgettext files.
+		rm -f "$FINAL_DIR/lib/libgettext"*
+	popd >/dev/null || exit
+}
+
+function verify {
+	echo "* Verify binary correctnes"
+	# ensure that all executables and libraries have correct lib-path settings and are signed correctly
+	pushd "$FINAL_DIR" >/dev/null || exit
+		otool -L bin/!(convert-keyring|gpg-zip) | grep "$WORKING_DIR" && do_fail "verify: some binaries in bin/ still contain wrong paths"
+		otool -L libexec/!(fixGpgHome|shutdown-gpg-agent) | grep "$WORKING_DIR" && do_fail "verify: some binaries in libexec/ still contain wrong paths"
+		otool -L lib/* | grep "$WORKING_DIR" && do_fail "verify: some binaries in lib/ still contain wrong paths"
+
+		if [[ -n "$CERT_NAME_APPLICATION" ]]; then
+			find . -print0 | xargs -0 file | grep -F Mach-O | cut -d: -f1 | while read -r file; do
+				codesign --verify "$file" || do_fail "verify: invalid signature for $file"
+			done
+			echo "  - All binaries are signed correctly."
+		else
+			echo "  - No code signing certificate specified."
+		fi
+	popd >/dev/null || exit
+}
+
+echo -n "Build started at "; date
 
 # Read libs.json
-config=$(python -c "import sys,json; print(json.loads(sys.stdin.read()))" < "$BASE_DIR/libs.json" 2>/dev/null) || doFail "read libs.json"
-count=$(pycmd "print(len(c))") || doFail "process libs.json" 
+config=$(python -c "import sys,json; print(json.loads(sys.stdin.read()))" < "$BASE_DIR/libs.json" 2>/dev/null) || do_fail "read libs.json"
+count=$(pycmd "print(len(c))") || do_fail "process libs.json"
+
+if [[ -n "${TOOL}" ]]; then
+	echo "== Building ${TOOL} =="
+fi
 
 # Loop over all libs
 for (( i=0; i<count; i++ )); do
 	# Set the variables lib_name, lib_url, etc.
-	unset $(compgen -A variable | grep "^lib_") 
+	unset $(compgen -A variable | grep "^lib_")
 	eval $(pycmd "for k, v in c[$i].items(): print('lib_%s=\'%s\'' % (k, v))")
-	
-	[[ -n "$lib_url" ]] || errExit 'Variable $lib_url not set!'
-	
-	fullUrl=${lib_url/\$\{VERSION\}/$lib_version}
-	archiveName=${fullUrl##*/}
-	archivePath=$CACHE_DIR/$archiveName
-	libDirName=${archiveName%%.tar*}
-	libDirPath=$BUILD_DIR/$libDirName
-	
-	
-	if [[ -n "$lib_installed_file" && -d "$libDirPath" && -f "$DIST_DIR/$lib_installed_file" ]]; then
-		echo "Already built $libDirName"
+
+	[[ -n "$lib_url" ]] || err_exit "Variable lib_url not set!"
+
+	full_url=${lib_url/\$\{VERSION\}/$lib_version}
+	archive_name=${full_url##*/}
+	archive_path=$CACHE_DIR/$archive_name
+	dir_name=${archive_name%%.tar*}
+	dir_path=$BUILD_DIR/$dir_name
+
+	echo "* Build $lib_name"
+
+	if [[ -n "$TOOL" && "$TOOL" != "$lib_name" ]]; then
+		echo "Skip $lib_name"
 		continue
 	fi
-	downloadLib
-	
-	unpackLib
-	
-	patchLib
-	
-	if [[ "$lib_name" == "gnupg" ]]; then
-		buildGnuPG
-	else 
-		buildLib
-	fi
 
-done
-
-
-
-# some files get wrong permissions, let's just fix them ...
-find "$DIST_DIR" -type f -exec chmod +w {} +
-
-
-
-# Adjust ids using otool for libraries in lib/
-pushd "$DIST_DIR/lib" >/dev/null
-for dylib in *.dylib; do
-	if [[ ! -L "$dylib" ]]; then
-		echo "adapting ID for $dylib"
-		install_name_tool -id "${TARGET_DIR}/lib/$dylib" "$dylib"
-	fi
-done
-popd >/dev/null
-
-
-
-# Adjust rpath using otool for libraries and binaries and code sign them.
-pushd "$DIST_DIR" >/dev/null
-NL="
-"
-have_rpath_regex="cmd LC_RPATH${NL}[^${NL}]+${NL} *path @loader_path/../lib"
-dylib_files=(lib/*.dylib)
-
-for file in "${BIN_FILES[@]/#/bin/}" "${LIBEXEC_FILES[@]/#/libexec/}" "${dylib_files[@]}"; do
-	if [[ -L "$file" ]]; then
+	if [[ -n "$lib_installed_file" && -d "$dir_path" && (-f "$DIST_DIR/$lib_installed_file" || -f "$DIST_DIR/arm64/$lib_installed_file") ]]; then
+		echo "Already built $dir_name"
 		continue
 	fi
-	
-	need_rpath=0
-	for loadPath in $(otool -L "$file" | cut -d' ' -f1); do
-		if [[ "$loadPath" =~ "$DIST_DIR/lib/" ]]; then
-			if [[ $need_rpath -eq 0 ]]; then
-				echo "adapting ld-paths for $file"
-				need_rpath=1
-			fi
-			rpath=@rpath/${loadPath##*/}
-			install_name_tool -change "$loadPath" "$rpath" "$file"
-		fi
-	done
-	
-	# Add rpath if necessary.
-	if [[ $need_rpath -eq 1 && ! "$(otool -l "$file")" =~ $have_rpath_regex ]]; then
-		echo "adding rpath to $file"
-		install_name_tool -add_rpath @loader_path/../lib "$file"
-	fi
-	
-	# Code sign the binary.
-	if [[ -n "$CERT_NAME_APPLICATION" ]]; then
-		KEYCHAIN=$(security find-certificate -c "$CERT_NAME_APPLICATION" | sed -En 's/^keychain: "(.*)"/\1/p')
-		[[ -n "$KEYCHAIN" ]] ||
-			errExit "I require certificate '$CERT_NAME_APPLICATION' but it can't be found.  Aborting."
-		if [[ -n "$UNLOCK_PWD" ]]; then
-			security unlock-keychain -p "$UNLOCK_PWD" "$KEYCHAIN"
-		fi
-		codesign --force --timestamp -o runtime --sign "$CERT_NAME_APPLICATION" "$file" || doFail "codesign $file"
-	fi
-	
+
+	download
+
+	unpack
+
+	apply_patches
+
+	build "x86_64"
+	build "arm64"
 done
-popd >/dev/null
 
+echo "* Prepare for packaging"
 
+# Merge the architectures together.
+prepare_for_packaging
 
-echo "copying files to ${FINAL_DIR##*/}"
-rm -rf "$FINAL_DIR" &>/dev/null
-mkdir -p "$FINAL_DIR"
-pushd "$DIST_DIR" >/dev/null
+# Copy all files to the final destination
+copy_to_final_destination
 
-
-tar -cf - \
-	"${BIN_FILES[@]/#/bin/}" \
-	"${LIBEXEC_FILES[@]/#/libexec/}" \
-	lib/*dylib \
-	share/gnupg \
-	share/man \
-	share/locale | tar -C "$FINAL_DIR" -xf -
-
-ln -s gpg "$FINAL_DIR/bin/gpg2"
-cp -r "$BASE_DIR/payload/" "$FINAL_DIR/" || doFail "cp payload"
-cp sbin/gpg-zip "$FINAL_DIR/bin/" || doFail "cp gpg-zip"
-
-
-rm -f "$FINAL_DIR/lib/libgettext"*
-popd >/dev/null
-
-
-
-# ensure that all executables and libraries have correct lib-path settings and are signed correctly
-pushd "$FINAL_DIR" >/dev/null
-shopt -s extglob
-otool -L bin/!(convert-keyring|gpg-zip) | grep "$WORKING_DIR" && doFail "otool bin"
-otool -L libexec/!(fixGpgHome|shutdown-gpg-agent) | grep "$WORKING_DIR" && doFail "otool libexec"
-otool -L lib/* | grep "$WORKING_DIR" && doFail "otool lib"
-
-if [[ -n "$CERT_NAME_APPLICATION" ]]; then
-	find . -print0 | xargs -0 file | grep -F Mach-O | cut -d: -f1 | while read file; do
-		codesign --verify "$file" || doFail "invalid signature at $file"
-	done
-	echo "All binaries are signed correctly."
-else 
-	echo "No code signing certificate specified."
-fi
-popd >/dev/null
-
+# Verify all files
+verify
 
 echo -n "Build ended at "; date
-
-

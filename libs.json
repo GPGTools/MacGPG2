@@ -9,11 +9,10 @@
 	},
 	{
 		"name": "gmp",
-		"url": "https://mirror.kumi.systems/gnu/gmp/gmp-${VERSION}.tar.lz",
-		"version": "6.1.2",
-		"sha256": "12fed0532d440d2dc902e64f016aa89a33af6044b90bd1f7bca7396635105dbb",
-		"configure_args": "--disable-java --disable-rpath --disable-c++ --disable-openmp --with-included-gettext",
-		"n_cpu": 2,
+		"url": "https://gmplib.org/download/gmp/gmp-${VERSION}.tar.lz",
+		"version": "6.2.1",
+		"sha256": "2c7f4f0d370801b2849c48c9ef3f59553b5f1d3791d070cffb04599f9fc67b41",
+		"configure_args": "--disable-rpath --disable-c++ --with-included-gettext --with-pic --enable-cxx",
 		"installed_file": "lib/libgmp.dylib"
 	},
 	{
@@ -86,7 +85,7 @@
 		"url": "https://gnupg.org/ftp/gcrypt/gnutls/v3.6/gnutls-${VERSION}.tar.xz",
 		"version": "3.6.15",
 		"sha256": "0ea8c3283de8d8335d7ae338ef27c53a916f15f382753b174c18b45ffd481558",
-		"configure_args": "--with-included-libtasn1 --without-p11-kit --disable-doc --disable-cxx --disable-rpath --disable-nls --disable-tests --with-default-trust-store-file=/usr/local/MacGPG2/share/ca-certs.crt --with-included-unistring",
+		"configure_args": "--with-included-libtasn1 --without-p11-kit --disable-doc --disable-cxx --disable-rpath --disable-nls --disable-tests --disable-tools --with-included-unistring --with-default-trust-store-file=/usr/local/MacGPG2/share/ca-certs.crt",
 		"installed_file": "lib/libgnutls.dylib"
 	},
 	{

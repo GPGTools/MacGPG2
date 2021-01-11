@@ -35,4 +35,4 @@ Copy ./build/MacGPG2 to /usr/local/MacGPG2
 System Requirements
 -------------------
 
-* Mac OS X >= 10.9
+* Mac OS X >= 10.12
