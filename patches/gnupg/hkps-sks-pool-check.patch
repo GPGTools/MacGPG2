@@ -1,0 +1,30 @@
+# dirmngr only loads the system certificates via gnutls if no custom cert is
+# configured via hkp-cacert options and if the keyserver to be used is *not*
+# the hkps pool server.
+# However, in order to check if the current server is the pool, dirmngr doesn't
+# check the current keyserver against 'hkps.pool.sks-keyservers.net' but instead
+# compares it aganst the value returned by get_default_keyserver (1).
+# For the vanilla version of GnuPG this is no problem, since the hkps pool
+# is the default keyserver.
+#
+# For MacGPG however, keys.openpgp.org is the default key server.
+# This leads to the problem that instead of loading the system certificates for
+# keys.openpgp.org – since it is not the sks keyserver - it only loads the
+# special sks-keyservers CA and will fail to connect to keys.openpgp.org
+#
+# This patch fixes this check by comparing the wanted keyserver against the
+# domain of the hkps pool keyserver, which is how it should be.
+
+diff --git a/dirmngr/http.c b/dirmngr/http.c
+index 5e3f17c..40160e0 100644
+--- a/dirmngr/http.c
++++ b/dirmngr/http.c
+@@ -768,7 +768,7 @@ http_session_new (http_session_t *r_session,
+ 
+     is_hkps_pool = (intended_hostname
+                     && !ascii_strcasecmp (intended_hostname,
+-                                          get_default_keyserver (1)));
++                                          "hkps.pool.sks-keyservers.net"));
+ 
+     /* If we are looking for the hkps pool from sks-keyservers.net,
+      * then forcefully use its dedicated certificate authority.  */

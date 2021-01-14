@@ -85,7 +85,7 @@
 		"url": "https://gnupg.org/ftp/gcrypt/gnutls/v3.6/gnutls-${VERSION}.tar.xz",
 		"version": "3.6.15",
 		"sha256": "0ea8c3283de8d8335d7ae338ef27c53a916f15f382753b174c18b45ffd481558",
-		"configure_args": "--with-included-libtasn1 --without-p11-kit --disable-doc --disable-cxx --disable-rpath --disable-nls --disable-tests --disable-tools --with-included-unistring --with-default-trust-store-file=/usr/local/MacGPG2/share/ca-certs.crt",
+		"configure_args": "--with-included-libtasn1 --without-p11-kit --disable-doc --disable-cxx --disable-rpath --disable-nls --disable-tests --disable-tools --with-included-unistring",
 		"installed_file": "lib/libgnutls.dylib"
 	},
 	{
