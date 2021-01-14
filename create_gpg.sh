@@ -215,6 +215,10 @@ function customize_build {
 	else
 		echo SQLite no Ofast
 	fi
+
+	if [[ "${lib_name}" != "gnupg" ]]; then
+		configure_args="$configure_args --enable-static=no"
+	fi
 }
 
 function build {
@@ -259,7 +263,6 @@ function build {
 	ac_cv_search_clock_gettime=no ac_cv_func_clock_gettime=no \
 	./configure \
 		--prefix="${arch_dist_dir:?}" \
-		--enable-static=no \
 		--cache-file="${cache_file:?}" \
 		$configure_args || \
 	do_fail "build: ${lib_name} (${dest_arch}) configure"

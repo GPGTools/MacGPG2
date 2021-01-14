@@ -1,5 +1,20 @@
 [
 	{
+		"name": "readline",
+		"url": "https://mirror.kumi.systems/gnu/readline/readline-${VERSION}.tar.gz",
+		"version": "7.0",
+		"sha256": "750d437185286f40a369e1e4f4764eda932b9459b5ec9a731628393dd3d32334",
+		"installed_file": "lib/libreadline.dylib"
+	},
+	{
+		"name": "npth",
+		"url": "https://gnupg.org/ftp/gcrypt/npth/npth-${VERSION}.tar.bz2",
+		"version": "1.6",
+		"sha256": "1393abd9adcf0762d34798dc34fdcf4d0d22a8410721e76f1e3afcd1daa4e2d1",
+		"configure_args": "--disable-tests --disable-dependency-tracking --enable-static=no",
+		"installed_file": "lib/libnpth.dylib"
+	},
+	{
 		"name": "gettext",
 		"url": "https://mirror.kumi.systems/gnu/gettext/gettext-${VERSION}.tar.lz",
 		"version": "0.19.8.1",
@@ -12,7 +27,7 @@
 		"url": "https://gmplib.org/download/gmp/gmp-${VERSION}.tar.lz",
 		"version": "6.2.1",
 		"sha256": "2c7f4f0d370801b2849c48c9ef3f59553b5f1d3791d070cffb04599f9fc67b41",
-		"configure_args": "--disable-rpath --disable-c++ --with-included-gettext --with-pic --enable-cxx",
+		"configure_args": "--with-pic --enable-cxx",
 		"installed_file": "lib/libgmp.dylib"
 	},
 	{
@@ -52,21 +67,6 @@
 		"installed_file": "lib/libksba.dylib"
 	},
 	{
-		"name": "readline",
-		"url": "https://mirror.kumi.systems/gnu/readline/readline-${VERSION}.tar.gz",
-		"version": "7.0",
-		"sha256": "750d437185286f40a369e1e4f4764eda932b9459b5ec9a731628393dd3d32334",
-		"installed_file": "lib/libreadline.dylib"
-	},
-	{
-		"name": "npth",
-		"url": "https://gnupg.org/ftp/gcrypt/npth/npth-${VERSION}.tar.bz2",
-		"version": "1.6",
-		"sha256": "1393abd9adcf0762d34798dc34fdcf4d0d22a8410721e76f1e3afcd1daa4e2d1",
-		"configure_args": "--disable-tests --disable-dependency-tracking --enable-static=no",
-		"installed_file": "lib/libnpth.dylib"
-	},
-	{
 		"name": "sqlite",
 		"url": "https://www.sqlite.org/2017/sqlite-autoconf-${VERSION}.tar.gz",
 		"version": "3200000",
@@ -91,8 +91,8 @@
 	{
 		"name": "gnupg",
 		"url": "https://gnupg.org/ftp/gcrypt/gnupg/gnupg-${VERSION}.tar.bz2",
-		"version": "2.2.26",
-		"sha256": "517569e6c9fad22175df16be5900f94c991c41e53612db63c14493e814cfff6d",
+		"version": "2.2.27",
+		"sha256": "34e60009014ea16402069136e0a5f63d9b65f90096244975db5cea74b3d02399",
 		"installed_file": "bin/gpg"
 	}
 ]
