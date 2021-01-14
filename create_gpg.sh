@@ -410,7 +410,9 @@ function verify {
 		otool -L lib/* | grep "$WORKING_DIR" && do_fail "verify: some binaries in lib/ still contain wrong paths"
 
 		if [[ -n "$CERT_NAME_APPLICATION" ]]; then
-			find . -print0 | xargs -0 file | grep -F Mach-O | cut -d: -f1 | while read -r file; do
+			# file prints 3 lines for each binary. the first with the filename and next one line for each architecture.
+			# By using grep -v '(' only the first line is kept.
+			find . -print0 | xargs -0 file | grep -F Mach-O | grep -v '(' | cut -d: -f1 | while read -r file; do
 				codesign --verify "$file" || do_fail "verify: invalid signature for $file"
 			done
 			echo "  - All binaries are signed correctly."
