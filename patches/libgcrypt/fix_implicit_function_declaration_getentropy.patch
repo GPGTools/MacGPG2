@@ -1,0 +1,17 @@
+diff --git a/random/rndlinux.c b/random/rndlinux.c
+index 04e2a46..f19ec7a 100644
+--- a/random/rndlinux.c
++++ b/random/rndlinux.c
+@@ -41,6 +41,12 @@
+ #endif
+ #endif
+ 
++#ifdef __APPLE__
++#if defined(HAVE_GETRANDOM) || defined(HAVE_GETENTROPY)
++# include <sys/random.h>
++#endif
++#endif
++
+ #include "types.h"
+ #include "g10lib.h"
+ #include "rand-internal.h"
