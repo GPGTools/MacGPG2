@@ -164,6 +164,7 @@ function customize_build_for_gnupg {
 	build_cflags="${build_cflags} -I${arch_dist_dir}/include -I${arch_dist_dir}/include/libusb-1.0/"
 	build_cxxflags="${build_cflags}"
 	build_cppflags="${build_cflags}"
+	build_ldflags="${build_ldflags} -framework Foundation -framework Security"
 	cache_file="${WORKING_DIR}/config.${dest_arch}.gnupg.cache"
 
 	configure_args="$configure_args \
