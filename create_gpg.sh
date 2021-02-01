@@ -162,6 +162,11 @@ function customize_build_for_libgcrypt {
 
 function customize_build_for_gnupg {
 	build_cflags="${build_cflags} -I${arch_dist_dir}/include -I${arch_dist_dir}/include/libusb-1.0/"
+	build_cflags="${build_cflags} -UGNUPG_BINDIR -DGNUPG_BINDIR=\"\\\"${TARGET_DIR}/bin\\\"\" \
+				      -UGNUPG_LIBEXECDIR -DGNUPG_LIBEXECDIR=\"\\\"${TARGET_DIR}/libexec\\\"\" \
+				      -UGNUPG_LIBDIR -DGNUPG_LIBDIR=\"\\\"${TARGET_DIR}/lib/gnupg\\\"\" \
+				      -UGNUPG_DATADIR -DGNUPG_DATADIR=\"\\\"${TARGET_DIR}/share/gnupg\\\"\" \
+				      -UGNUPG_SYSCONFDIR -DGNUPG_SYSCONFDIR=\"\\\"${TARGET_DIR}/etc/gnupg\\\"\""
 	build_cxxflags="${build_cflags}"
 	build_cppflags="${build_cflags}"
 	build_ldflags="${build_ldflags} -framework Foundation -framework Security"
