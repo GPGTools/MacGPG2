@@ -160,6 +160,18 @@ function customize_build_for_libgcrypt {
 	fi
 }
 
+function post_configure_for_libtasn1 {
+	if [[ "$1" != "arm64" ]]; then
+		return
+	fi
+
+	echo "Disabling 'tests' and 'examples' make steps for $1"
+	# `make tests` and `make examples` will fail on arm64 due to linking x86_64 and arm64
+	# so replace the Makefile with a dummy one.
+	echo -e "all:\n\techo test\n\ninstall:\n\techo install" > ./tests/Makefile
+	echo -e "all:\n\techo test\n\ninstall:\n\techo install" > ./examples/Makefile
+}
+
 function customize_build_for_gnupg {
 	build_cflags="${build_cflags} -I${arch_dist_dir}/include -I${arch_dist_dir}/include/libusb-1.0/"
 	build_cflags="${build_cflags} -UGNUPG_BINDIR -DGNUPG_BINDIR=\"\\\"${TARGET_DIR}/bin\\\"\" \
@@ -274,6 +286,11 @@ function build {
 	do_fail "build: ${lib_name} (${dest_arch}) configure"
 
 	post_configure
+
+	post_configure_func="post_configure_for_${lib_name//-/_}"
+	if [[ "$(type -t "${post_configure_func}")" == "function" ]]; then
+		${post_configure_func} "${dest_arch}"
+	fi
 
 	make localedir="${TARGET_DIR}/share/locale" datarootdir="${TARGET_DIR}/share" || do_fail "build: ${lib_name} (${dest_arch}) make"
 	make install || do_fail "build: ${lib_name} (${dest_arch}) install"

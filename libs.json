@@ -81,11 +81,17 @@
 		"installed_file": "lib/libusb-1.0.dylib"
 	},
 	{
+		"name": "libtasn1",
+		"sha256": "ece7551cea7922b8e10d7ebc70bc2248d1fdd73351646a2d6a8d68a9421c45a5",
+		"url": "http://ftp.gnu.org/gnu/libtasn1/libtasn1-4.17.0.tar.gz",
+		"installed_file": "lib/libtasn1.dylib"
+	},
+	{
 		"name": "gnutls",
 		"url": "https://gnupg.org/ftp/gcrypt/gnutls/v3.6/gnutls-${VERSION}.tar.xz",
 		"version": "3.6.15",
 		"sha256": "0ea8c3283de8d8335d7ae338ef27c53a916f15f382753b174c18b45ffd481558",
-		"configure_args": "--with-included-libtasn1 --without-p11-kit --disable-doc --disable-cxx --disable-rpath --disable-nls --disable-tests --disable-tools --with-included-unistring",
+		"configure_args": "--without-p11-kit --disable-doc --disable-cxx --disable-rpath --disable-nls --disable-tests --disable-tools --with-included-unistring",
 		"installed_file": "lib/libgnutls.dylib"
 	},
 	{
