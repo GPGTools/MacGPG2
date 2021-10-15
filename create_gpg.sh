@@ -309,6 +309,9 @@ function prepare_for_packaging {
 	mkdir -p "${UNIVERSAL_DIST_DIR:?}/share"
 	cp -R "${DIST_DIR}/arm64/share/"* "${UNIVERSAL_DIST_DIR:?}/share/"
 
+	mkdir -p "${UNIVERSAL_DIST_DIR:?}/include"
+	cp -R "${DIST_DIR}/arm64/include/"* "${UNIVERSAL_DIST_DIR:?}/include/"
+
 	# Walk through the files and copy non-binary files as is and
 	# perform necessary fixups (adjusting library ids, rpaths)
 	# and combining variants into one universal binary.
@@ -414,6 +417,7 @@ function copy_to_final_destination {
 			"${BIN_FILES[@]/#/bin/}" \
 			"${LIBEXEC_FILES[@]/#/libexec/}" \
 			lib/*dylib \
+			include \
 			share/gnupg \
 			share/man \
 			share/locale | tar -C "$FINAL_DIR" -xf -
