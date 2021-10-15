@@ -202,6 +202,10 @@ function customize_build_for_gnupg {
 		--with-libiconv-prefix=${arch_dist_dir}"
 }
 
+function customize_build_for_gettext {
+	cache_file="${WORKING_DIR}/config.${dest_arch}.gettext.cache"
+}
+
 function pre_build {
 	if [[ "$lib_name" = "gettext" ]]; then
 		pushd gettext-runtime || exit

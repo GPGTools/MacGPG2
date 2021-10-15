@@ -2,8 +2,8 @@
 	{
 		"name": "readline",
 		"url": "https://mirror.kumi.systems/gnu/readline/readline-${VERSION}.tar.gz",
-		"version": "7.0",
-		"sha256": "750d437185286f40a369e1e4f4764eda932b9459b5ec9a731628393dd3d32334",
+		"version": "8.1",
+		"sha256": "f8ceb4ee131e3232226a17f51b164afc46cd0b9e6cef344be87c65962cb82b02",
 		"installed_file": "lib/libreadline.dylib"
 	},
 	{
@@ -17,8 +17,8 @@
 	{
 		"name": "gettext",
 		"url": "https://mirror.kumi.systems/gnu/gettext/gettext-${VERSION}.tar.lz",
-		"version": "0.19.8.1",
-		"sha256": "e462c9fb8b2ccd507452b4e73e51a8268c5d9f0d85e832b0b3e08aec4849a24f",
+		"version": "0.21",
+		"sha256": "435b546e3880ab767c967c0731b20629a0cb0ba620e6bac2f590f401c10ebb45",
 		"configure_args": "--disable-java --disable-rpath --disable-c++ --disable-openmp --with-included-gettext",
 		"installed_file": "lib/libintl.dylib"
 	},
@@ -33,37 +33,37 @@
 	{
 		"name": "nettle",
 		"url": "https://ftp.gnu.org/gnu/nettle/nettle-${VERSION}.tar.gz",
-		"version": "3.4.1",
-		"sha256": "f941cf1535cd5d1819be5ccae5babef01f6db611f9b5a777bae9c7604b8a92ad",
+		"version": "3.7",
+		"sha256": "f001f64eb444bf13dd91bceccbc20acbc60c4311d6e2b20878452eb9a9cec75a",
 		"configure_args": "--disable-assembler",
 		"installed_file": "lib/libnettle.dylib"
 	},
 	{
 		"name": "libgpg-error",
 		"url": "https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-${VERSION}.tar.bz2",
-		"version": "1.41",
-		"sha256": "64b078b45ac3c3003d7e352a5e05318880a5778c42331ce1ef33d1a0d9922742",
+		"version": "1.42",
+		"sha256": "fc07e70f6c615f8c4f590a8e37a9b8dd2e2ca1e9408f8e60459c67452b925e23",
 		"installed_file": "lib/libgpg-error.dylib"
 	},
 	{
 		"name": "libgcrypt",
 		"url": "https://gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-${VERSION}.tar.bz2",
-		"version": "1.8.7",
-		"sha256": "03b70f028299561b7034b8966d7dd77ef16ed139c43440925fe8782561974748",
+		"version": "1.8.8",
+		"sha256": "895de2bb981dd127f0821d1ce13fadf7d760f9fa7737648b15f2c1fe13cc5af5",
 		"installed_file": "lib/libgcrypt.dylib"
 	},
 	{
 		"name": "libassuan",
 		"url": "https://gnupg.org/ftp/gcrypt/libassuan/libassuan-${VERSION}.tar.bz2",
-		"version": "2.5.4",
-		"sha256": "c080ee96b3bd519edd696cfcebdecf19a3952189178db9887be713ccbcb5fbf0",
+		"version": "2.5.5",
+		"sha256": "8e8c2fcc982f9ca67dcbb1d95e2dc746b1739a4668bc20b3a3c5be632edb34e4",
 		"installed_file": "lib/libassuan.dylib"
 	},
 	{
 		"name": "libksba",
 		"url": "https://gnupg.org/ftp/gcrypt/libksba/libksba-${VERSION}.tar.bz2",
-		"version": "1.5.0",
-		"sha256": "ae4af129216b2d7fdea0b5bf2a788cd458a79c983bb09a43f4d525cc87aba0ba",
+		"version": "1.6.0",
+		"sha256": "dad683e6f2d915d880aa4bed5cea9a115690b8935b78a1bbe01669189307a48b",
 		"installed_file": "lib/libksba.dylib"
 	},
 	{
@@ -76,8 +76,8 @@
 	},
 	{
 		"name": "libusb",
-		"url": "https://github.com/libusb/libusb/releases/download/v1.0.22/libusb-1.0.22.tar.bz2",
-		"sha256": "75aeb9d59a4fdb800d329a545c2e6799f732362193b465ea198f2aa275518157",
+		"url": "https://github.com/libusb/libusb/releases/download/v1.0.24/libusb-1.0.24.tar.bz2",
+		"sha256": "7efd2685f7b327326dcfb85cee426d9b871fd70e22caa15bb68d595ce2a2b12a",
 		"installed_file": "lib/libusb-1.0.dylib"
 	},
 	{
@@ -89,16 +89,16 @@
 	{
 		"name": "gnutls",
 		"url": "https://gnupg.org/ftp/gcrypt/gnutls/v3.6/gnutls-${VERSION}.tar.xz",
-		"version": "3.6.15",
-		"sha256": "0ea8c3283de8d8335d7ae338ef27c53a916f15f382753b174c18b45ffd481558",
+		"version": "3.6.16",
+		"sha256": "1b79b381ac283d8b054368b335c408fedcb9b7144e0c07f531e3537d4328f3b3",
 		"configure_args": "--without-p11-kit --disable-doc --disable-cxx --disable-rpath --disable-nls --disable-tests --disable-tools --with-included-unistring",
 		"installed_file": "lib/libgnutls.dylib"
 	},
 	{
 		"name": "gnupg",
 		"url": "https://gnupg.org/ftp/gcrypt/gnupg/gnupg-${VERSION}.tar.bz2",
-		"version": "2.2.27",
-		"sha256": "34e60009014ea16402069136e0a5f63d9b65f90096244975db5cea74b3d02399",
+		"version": "2.2.32",
+		"sha256": "b2571b35f82c63e7d278aa6a1add0d73453dc14d3f0854be490c844fca7e0614",
 		"installed_file": "bin/gpg"
 	}
 ]
