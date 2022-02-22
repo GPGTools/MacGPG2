@@ -19,8 +19,25 @@ TOOL="$1"
 BIN_FILES=(gpg gpg-agent gpg-connect-agent gpg-error gpgconf gpgparsemail gpgsm gpgsplit gpgtar gpgv kbxutil watchgnupg dirmngr-client dirmngr mpicalc dumpsexp hmac256)
 LIBEXEC_FILES=(dirmngr_ldap gpg-preset-passphrase scdaemon gpg-check-pattern gpg-protect-tool gpg-wks-client)
 
-export MACOSX_DEPLOYMENT_TARGET=10.12
-MACOS_MIN_VERSION="-mmacosx-version-min=10.12"
+export MACOSX_DEPLOYMENT_TARGET=10.14
+MACOS_MIN_VERSION="-mmacosx-version-min=10.14"
+MACOS_SDK_PATH="$(xcrun --sdk macosx --show-sdk-path)"
+
+# By default during compilation macOS picks Command Line Tools binaries 
+# (gcc, clang and others) over installed Xcode.app binaries.
+# These binaries by default use the SDK (includes the headers and libs) for the platform version
+# they are run on. SDKs for macOS < Big Sur are not able to compile
+# binaries for arm64 and such that leads to a binary which fails to run on M1 processors.
+# Example error: symbol not found in flat namespace '_BC'
+#
+# In order to make sure that always Xcode.app binaries the SDKROOT has to point
+# to the correct SDK within Xcode.app on macOS < Big Sur
+#
+# xcrun --show-sdk-path returns the path for the SDK path in case Command Line Tools
+# are installed
+#
+# xcrun --sdk macosx --show-sdk-path however returns the SDK within Xcode.app
+export SDKROOT="$MACOS_SDK_PATH"
 
 # Prepare logging.
 mkdir -p "$WORKING_DIR" "$BUILD_DIR" "$DIST_DIR" "$CACHE_DIR"
@@ -38,10 +55,6 @@ set -o pipefail
 # But *must* be turned on, before the function is parsed.
 shopt -s extglob
 
-if [[ "$(type -t pkg-config)" != "file" ]]; then
-	err_exit "ERROR: pkg-config is not installed. This script requires pkg-config to be available.\nPlease fix your setup and try again."
-fi
-
 # Helper functions.
 function err_exit {
 	msg="$* (${BASH_SOURCE[1]##*/}: line ${BASH_LINENO[0]})"
@@ -52,6 +65,11 @@ function err_exit {
 	fi
 	exit 1
 }
+
+if [[ "$(type -t pkg-config)" != "file" ]]; then
+	err_exit "ERROR: pkg-config is not installed. This script requires pkg-config to be available.\nPlease fix your setup and try again."
+fi
+
 function do_fail {
 	msg="\n** ERROR at $* ** - build failed (${BASH_SOURCE[1]##*/}: line ${BASH_LINENO[0]})"
 	if [[ "$HAVE_TERMINAL" == "1" ]] ;then
@@ -127,7 +145,7 @@ function apply_patches {
 
 function define_build_vars {
 	dest_arch="${1:-x86_64}"
-	build_cflags="${MACOS_MIN_VERSION} -ULOCALEDIR -DLOCALEDIR='\"${TARGET_DIR}/share/locale\"'"
+	build_cflags="${MACOS_MIN_VERSION} -isysroot ${MACOS_SDK_PATH} -isystem ${MACOS_SDK_PATH} -ULOCALEDIR -DLOCALEDIR='\"${TARGET_DIR}/share/locale\"'"
 	# For some reason, many configure based libraries test for aarch64 instead of arm64,
 	# so replace arm64 with aarch64.
 	build_alias="${dest_arch/arm64/aarch64}-apple-darwin"
