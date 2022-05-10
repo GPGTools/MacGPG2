@@ -1,0 +1,23 @@
+# On macOS Monterey with Xcode 13.3, building gnutls segfaults
+# since two different -march arguments are passed during build.
+# Once -march=armv8.2-a and later based on the Makefile.in file
+# in `lib/accelerated/aarch64` with -march=all
+#
+# The segfault is gone if -march=all is not passed, thus
+# that option is removed from Makefile.in prior to building.
+
+# More: https://github.com/android/ndk/issues/1710
+
+diff --git a/lib/accelerated/aarch64/Makefile.in b/lib/accelerated/aarch64/Makefile.in
+index 6231c15..b0b3c52 100644
+--- a/lib/accelerated/aarch64/Makefile.in
++++ b/lib/accelerated/aarch64/Makefile.in
+@@ -1634,7 +1634,7 @@ AM_CPPFLAGS = -I$(srcdir)/../../../gl -I$(builddir)/../../../gl \
+       -I$(srcdir)/../../ -I$(srcdir)/../ $(am__append_1)
+ 
+ #ensure that we have all aarch64 instruction sets enabled for the assembler
+-AM_CCASFLAGS = -Wa,-march=all
++AM_CCASFLAGS = 
+ EXTRA_DIST = README
+ noinst_LTLIBRARIES = libaarch64.la
+ libaarch64_la_SOURCES = aarch64-common.c aarch64-common.h \
