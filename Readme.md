@@ -28,6 +28,8 @@ cd MacGPG2
 make
 ```
 
+**Note**: It might be necessary to install lzip if you don't already have it (e.g. `brew install lzip`)
+
 #### Install
 
 Copy ./build/MacGPG2 to /usr/local/MacGPG2
