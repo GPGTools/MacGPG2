@@ -464,8 +464,10 @@ function verify {
 		if [[ -n "$CERT_NAME_APPLICATION" ]]; then
 			# file prints 3 lines for each binary. the first with the filename and next one line for each architecture.
 			# By using grep -v '(' only the first line is kept.
-			find . -print0 | xargs -0 file | grep -F Mach-O | grep -v '(' | cut -d: -f1 | while read -r file; do
-				codesign --verify "$file" || do_fail "verify: invalid signature for $file"
+			# Use for instead of while/read since otherwise do_fail would *not* exit the script
+			# as the command is run in a subshell.
+			for filename in $(find . -print0 -type f | xargs -0 file --mime-type | grep 'application/x-mach-binary' | grep -v 'for architecture' | sed -E 's/: +(.*)//'); do
+				codesign --verify "$filename" &>/dev/null || do_fail "verify: invalid signature for $filename"
 			done
 			echo "  - All binaries are signed correctly."
 		else
