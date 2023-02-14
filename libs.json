@@ -2,8 +2,8 @@
 	{
 		"name": "readline",
 		"url": "https://mirror.kumi.systems/gnu/readline/readline-${VERSION}.tar.gz",
-		"version": "8.1",
-		"sha256": "f8ceb4ee131e3232226a17f51b164afc46cd0b9e6cef344be87c65962cb82b02",
+		"version": "8.2",
+		"sha256": "3feb7171f16a84ee82ca18a36d7b9be109a52c04f492a053331d7d1095007c35",
 		"installed_file": "lib/libreadline.dylib"
 	},
 	{
@@ -17,8 +17,8 @@
 	{
 		"name": "gettext",
 		"url": "https://mirror.kumi.systems/gnu/gettext/gettext-${VERSION}.tar.lz",
-		"version": "0.21",
-		"sha256": "435b546e3880ab767c967c0731b20629a0cb0ba620e6bac2f590f401c10ebb45",
+		"version": "0.21.1",
+		"sha256": "53ae95b7ac8b6f6996a85076cf4f7c8b32c8c4027387b7b989dd0796333c8c8f",
 		"configure_args": "--disable-java --disable-rpath --disable-c++ --disable-openmp --with-included-gettext",
 		"installed_file": "lib/libintl.dylib"
 	},
@@ -33,23 +33,24 @@
 	{
 		"name": "nettle",
 		"url": "https://ftp.gnu.org/gnu/nettle/nettle-${VERSION}.tar.gz",
-		"version": "3.7.3",
-		"sha256": "661f5eb03f048a3b924c3a8ad2515d4068e40f67e774e8a26827658007e3bcf0",
+		"version": "3.8.1",
+		"sha256": "364f3e2b77cd7dcde83fd7c45219c834e54b0c75e428b6f894a23d12dd41cbfe",
 		"configure_args": "--disable-assembler",
 		"installed_file": "lib/libnettle.dylib"
 	},
 	{
 		"name": "libgpg-error",
 		"url": "https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-${VERSION}.tar.bz2",
-		"version": "1.45",
-		"sha256": "570f8ee4fb4bff7b7495cff920c275002aea2147e9a1d220c068213267f80a26",
+		"version": "1.46",
+		"sha256": "b7e11a64246bbe5ef37748de43b245abd72cfcd53c9ae5e7fc5ca59f1c81268d",
+                "configure_args": "--enable-install-gpg-error-config",
 		"installed_file": "lib/libgpg-error.dylib"
 	},
 	{
 		"name": "libgcrypt",
 		"url": "https://gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-${VERSION}.tar.bz2",
-		"version": "1.8.9",
-		"sha256": "2bda4790aa5f0895d3407cf7bf6bd7727fd992f25a45a63d92fef10767fa3769",
+		"version": "1.8.10",
+		"sha256": "6896915501f951e23d02dcb0453469c2cc22aa4d77a001ff73a2647c2d29e7dd",
 		"installed_file": "lib/libgcrypt.dylib"
 	},
 	{
@@ -62,15 +63,15 @@
 	{
 		"name": "libksba",
 		"url": "https://gnupg.org/ftp/gcrypt/libksba/libksba-${VERSION}.tar.bz2",
-		"version": "1.6.2",
-		"sha256": "fce01ccac59812bddadffacff017dac2e4762bdb6ebc6ffe06f6ed4f6192c971",
+		"version": "1.6.3",
+		"sha256": "3f72c68db30971ebbf14367527719423f0a4d5f8103fc9f4a1c01a9fa440de5c",
 		"installed_file": "lib/libksba.dylib"
 	},
 	{
 		"name": "sqlite",
-		"url": "https://www.sqlite.org/2017/sqlite-autoconf-${VERSION}.tar.gz",
-		"version": "3200000",
-		"sha256": "3814c6f629ff93968b2b37a70497cfe98b366bf587a2261a56a5f750af6ae6a0",
+		"url": "https://www.sqlite.org/2022/sqlite-autoconf-${VERSION}.tar.gz",
+		"version": "3400100",
+		"sha256": "2c5dea207fa508d765af1ef620b637dcb06572afa6f01f0815bd5bbf864b33d9",
 		"configure_args": "--disable-editline",
 		"installed_file": "lib/libsqlite3.dylib"
 	},
@@ -82,8 +83,8 @@
 	},
 	{
 		"name": "libtasn1",
-		"sha256": "4365c154953563d64c67a024b607d1ee75c6db76e0d0f65709ea80a334cd1898",
-		"url": "http://ftp.gnu.org/gnu/libtasn1/libtasn1-4.18.0.tar.gz",
+		"sha256": "1613f0ac1cf484d6ec0ce3b8c06d56263cc7242f1c23b30d82d23de345a63f7a",
+		"url": "http://ftp.gnu.org/gnu/libtasn1/libtasn1-4.19.0.tar.gz",
 		"installed_file": "lib/libtasn1.dylib"
 	},
 	{
@@ -97,8 +98,9 @@
 	{
 		"name": "gnupg",
 		"url": "https://gnupg.org/ftp/gcrypt/gnupg/gnupg-${VERSION}.tar.bz2",
-		"version": "2.2.40",
-		"sha256": "1164b29a75e8ab93ea15033300149e1872a7ef6bdda3d7c78229a735f8204c28",
+		"version": "2.2.41",
+		"sha256": "13f3291007a5e8546fcb7bc0c6610ce44aaa9b3995059d4f8145ba09fd5be3e1",
 		"installed_file": "bin/gpg"
 	}
 ]
+

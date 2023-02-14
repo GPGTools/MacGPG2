@@ -19,8 +19,8 @@ TOOL="$1"
 BIN_FILES=(gpg gpg-agent gpg-connect-agent gpg-error gpgconf gpgparsemail gpgsm gpgsplit gpgtar gpgv kbxutil watchgnupg dirmngr-client dirmngr mpicalc dumpsexp hmac256)
 LIBEXEC_FILES=(dirmngr_ldap gpg-preset-passphrase scdaemon gpg-check-pattern gpg-protect-tool gpg-wks-client)
 
-export MACOSX_DEPLOYMENT_TARGET=10.14
-MACOS_MIN_VERSION="-mmacosx-version-min=10.14"
+export MACOSX_DEPLOYMENT_TARGET=10.15
+MACOS_MIN_VERSION="-mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET:?}"
 MACOS_SDK_PATH="$(xcrun --sdk macosx --show-sdk-path)"
 
 # By default during compilation macOS picks Command Line Tools binaries 
@@ -173,6 +173,7 @@ function customize_build_for_sqlite {
 }
 
 function customize_build_for_libgcrypt {
+	configure_args="$configure_args --with-libgpg-error-prefix=${arch_dist_dir}"
 	if [[ "$1" = "arm64" ]]; then
 		configure_args="$configure_args --disable-asm"
 	fi
@@ -258,6 +259,10 @@ function customize_build {
 
 	if [[ "${lib_name}" != "gnupg" ]]; then
 		configure_args="$configure_args --enable-static=no"
+	fi
+
+	if [[ "${lib_name}" == "gpg-error" ]]; then
+		configure_args="$configure_args --with-libintl-prefix=\"${DIST_DIR}/${dest_arch}\" --with-iconv-prefix=\"${DIST_DIR}/${dest_arch}\""
 	fi
 }
 
