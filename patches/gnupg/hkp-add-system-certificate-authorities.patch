@@ -1,8 +1,8 @@
 diff --git a/dirmngr/dirmngr.c b/dirmngr/dirmngr.c
-index ae967dd..53a6d91 100644
+index 06ef22b..1396f1b 100644
 --- a/dirmngr/dirmngr.c
 +++ b/dirmngr/dirmngr.c
-@@ -1300,6 +1300,20 @@ main (int argc, char **argv)
+@@ -1466,6 +1466,20 @@ main (int argc, char **argv)
        es_printf ("set %s=%s;%lu;1\n",
                   DIRMNGR_INFO_NAME, socket_name, (ulong) pid);
  #else
@@ -23,7 +23,7 @@ index ae967dd..53a6d91 100644
        pid = fork();
        if (pid == (pid_t)-1)
          {
-@@ -1541,6 +1555,7 @@ main (int argc, char **argv)
+@@ -1658,6 +1672,7 @@ main (int argc, char **argv)
  static void
  cleanup (void)
  {
@@ -144,10 +144,10 @@ index 3b6cd44..3e27c7a 100644
 +  get_system_certificate_authorities (1);
 +}
 diff --git a/dirmngr/http-common.h b/dirmngr/http-common.h
-index 5e6657b..d20f31c 100644
+index ddb340d..8c0e7c7 100644
 --- a/dirmngr/http-common.h
 +++ b/dirmngr/http-common.h
-@@ -17,9 +17,22 @@
+@@ -17,11 +17,23 @@
   * along with this program; if not, see <https://www.gnu.org/licenses/>.
   */
  
@@ -168,14 +168,15 @@ index 5e6657b..d20f31c 100644
 +CFMutableArrayRef get_system_certificate_authorities (int clear);
 +int add_system_certificate_authorities(gnutls_certificate_credentials_t cred);
 +void clear_system_certificate_authorities ();
-+
+ void http_reinitialize (void);
+ 
  #endif /* HTTP_COMMON_H */
 diff --git a/dirmngr/http.c b/dirmngr/http.c
-index 5e3f17c..3a749c2 100644
+index 2163467..7e6d882 100644
 --- a/dirmngr/http.c
 +++ b/dirmngr/http.c
-@@ -821,7 +821,7 @@ http_session_new (http_session_t *r_session,
- #if GNUTLS_VERSION_NUMBER >= 0x030014
+@@ -934,7 +934,7 @@ http_session_new (http_session_t *r_session,
+       {
          static int shown;
  
 -        rc = gnutls_certificate_set_x509_system_trust (sess->certcred);

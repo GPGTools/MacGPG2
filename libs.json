@@ -25,60 +25,60 @@
 	{
 		"name": "gmp",
 		"url": "https://gmplib.org/download/gmp/gmp-${VERSION}.tar.lz",
-		"version": "6.2.1",
-		"sha256": "2c7f4f0d370801b2849c48c9ef3f59553b5f1d3791d070cffb04599f9fc67b41",
+		"version": "6.3.0",
+		"sha256": "be5c908a7a836c3a9bd9d62aa58563c5e9e7fef94c43a7f42dbc35bb6d02733c",
 		"configure_args": "--with-pic --enable-cxx",
 		"installed_file": "lib/libgmp.dylib"
 	},
 	{
 		"name": "nettle",
 		"url": "https://ftp.gnu.org/gnu/nettle/nettle-${VERSION}.tar.gz",
-		"version": "3.8.1",
-		"sha256": "364f3e2b77cd7dcde83fd7c45219c834e54b0c75e428b6f894a23d12dd41cbfe",
+		"version": "3.9.1",
+		"sha256": "ccfeff981b0ca71bbd6fbcb054f407c60ffb644389a5be80d6716d5b550c6ce3",
 		"configure_args": "--disable-assembler",
 		"installed_file": "lib/libnettle.dylib"
 	},
 	{
 		"name": "libgpg-error",
 		"url": "https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-${VERSION}.tar.bz2",
-		"version": "1.46",
-		"sha256": "b7e11a64246bbe5ef37748de43b245abd72cfcd53c9ae5e7fc5ca59f1c81268d",
-                "configure_args": "--enable-install-gpg-error-config",
+		"version": "1.47",
+		"sha256": "9e3c670966b96ecc746c28c2c419541e3bcb787d1a73930f5e5f5e1bcbbb9bdb",
+    "configure_args": "--enable-install-gpg-error-config",
 		"installed_file": "lib/libgpg-error.dylib"
 	},
 	{
 		"name": "libgcrypt",
 		"url": "https://gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-${VERSION}.tar.bz2",
-		"version": "1.8.10",
-		"sha256": "6896915501f951e23d02dcb0453469c2cc22aa4d77a001ff73a2647c2d29e7dd",
+		"version": "1.8.11",
+		"sha256": "c98249fb5bb1f6017f5f9bf484327a940b59075bca7c46fa69ebb54098249860",
 		"installed_file": "lib/libgcrypt.dylib"
 	},
 	{
 		"name": "libassuan",
 		"url": "https://gnupg.org/ftp/gcrypt/libassuan/libassuan-${VERSION}.tar.bz2",
-		"version": "2.5.5",
-		"sha256": "8e8c2fcc982f9ca67dcbb1d95e2dc746b1739a4668bc20b3a3c5be632edb34e4",
+		"version": "2.5.6",
+		"sha256": "e9fd27218d5394904e4e39788f9b1742711c3e6b41689a31aa3380bd5aa4f426",
 		"installed_file": "lib/libassuan.dylib"
 	},
 	{
 		"name": "libksba",
 		"url": "https://gnupg.org/ftp/gcrypt/libksba/libksba-${VERSION}.tar.bz2",
-		"version": "1.6.3",
-		"sha256": "3f72c68db30971ebbf14367527719423f0a4d5f8103fc9f4a1c01a9fa440de5c",
+		"version": "1.6.5",
+		"sha256": "a564628c574c99287998753f98d750babd91a4e9db451f46ad140466ef2a6d16",
 		"installed_file": "lib/libksba.dylib"
 	},
 	{
 		"name": "sqlite",
-		"url": "https://www.sqlite.org/2022/sqlite-autoconf-${VERSION}.tar.gz",
-		"version": "3400100",
-		"sha256": "2c5dea207fa508d765af1ef620b637dcb06572afa6f01f0815bd5bbf864b33d9",
+		"url": "https://www.sqlite.org/2024/sqlite-autoconf-${VERSION}.tar.gz",
+		"version": "3450100",
+		"sha256": "cd9c27841b7a5932c9897651e20b86c701dd740556989b01ca596fcfa3d49a0a",
 		"configure_args": "--disable-editline",
 		"installed_file": "lib/libsqlite3.dylib"
 	},
 	{
 		"name": "libusb",
-		"url": "https://github.com/libusb/libusb/releases/download/v1.0.25/libusb-1.0.25.tar.bz2",
-		"sha256": "8a28ef197a797ebac2702f095e81975e2b02b2eeff2774fa909c78a74ef50849",
+		"url": "https://github.com/libusb/libusb/releases/download/v1.0.26/libusb-1.0.26.tar.bz2",
+		"sha256": "12ce7a61fc9854d1d2a1ffe095f7b5fac19ddba095c259e6067a46500381b5a5",
 		"installed_file": "lib/libusb-1.0.dylib"
 	},
 	{
@@ -98,9 +98,8 @@
 	{
 		"name": "gnupg",
 		"url": "https://gnupg.org/ftp/gcrypt/gnupg/gnupg-${VERSION}.tar.bz2",
-		"version": "2.2.41",
-		"sha256": "13f3291007a5e8546fcb7bc0c6610ce44aaa9b3995059d4f8145ba09fd5be3e1",
+		"version": "2.2.42",
+		"sha256": "9189fbd4ec83ad243a4e499d5cb7fe72e4532176817e5ea880ed36a71dd82557",
 		"installed_file": "bin/gpg"
 	}
 ]
-
