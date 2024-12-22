@@ -32,10 +32,10 @@ index b583d16..da03971 100644
  
  AC_DEFINE_UNQUOTED(GPGEXT_GPG, "gpg", [The standard binary file suffix])
 diff --git a/dirmngr/server.c b/dirmngr/server.c
-index bf4e891..fe44d51 100644
+index 32c85d0..565a892 100644
 --- a/dirmngr/server.c
 +++ b/dirmngr/server.c
-@@ -2145,22 +2145,30 @@ make_keyserver_item (const char *uri, uri_item_t *r_item)
+@@ -2168,22 +2168,30 @@ make_keyserver_item (const char *uri, uri_item_t *r_item)
     */
    if (!strcmp (uri, "hkps://keys.gnupg.net")
        || !strcmp (uri, "keys.gnupg.net"))
@@ -45,9 +45,11 @@ index bf4e891..fe44d51 100644
 -    uri = "hkps://keyserver.ubuntu.com";
 +    uri = "hkps://pgpkeys.eu";
    else if (!strcmp (uri, "hkp://keys.gnupg.net"))
-     uri = "hkp://pgp.surf.nl";
+-    uri = "hkp://keyserver.ubuntu.com";
++    uri = "hkps://pgpkeys.eu";
    else if (!strcmp (uri, "http://keys.gnupg.net"))
-     uri = "hkp://pgp.surf.nl:80";
+-    uri = "hkp://keyserver.ubuntu.com:80";
++    uri = "hkps://pgpkeys.eu";
    else if (!strcmp (uri, "hkps://http-keys.gnupg.net")
             || !strcmp (uri, "http-keys.gnupg.net"))
 -    uri = "hkps://keyserver.ubuntu.com";
@@ -56,14 +58,16 @@ index bf4e891..fe44d51 100644
 -    uri = "hkps://keyserver.ubuntu.com";
 +    uri = "hkps://pgpkeys.eu";
    else if (!strcmp (uri, "hkp://http-keys.gnupg.net"))
-     uri = "hkp://pgp.surf.nl";
+-    uri = "hkp://keyserver.ubuntu.com";
++    uri = "hkps://pgpkeys.eu";
    else if (!strcmp (uri, "http://http-keys.gnupg.net"))
-     uri = "hkp://pgp.surf.nl:80";
+-    uri = "hkp://keyserver.ubuntu.com:80";
++    uri = "hkps://pgpkeys.eu";
 +  /* Ubuntu Keyserver stopped to synchronize with other keyservers
-+     to resolve a flooding issue. 
++     to resolve a flooding issue.
 +     pgpkeys.eu is based on Hockeypuck, has a cleansed set of keys
 +     and contains poison protections.
-+    */
++  */
 +  else if (!strcmp (uri, "hkps://keyserver.ubuntu.com")
 +           || !strcmp(uri, "keyserver.ubuntu.com"))
 +    uri = "hkps://pgpkeys.eu/";

@@ -1,0 +1,12 @@
+diff --git a/tests/bench-slope.c b/tests/bench-slope.c
+index 4b14541..b17f782 100644
+--- a/tests/bench-slope.c
++++ b/tests/bench-slope.c
+@@ -31,6 +31,7 @@
+ #include <windows.h>
+ #endif
+ 
++#include <sys/time.h>
+ #ifdef _GCRYPT_IN_LIBGCRYPT
+ # include "../src/gcrypt-int.h"
+ # include "../compat/libcompat.h"

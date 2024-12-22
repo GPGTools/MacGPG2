@@ -1,0 +1,62 @@
+# GnuPG 2.4.7 tries to install html docs which were never built
+# According to Werner they should only be built if --enable-maintainer-mode
+# is on. That's however not the case. So not build them at all.
+
+diff --git a/doc/Makefile.am b/doc/Makefile.am
+index 5d55767..3a94704 100644
+--- a/doc/Makefile.am
++++ b/doc/Makefile.am
+@@ -95,7 +95,7 @@ myhtmlman_pages = \
+                 gpg-wks-server.1.html \
+ 		dirmngr-client.1.html gpg-card.1.html gpg-check-pattern.1.html
+ 
+-man_MANS = $(myman_pages) gnupg.7 gnupg.7.html
++man_MANS = $(myman_pages) gnupg.7
+ 
+ watchgnupg_SOURCE = gnupg.texi
+ 
+@@ -103,7 +103,7 @@ watchgnupg_SOURCE = gnupg.texi
+ CLEANFILES = yat2m mkdefsinc defs.inc
+ 
+ DISTCLEANFILES = gnupg.tmp gnupg.ops yat2m-stamp.tmp yat2m-stamp \
+-		 $(myman_pages) gnupg.7 gnupg.7.html $(myhtmlman_pages)
++		 $(myman_pages) gnupg.7 $(myhtmlman_pages)
+ 
+ yat2m: yat2m.c
+ 	$(CC_FOR_BUILD) -o $@ $(srcdir)/yat2m.c
+@@ -152,7 +152,7 @@ yat2m-stamp: $(myman_sources) defs.inc
+ 
+ yat2m-stamp: $(YAT2M)
+ 
+-$(myman_pages) $(myhtmlman_pages) gnupg.7 gnupg.7.html : yat2m-stamp defs.inc
++$(myman_pages) $(myhtmlman_pages) gnupg.7 : yat2m-stamp defs.inc
+ 	@if test -f $@; then :; else \
+             trap 'rm -rf yat2m-stamp yat2m-lock' 1 2 13 15; \
+                if mkdir yat2m-lock 2>/dev/null; then \
+diff --git a/doc/Makefile.in b/doc/Makefile.in
+index 70ab945..79438a7 100644
+--- a/doc/Makefile.in
++++ b/doc/Makefile.in
+@@ -538,11 +538,11 @@ myhtmlman_pages = \
+                 gpg-wks-server.1.html \
+ 		dirmngr-client.1.html gpg-card.1.html gpg-check-pattern.1.html
+ 
+-man_MANS = $(myman_pages) gnupg.7 gnupg.7.html
++man_MANS = $(myman_pages) gnupg.7
+ watchgnupg_SOURCE = gnupg.texi
+ CLEANFILES = yat2m mkdefsinc defs.inc
+ DISTCLEANFILES = gnupg.tmp gnupg.ops yat2m-stamp.tmp yat2m-stamp \
+-		 $(myman_pages) gnupg.7 gnupg.7.html $(myhtmlman_pages)
++		 $(myman_pages) gnupg.7 $(myhtmlman_pages)
+ 
+ all: $(BUILT_SOURCES)
+ 	$(MAKE) $(AM_MAKEFLAGS) all-am
+@@ -1260,7 +1260,7 @@ yat2m-stamp: $(myman_sources) defs.inc
+ 
+ yat2m-stamp: $(YAT2M)
+ 
+-$(myman_pages) $(myhtmlman_pages) gnupg.7 gnupg.7.html : yat2m-stamp defs.inc
++$(myman_pages) $(myhtmlman_pages) gnupg.7 : yat2m-stamp defs.inc
+ 	@if test -f $@; then :; else \
+             trap 'rm -rf yat2m-stamp yat2m-lock' 1 2 13 15; \
+                if mkdir yat2m-lock 2>/dev/null; then \

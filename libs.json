@@ -49,8 +49,8 @@
 	{
 		"name": "libgcrypt",
 		"url": "https://gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-${VERSION}.tar.bz2",
-		"version": "1.8.11",
-		"sha256": "c98249fb5bb1f6017f5f9bf484327a940b59075bca7c46fa69ebb54098249860",
+		"version": "1.11.0",
+		"sha256": "09120c9867ce7f2081d6aaa1775386b98c2f2f246135761aae47d81f58685b9c",
 		"installed_file": "lib/libgcrypt.dylib",
 		"configure_args": "--disable-asm"
 	},
@@ -90,17 +90,17 @@
 	},
 	{
 		"name": "gnutls",
-		"url": "https://gnupg.org/ftp/gcrypt/gnutls/v3.6/gnutls-${VERSION}.tar.xz",
-		"version": "3.6.16",
-		"sha256": "1b79b381ac283d8b054368b335c408fedcb9b7144e0c07f531e3537d4328f3b3",
-		"configure_args": "--without-p11-kit --disable-doc --disable-cxx --disable-rpath --disable-nls --without-idn --disable-tests --disable-tools --with-included-unistring",
+		"url": "https://www.gnupg.org/ftp/gcrypt/gnutls/v3.7/gnutls-${VERSION}.tar.xz",
+		"version": "3.7.11",
+		"sha256": "90e337504031ef7d3077ab1a52ca8bac9b2f72bc454c95365a1cd1e0e81e06e9",
+		"configure_args": "--without-p11-kit --disable-doc --disable-cxx --disable-rpath --disable-nls --without-idn --without-brotli --without-zstd --disable-tests --disable-tools --with-included-unistring",
 		"installed_file": "lib/libgnutls.dylib"
 	},
 	{
 		"name": "gnupg",
 		"url": "https://gnupg.org/ftp/gcrypt/gnupg/gnupg-${VERSION}.tar.bz2",
-		"version": "2.2.45",
-		"sha256": "d1abecd2b6c052749fd5748ba9de7021567e06b573dc6becac8df25cb87500e8",
+		"version": "2.4.7",
+		"sha256": "7b24706e4da7e0e3b06ca068231027401f238102c41c909631349dcc3b85eb46",
 		"installed_file": "bin/gpg"
 	}
 ]
