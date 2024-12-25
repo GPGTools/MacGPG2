@@ -323,6 +323,8 @@ function build {
 	PKG_CONFIG_PATH="${arch_dist_dir}/lib/pkgconfig" \
 	ABI=64 \
 	ac_cv_search_clock_gettime=no ac_cv_func_clock_gettime=no \
+	# Fix undefined symbols _rpl_malloc/_rpl_realloc when compiling gnutls.
+	ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes \
 	./configure \
 		--prefix="${arch_dist_dir:?}" \
 		--cache-file="${cache_file:?}" \
