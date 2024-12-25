@@ -472,7 +472,6 @@ function copy_to_final_destination {
 
 		ln -s gpg "${FINAL_DIR}/bin/gpg2"
 		cp -r "${BASE_DIR}/payload/" "${FINAL_DIR}/" || do_fail "copy_to_final_destination: failed to copy payload files."
-		cp sbin/gpg-zip "$FINAL_DIR/bin/" || do_fail "copy_to_final_destination: failed to copy gpg-zip"
 
 		# Remove any libgettext files.
 		rm -f "$FINAL_DIR/lib/libgettext"*
