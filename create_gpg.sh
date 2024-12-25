@@ -317,13 +317,13 @@ function build {
 	# 2. Define the build flags to pass to configure.
 	# 3. ABI is always 64-bit
 	# 4. Define ac_cv_* to work around a bug on macOS where this check failed (caused a runtime segfault.)
+	# 5. Define ac_cv_func_(m|re)alloc_0_nonnull to fix undefined symbols _rpl_malloc/_rpl_realloc when compiling gnutls.
 	SYSROOT="${arch_dist_dir}" \
 	CFLAGS="$build_cflags" CXXFLAGS="$build_cxxflags" \
 	LDFLAGS="$build_ldflags" CPPFLAGS="$build_cppflags" \
 	PKG_CONFIG_PATH="${arch_dist_dir}/lib/pkgconfig" \
 	ABI=64 \
 	ac_cv_search_clock_gettime=no ac_cv_func_clock_gettime=no \
-	# Fix undefined symbols _rpl_malloc/_rpl_realloc when compiling gnutls.
 	ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes \
 	./configure \
 		--prefix="${arch_dist_dir:?}" \
