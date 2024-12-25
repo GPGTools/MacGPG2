@@ -253,8 +253,10 @@ function post_build {
 	fi
 	# Run libgcrypt tests after building for x86_64 to make sure
 	# that the library doesn't crash. See the explanation for
-	# `-ld_classic` flag. 
-	if [[ "$lib_name" == "libgcrypt" ]] && [[ "$dest_arch" == "x86_64" ]]; then
+	# `-ld_classic` flag.
+	local host_arch=$(uname -m)
+	host_arch=${host_arch/aarch64/arm64}
+	if [[ "$lib_name" == "libgcrypt" ]] && [[ "$dest_arch" == "$host_arch" ]]; then
 		echo "* Running libgcrypt tests to make sure "
 		make check || do_fail "${lib_name}: failed running tests"
 	fi
