@@ -1,9 +1,60 @@
-build-job:
+readline:
   stage: build
   script:
-    - echo "Hello, $GITLAB_USER_LOGIN!"
-    - export
-    - make
+    - ./create_gpg "readline"
+npth:
+  stage: build
+  script:
+    - ./create_gpg "npth"
+gettext:
+  stage: build
+  script:
+    - ./create_gpg "gettext"
+gmp:
+  stage: build
+  script:
+    - ./create_gpg "gmp"
+nettle:
+  stage: build
+  script:
+    - ./create_gpg "nettle"
+libtasn1:
+  stage: build
+  script:
+    - ./create_gpg "libtasn1"
+gnutls:
+  stage: build
+  script:
+    - ./create_gpg "gnutls"
+libgpg-error:
+  stage: build
+  script:
+    - ./create_gpg "libgpg-error"
+libgcrypt:
+  stage: build
+  needs: [libgpg-error]
+  script:
+    - ./create_gpg "libgcrypt"
+libassuan:
+  stage: build
+  script:
+    - ./create_gpg "libassuan"
+libksba:
+  stage: build
+  script:
+    - ./create_gpg "libksba"
+sqlite:
+  stage: build
+  script:
+    - ./create_gpg "sqlite"
+libusb:
+  stage: build
+  script:
+    - ./create_gpg "libusb"
+gnupg:
+  stage: build
+  script:
+    - ./create_gpg "gnupg"
 
 test-job1:
   stage: test
