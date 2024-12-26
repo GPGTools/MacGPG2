@@ -1,60 +1,60 @@
 readline:
   stage: build
   script:
-    - ./create_gpg "readline"
+    - ./create_gpg.sh "readline"
 npth:
   stage: build
   script:
-    - ./create_gpg "npth"
+    - ./create_gpg.sh "npth"
 gettext:
   stage: build
   script:
-    - ./create_gpg "gettext"
+    - ./create_gpg.sh "gettext"
 gmp:
   stage: build
   script:
-    - ./create_gpg "gmp"
+    - ./create_gpg.sh "gmp"
 nettle:
   stage: build
   script:
-    - ./create_gpg "nettle"
+    - ./create_gpg.sh "nettle"
 libtasn1:
   stage: build
   script:
-    - ./create_gpg "libtasn1"
+    - ./create_gpg.sh "libtasn1"
 gnutls:
   stage: build
   script:
-    - ./create_gpg "gnutls"
+    - ./create_gpg.sh "gnutls"
 libgpg-error:
   stage: build
   script:
-    - ./create_gpg "libgpg-error"
+    - ./create_gpg.sh "libgpg-error"
 libgcrypt:
   stage: build
   needs: [libgpg-error]
   script:
-    - ./create_gpg "libgcrypt"
+    - ./create_gpg.sh "libgcrypt"
 libassuan:
   stage: build
   script:
-    - ./create_gpg "libassuan"
+    - ./create_gpg.sh "libassuan"
 libksba:
   stage: build
   script:
-    - ./create_gpg "libksba"
+    - ./create_gpg.sh "libksba"
 sqlite:
   stage: build
   script:
-    - ./create_gpg "sqlite"
+    - ./create_gpg.sh "sqlite"
 libusb:
   stage: build
   script:
-    - ./create_gpg "libusb"
+    - ./create_gpg.sh "libusb"
 gnupg:
   stage: build
   script:
-    - ./create_gpg "gnupg"
+    - ./create_gpg.sh "gnupg"
 
 test-job1:
   stage: test
