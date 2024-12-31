@@ -65,7 +65,7 @@ trap onExit SIGHUP SIGINT SIGTERM
 
 log "  - successfully setup kill event listeners"
 log "  - waiting for logout..."
-# Sleep for approx. a year. Every user should shutdown there computer at
+# Sleep for approx. a year. Every user should shutdown their computer at
 # least once a year.
 sleep 31536000 &
 wait $!
