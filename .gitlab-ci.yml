@@ -2,59 +2,115 @@ readline:
   stage: build
   script:
     - ./create_gpg.sh "readline"
+  artifacts:
+    paths:
+      - build
+    expire_in: 1 month
 npth:
   stage: build
   script:
     - ./create_gpg.sh "npth"
+  artifacts:
+    paths:
+      - build
+    expire_in: 1 month
 gettext:
   stage: build
   script:
     - ./create_gpg.sh "gettext"
+  artifacts:
+    paths:
+      - build
+    expire_in: 1 month
 gmp:
   stage: build
   script:
     - ./create_gpg.sh "gmp"
+  artifacts:
+    paths:
+      - build
+    expire_in: 1 month
 nettle:
   stage: build
   script:
     - ./create_gpg.sh "nettle"
+  artifacts:
+    paths:
+      - build
+    expire_in: 1 month
 libtasn1:
   stage: build
   script:
     - ./create_gpg.sh "libtasn1"
+  artifacts:
+    paths:
+      - build
+    expire_in: 1 month
 gnutls:
   stage: build
   script:
     - ./create_gpg.sh "gnutls"
+  artifacts:
+    paths:
+      - build
+    expire_in: 1 month
 libgpg-error:
   stage: build
   script:
     - ./create_gpg.sh "libgpg-error"
+  artifacts:
+    paths:
+      - build
+    expire_in: 1 month
 libgcrypt:
   stage: build
   needs: [libgpg-error]
   script:
     - ./create_gpg.sh "libgcrypt"
+  artifacts:
+    paths:
+      - build
+    expire_in: 1 month
 libassuan:
   stage: build
   script:
     - ./create_gpg.sh "libassuan"
+  artifacts:
+    paths:
+      - build
+    expire_in: 1 month
 libksba:
   stage: build
   script:
     - ./create_gpg.sh "libksba"
+  artifacts:
+    paths:
+      - build
+    expire_in: 1 month
 sqlite:
   stage: build
   script:
     - ./create_gpg.sh "sqlite"
+  artifacts:
+    paths:
+      - build
+    expire_in: 1 month
 libusb:
   stage: build
   script:
     - ./create_gpg.sh "libusb"
+  artifacts:
+    paths:
+      - build
+    expire_in: 1 month
 gnupg:
   stage: build
   script:
     - ./create_gpg.sh "gnupg"
+  artifacts:
+    paths:
+      - build
+    expire_in: 1 month
 
 test-job1:
   stage: test
@@ -73,4 +129,8 @@ deploy-prod:
   stage: deploy
   script:
     - echo "This job deploys something from the $CI_COMMIT_BRANCH branch."
+    - find build
   environment: production
+  artifacts:
+    paths:
+      - build
