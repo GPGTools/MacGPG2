@@ -4,141 +4,89 @@ stages:
   - packaging
   - deploy
 
+cache:
+    paths:
+      - build/
+.keep-build:
+  artifacts:
+    untracked: true
+    paths:
+      - build/
+    expire_in: 1 month
+
 readline:
+  extends: .keep-build
   stage: build
   script:
-    - find $CI_PROJECT_DIR
     - ./create_gpg.sh "readline"
-  cache:
-    paths:
-      - build/
-  artifacts:
-    untracked: true
-    paths:
-      - build/
-    expire_in: 1 month
+  
 npth:
+  extends: .keep-build
   stage: build
   script:
-    - find $CI_PROJECT_DIR
     - ./create_gpg.sh "npth"
-  cache:
-    paths:
-      - build/
-  artifacts:
-    untracked: true
-    paths:
-      - build/
-    expire_in: 1 month
-# gettext:
-#   stage: build
-#   script:
-#     - ./create_gpg.sh "gettext"
-#   artifacts:
-#     untracked: true
-#     paths:
-#       - build
-#     expire_in: 1 month
-# gmp:
-#   stage: build
-#   script:
-#     - ./create_gpg.sh "gmp"
-#   artifacts:
-#     untracked: true
-#     paths:
-#       - build
-#     expire_in: 1 month
-# nettle:
-#   stage: build
-#   script:
-#     - ./create_gpg.sh "nettle"
-#   artifacts:
-#     untracked: true
-#     paths:
-#       - build
-#     expire_in: 1 month
-# libtasn1:
-#   stage: build
-#   script:
-#     - ./create_gpg.sh "libtasn1"
-#   artifacts:
-#     untracked: true
-#     paths:
-#       - build
-#     expire_in: 1 month
-# gnutls:
-#   stage: build
-#   script:
-#     - ./create_gpg.sh "gnutls"
-#   artifacts:
-#     untracked: true
-#     paths:
-#       - build
-#     expire_in: 1 month
-# libgpg-error:
-#   stage: build
-#   script:
-#     - ./create_gpg.sh "libgpg-error"
-#   artifacts:
-#     untracked: true
-#     paths:
-#       - build
-#     expire_in: 1 month
-# libgcrypt:
-#   stage: build
-#   needs: [libgpg-error]
-#   script:
-#     - ./create_gpg.sh "libgcrypt"
-#   artifacts:
-#     untracked: true
-#     paths:
-#       - build
-#     expire_in: 1 month
-# libassuan:
-#   stage: build
-#   script:
-#     - ./create_gpg.sh "libassuan"
-#   artifacts:
-#     untracked: true
-#     paths:
-#       - build
-#     expire_in: 1 month
-# libksba:
-#   stage: build
-#   script:
-#     - ./create_gpg.sh "libksba"
-#   artifacts:
-#     untracked: true
-#     paths:
-#       - build
-#     expire_in: 1 month
-# sqlite:
-#   stage: build
-#   script:
-#     - ./create_gpg.sh "sqlite"
-#   artifacts:
-#     untracked: true
-#     paths:
-#       - build
-#     expire_in: 1 month
-# libusb:
-#   stage: build
-#   script:
-#     - ./create_gpg.sh "libusb"
-#   artifacts:
-#     untracked: true
-#     paths:
-#       - build
-#     expire_in: 1 month
-# gnupg:
-#   stage: build
-#   script:
-#     - ./create_gpg.sh "gnupg"
-#   artifacts:
-#     untracked: true
-#     paths:
-#       - build
-#     expire_in: 1 month
+
+gettext:
+  extends: .keep-build
+  stage: build
+  script:
+    - ./create_gpg.sh "gettext"
+gmp:
+  extends: .keep-build
+  stage: build
+  script:
+    - ./create_gpg.sh "gmp"
+nettle:
+  extends: .keep-build
+  stage: build
+  script:
+    - ./create_gpg.sh "nettle"
+libtasn1:
+  extends: .keep-build
+  stage: build
+  script:
+    - ./create_gpg.sh "libtasn1"
+gnutls:
+  extends: .keep-build
+  stage: build
+  script:
+    - ./create_gpg.sh "gnutls"
+libgpg-error:
+  extends: .keep-build
+  stage: build
+  script:
+    - ./create_gpg.sh "libgpg-error"
+libgcrypt:
+  extends: .keep-build
+  stage: build
+  needs: [libgpg-error]
+  script:
+    - ./create_gpg.sh "libgcrypt"
+libassuan:
+  extends: .keep-build
+  stage: build
+  script:
+    - ./create_gpg.sh "libassuan"
+libksba:
+  extends: .keep-build
+  stage: build
+  script:
+    - ./create_gpg.sh "libksba"
+sqlite:
+  extends: .keep-build
+  stage: build
+  script:
+    - ./create_gpg.sh "sqlite"
+libusb:
+  extends: .keep-build
+  stage: build
+  script:
+    - ./create_gpg.sh "libusb"
+gnupg:
+  extends: .keep-build
+  stage: build
+  script:
+    - ./create_gpg.sh "gnupg"
 
 test-job1:
   stage: test
