@@ -9,6 +9,9 @@ readline:
   script:
     - find $CI_PROJECT_DIR
     - ./create_gpg.sh "readline"
+  cache:
+    paths:
+      - build/
   artifacts:
     untracked: true
     paths:
@@ -19,6 +22,9 @@ npth:
   script:
     - find $CI_PROJECT_DIR
     - ./create_gpg.sh "npth"
+  cache:
+    paths:
+      - build/
   artifacts:
     untracked: true
     paths:
