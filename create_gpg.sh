@@ -547,15 +547,17 @@ for (( i=0; i<count; i++ )); do
 	build "arm64"
 done
 
-echo "* Prepare for packaging"
-
-# Merge the architectures together.
-prepare_for_packaging
-
-# Copy all files to the final destination
-copy_to_final_destination
-
-# Verify all files
-verify
+if [[ -z "$TOOL" || "$TOOL" == "prepare-for-packaging" ]]; then
+	echo "* Prepare for packaging"
+	
+	# Merge the architectures together.
+	prepare_for_packaging
+	
+	# Copy all files to the final destination
+	copy_to_final_destination
+	
+	# Verify all files
+	verify
+fi
 
 echo -n "Build ended at "; date
