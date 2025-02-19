@@ -7,7 +7,7 @@ stages:
 readline:
   stage: build
   script:
-    - find build
+    - find $CI_PROJECT_DIR/build
     #- ./create_gpg.sh "readline"
   artifacts:
     untracked: true
