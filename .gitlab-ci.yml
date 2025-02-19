@@ -7,7 +7,7 @@ stages:
 readline:
   stage: build
   script:
-    - find $CI_PROJECT_DIR/build
+    - find $CI_PROJECT_DIR
     - ./create_gpg.sh "readline"
   artifacts:
     untracked: true
@@ -17,7 +17,7 @@ readline:
 npth:
   stage: build
   script:
-    - find $CI_PROJECT_DIR/build
+    - find $CI_PROJECT_DIR
     - ./create_gpg.sh "npth"
   artifacts:
     untracked: true
