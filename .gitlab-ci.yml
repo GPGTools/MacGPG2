@@ -12,7 +12,7 @@ readline:
   artifacts:
     untracked: true
     paths:
-      - build
+      - build/
     expire_in: 1 month
 npth:
   stage: build
