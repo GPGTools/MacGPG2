@@ -1,3 +1,9 @@
+stages:
+  - build
+  - test
+  - packaging
+  - deploy
+
 readline:
   stage: build
   script:
