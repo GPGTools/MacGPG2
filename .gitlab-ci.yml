@@ -139,6 +139,15 @@ test-job2:
     - echo "which simulates a test that runs 20 seconds longer than test-job1"
     - sleep 20
 
+prepare-for-packaging:
+  stage: packaging
+  script:
+    - ./create_gpg.sh "prepare-for-packaging"
+  artifacts:
+    paths:
+      - build
+    expire_in: 1 month
+
 deploy-prod:
   stage: deploy
   script:
