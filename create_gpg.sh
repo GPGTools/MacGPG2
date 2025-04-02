@@ -202,7 +202,7 @@ function customize_build_for_libassuan {
 }
 
 function customize_build_for_gnupg {
-	build_cflags="${build_cflags} -I${arch_dist_dir}/include -I${arch_dist_dir}/include/libusb-1.0/"
+	build_cflags="${build_cflags} -I${arch_dist_dir}/include"
 	build_cflags="${build_cflags} -UGNUPG_BINDIR -DGNUPG_BINDIR=\"\\\"${TARGET_DIR}/bin\\\"\" \
 				      -UGNUPG_LIBEXECDIR -DGNUPG_LIBEXECDIR=\"\\\"${TARGET_DIR}/libexec\\\"\" \
 				      -UGNUPG_LIBDIR -DGNUPG_LIBDIR=\"\\\"${TARGET_DIR}/lib/gnupg\\\"\" \
@@ -213,6 +213,11 @@ function customize_build_for_gnupg {
 	build_ldflags="${build_ldflags} -framework Foundation -framework Security"
 	cache_file="${WORKING_DIR}/config.${dest_arch}.gnupg.cache"
 
+	# Disable libdns since it appears to cause troubles with gnupg 2.4.x
+  # dirmngr is constantly using 100% cpu usage and hangs.
+	# Disable the internal ccid-driver since on macOS systems pcscd is
+	# used and gnupg 2.4.x has no fallback mechanism anymore which 2.2.x
+	# still had, which causes smartcard connections to always fail on macOS.
 	configure_args="$configure_args \
 		--localstatedir=/var \
 		--sysconfdir=${TARGET_DIR}/etc \
@@ -228,7 +233,9 @@ function customize_build_for_gnupg {
 		--with-npth-prefix=${arch_dist_dir} \
 		--with-readline=${arch_dist_dir} \
 		--with-libintl-prefix=${arch_dist_dir} \
-		--with-libiconv-prefix=${arch_dist_dir}"
+		--with-libiconv-prefix=${arch_dist_dir} \
+		--disable-libdns \
+		--disable-ccid-driver"
 }
 
 function customize_build_for_gettext {
