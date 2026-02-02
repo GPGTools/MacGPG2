@@ -9,8 +9,8 @@
 	{
 		"name": "npth",
 		"url": "https://gnupg.org/ftp/gcrypt/npth/npth-${VERSION}.tar.bz2",
-		"version": "1.6",
-		"sha256": "1393abd9adcf0762d34798dc34fdcf4d0d22a8410721e76f1e3afcd1daa4e2d1",
+		"version": "1.8",
+		"sha256": "8bd24b4f23a3065d6e5b26e98aba9ce783ea4fd781069c1b35d149694e90ca3e",
 		"configure_args": "--disable-tests --disable-dependency-tracking --enable-static=no",
 		"installed_file": "lib/libnpth.dylib"
 	},
@@ -41,24 +41,24 @@
 	{
 		"name": "libgpg-error",
 		"url": "https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-${VERSION}.tar.bz2",
-		"version": "1.51",
-		"sha256": "be0f1b2db6b93eed55369cdf79f19f72750c8c7c39fc20b577e724545427e6b2",
+		"version": "1.58",
+		"sha256": "f943aea9a830a8bd938e5124b579efaece24a3225ff4c3d27611a80ce1260c27",
     "configure_args": "--enable-install-gpg-error-config",
 		"installed_file": "lib/libgpg-error.dylib"
 	},
 	{
 		"name": "libgcrypt",
 		"url": "https://gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-${VERSION}.tar.bz2",
-		"version": "1.11.0",
-		"sha256": "09120c9867ce7f2081d6aaa1775386b98c2f2f246135761aae47d81f58685b9c",
+		"version": "1.12.0",
+		"sha256": "0311454e678189bad62a7e9402a9dd793025efff6e7449898616e2fc75e0f4f5",
 		"installed_file": "lib/libgcrypt.dylib",
 		"configure_args": "--disable-asm"
 	},
 	{
 		"name": "libassuan",
 		"url": "https://gnupg.org/ftp/gcrypt/libassuan/libassuan-${VERSION}.tar.bz2",
-		"version": "3.0.1",
-		"sha256": "c8f0f42e6103dea4b1a6a483cb556654e97302c7465308f58363778f95f194b1",
+		"version": "3.0.2",
+		"sha256": "d2931cdad266e633510f9970e1a2f346055e351bb19f9b78912475b8074c36f6",
 		"installed_file": "lib/libassuan.dylib"
 	},
 	{
@@ -93,8 +93,8 @@
 	{
 		"name": "gnupg",
 		"url": "https://gnupg.org/ftp/gcrypt/gnupg/gnupg-${VERSION}.tar.bz2",
-		"version": "2.4.7",
-		"sha256": "7b24706e4da7e0e3b06ca068231027401f238102c41c909631349dcc3b85eb46",
+		"version": "2.4.9",
+		"sha256": "dd17ab2e9a04fd79d39d853f599cbc852062ddb9ab52a4ddeb4176fd8b302964",
 		"installed_file": "bin/gpg"
 	}
 ]
