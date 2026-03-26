@@ -22,6 +22,8 @@ LIBEXEC_FILES=(dirmngr_ldap gpg-preset-passphrase scdaemon gpg-check-pattern gpg
 export MACOSX_DEPLOYMENT_TARGET=10.15
 MACOS_MIN_VERSION="-mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET:?}"
 MACOS_SDK_PATH="$(xcrun --sdk macosx --show-sdk-path)"
+MACOS_CC="$(xcrun --sdk macosx --find clang)"
+MACOS_CXX="$(xcrun --sdk macosx --find clang++)"
 
 # By default during compilation macOS picks Command Line Tools binaries 
 # (gcc, clang and others) over installed Xcode.app binaries.
@@ -192,6 +194,9 @@ function customize_build_for_libksba {
 
 function customize_build_for_sqlite {
 	cache_file="$WORKING_DIR/config.${dest_arch}.sqlite.cache"
+	configure_cc="$MACOS_CC"
+	configure_cxx="$MACOS_CXX"
+	configure_cc_for_build="$MACOS_CC"
 }
 
 function customize_build_for_libgcrypt {
@@ -323,6 +328,9 @@ function build {
 	pre_build
 
 	configure_args="$lib_configure_args"
+	configure_cc=""
+	configure_cxx=""
+	configure_cc_for_build=""
 
 	cache_file="${WORKING_DIR}/config.${dest_arch}.cache"
 
@@ -345,14 +353,29 @@ function build {
 	# 3. ABI is always 64-bit
 	# 4. Define ac_cv_* to work around a bug on macOS where this check failed (caused a runtime segfault.)
 	# 5. Define ac_cv_func_(m|re)alloc_0_nonnull to fix undefined symbols _rpl_malloc/_rpl_realloc when compiling gnutls.
-	SYSROOT="${arch_dist_dir}" \
-	CFLAGS="$build_cflags" CXXFLAGS="$build_cxxflags" \
-	LDFLAGS="$build_ldflags" CPPFLAGS="$build_cppflags" \
-	PKG_CONFIG_PATH="${arch_dist_dir}/lib/pkgconfig" \
-	ABI=64 \
-	ac_cv_search_clock_gettime=no ac_cv_func_clock_gettime=no \
-	ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes \
-	./configure \
+	local configure_env=(
+		"SYSROOT=${arch_dist_dir}"
+		"CFLAGS=${build_cflags}"
+		"CXXFLAGS=${build_cxxflags}"
+		"LDFLAGS=${build_ldflags}"
+		"CPPFLAGS=${build_cppflags}"
+		"PKG_CONFIG_PATH=${arch_dist_dir}/lib/pkgconfig"
+		"ABI=64"
+		"ac_cv_search_clock_gettime=no"
+		"ac_cv_func_clock_gettime=no"
+		"ac_cv_func_malloc_0_nonnull=yes"
+		"ac_cv_func_realloc_0_nonnull=yes"
+	)
+	if [[ -n "$configure_cc" ]]; then
+		configure_env+=("CC=${configure_cc}")
+	fi
+	if [[ -n "$configure_cxx" ]]; then
+		configure_env+=("CXX=${configure_cxx}")
+	fi
+	if [[ -n "$configure_cc_for_build" ]]; then
+		configure_env+=("CC_FOR_BUILD=${configure_cc_for_build}")
+	fi
+	env "${configure_env[@]}" ./configure \
 		--prefix="${arch_dist_dir:?}" \
 		--cache-file="${cache_file:?}" \
 		$configure_args || \
