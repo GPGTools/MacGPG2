@@ -73,7 +73,7 @@
 		"url": "https://www.sqlite.org/2026/sqlite-autoconf-${VERSION}.tar.gz",
 		"version": "3510300",
 		"sha256": "81f5be397049b0cae1b167f2225af7646fc0f82e4a9b3c48c9ea3a533e21d77a",
-		"configure_args": "--disable-editline",
+		"configure_args": "--disable-readline --disable-static",
 		"installed_file": "lib/libsqlite3.dylib"
 	},
 	{

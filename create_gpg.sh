@@ -303,7 +303,7 @@ function customize_build {
 		echo SQLite no Ofast
 	fi
 
-	if [[ "${lib_name}" != "gnupg" ]]; then
+	if [[ "${lib_name}" != "gnupg" && "${lib_name}" != "sqlite" ]]; then
 		configure_args="$configure_args --enable-static=no"
 	fi
 
