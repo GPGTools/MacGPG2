@@ -193,7 +193,6 @@ function customize_build_for_libksba {
 }
 
 function customize_build_for_sqlite {
-	cache_file="$WORKING_DIR/config.${dest_arch}.sqlite.cache"
 	configure_cc="$MACOS_CC"
 	configure_cxx="$MACOS_CXX"
 	configure_cc_for_build="$MACOS_CC"
@@ -221,7 +220,6 @@ function post_configure_for_libtasn1 {
 function customize_build_for_libassuan {
   # Fixes duplicate symbols errors - https://lists.gnupg.org/pipermail/gnupg-devel/2024-July/035614.html
   build_cflags="${build_cflags} -std=gnu89"
-  cache_file="$WORKING_DIR/config.${dest_arch}.assuan.cache"
 }
 
 function customize_build_for_gnupg {
@@ -234,7 +232,6 @@ function customize_build_for_gnupg {
 	build_cxxflags="${build_cflags}"
 	build_cppflags="${build_cflags}"
 	build_ldflags="${build_ldflags} -framework Foundation -framework Security"
-	cache_file="${WORKING_DIR}/config.${dest_arch}.gnupg.cache"
 
 	# Disable libdns since it appears to cause troubles with gnupg 2.4.x
   # dirmngr is constantly using 100% cpu usage and hangs.
@@ -262,7 +259,7 @@ function customize_build_for_gnupg {
 }
 
 function customize_build_for_gettext {
-	cache_file="${WORKING_DIR}/config.${dest_arch}.gettext.cache"
+	:
 }
 
 function pre_build {
@@ -332,8 +329,6 @@ function build {
 	configure_cxx=""
 	configure_cc_for_build=""
 
-	cache_file="${WORKING_DIR}/config.${dest_arch}.cache"
-
 	# Call the general customize function.
 	customize_build
 
@@ -377,7 +372,6 @@ function build {
 	fi
 	env "${configure_env[@]}" ./configure \
 		--prefix="${arch_dist_dir:?}" \
-		--cache-file="${cache_file:?}" \
 		$configure_args || \
 	do_fail "build: ${lib_name} (${dest_arch}) configure"
 
