@@ -1,28 +1,8 @@
-# Changes the default keyserver to pgpkeys.eu
-#
-# Ubuntu Keyserver stopped to synchronize with other keyservers
-# to resolve a flooding issue. 
-# pgpkeys.eu is based on Hockeypuck, has a cleansed set of keys
-# and contains poison protections.
-
-diff --git a/configure b/configure
-index c8c992a..e8fbe57 100755
---- a/configure
-+++ b/configure
-@@ -15953,7 +15953,7 @@ _ACEOF
- 
- 
- cat >>confdefs.h <<_ACEOF
--#define DIRMNGR_DEFAULT_KEYSERVER "hkps://keyserver.ubuntu.com"
-+#define DIRMNGR_DEFAULT_KEYSERVER "hkps://pgpkeys.eu"
- _ACEOF
- 
- 
 diff --git a/configure.ac b/configure.ac
-index b583d16..da03971 100644
+index 0b365f3ab..4ea7156e1 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -1828,7 +1828,7 @@ AC_DEFINE_UNQUOTED(SCDAEMON_SOCK_NAME, "S.scdaemon",
+@@ -1928,7 +1928,7 @@ AC_DEFINE_UNQUOTED(TPM2DAEMON_SOCK_NAME, "S.tpm2daemon",
  AC_DEFINE_UNQUOTED(DIRMNGR_SOCK_NAME, "S.dirmngr",
                     [The name of the dirmngr socket])
  AC_DEFINE_UNQUOTED(DIRMNGR_DEFAULT_KEYSERVER,
@@ -32,10 +12,10 @@ index b583d16..da03971 100644
  
  AC_DEFINE_UNQUOTED(GPGEXT_GPG, "gpg", [The standard binary file suffix])
 diff --git a/dirmngr/server.c b/dirmngr/server.c
-index 32c85d0..565a892 100644
+index 30c48fc51..7a8996455 100644
 --- a/dirmngr/server.c
 +++ b/dirmngr/server.c
-@@ -2168,22 +2168,30 @@ make_keyserver_item (const char *uri, uri_item_t *r_item)
+@@ -2223,22 +2223,25 @@ make_keyserver_item (const char *uri, uri_item_t *r_item)
     */
    if (!strcmp (uri, "hkps://keys.gnupg.net")
        || !strcmp (uri, "keys.gnupg.net"))
@@ -63,13 +43,8 @@ index 32c85d0..565a892 100644
    else if (!strcmp (uri, "http://http-keys.gnupg.net"))
 -    uri = "hkp://keyserver.ubuntu.com:80";
 +    uri = "hkps://pgpkeys.eu";
-+  /* Ubuntu Keyserver stopped to synchronize with other keyservers
-+     to resolve a flooding issue.
-+     pgpkeys.eu is based on Hockeypuck, has a cleansed set of keys
-+     and contains poison protections.
-+  */
 +  else if (!strcmp (uri, "hkps://keyserver.ubuntu.com")
-+           || !strcmp(uri, "keyserver.ubuntu.com"))
++           || !strcmp (uri, "keyserver.ubuntu.com"))
 +    uri = "hkps://pgpkeys.eu/";
  
    return ks_action_parse_uri (uri, r_item);
