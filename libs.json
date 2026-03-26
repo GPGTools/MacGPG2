@@ -78,9 +78,9 @@
 	},
 	{
 		"name": "libtasn1",
-		"url": "https://ftp.gnu.org/gnu/libtasn1/libtasn1-v${VERSION}-src.tar.gz",
+		"url": "https://ftp.gnu.org/gnu/libtasn1/libtasn1-${VERSION}.tar.gz",
 		"version": "4.21.0",
-		"sha256": "06f7d0f77b38db3b6b17a3d54d590874e5e589bea8081329a8a3acfbec3dfe21",
+		"sha256": "1d8a444a223cc5464240777346e125de51d8e6abf0b8bac742ac84609167dc87",
 		"installed_file": "lib/libtasn1.dylib"
 	},
 	{
