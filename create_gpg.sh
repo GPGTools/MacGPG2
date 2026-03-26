@@ -337,12 +337,15 @@ function build {
 	if [[ "$(type -t "${customize_func}")" == "function" ]]; then
 		${customize_func} "${dest_arch}"
 	fi
+	local configure_machine_args=("--host=${host_alias}" "--target=${build_alias}")
+	if [[ "${lib_name}" == "sqlite" ]]; then
+		configure_machine_args=("--host=${host_alias}")
+	fi
 
 	# GMP by default produces assembly which is only compatible
 	# with the CPU the lib is built on or newer.
 	# --disable-assembly might have to be added as well.
 	# By defining host_alias, gmp will build for a generic 64bit CPU.
-	configure_args="$configure_args --host=${host_alias} --target=${build_alias}"
 	# 1. SYSROOT so libraries such as libgpg-error are automatically detected.
 	# 2. Define the build flags to pass to configure.
 	# 3. ABI is always 64-bit
@@ -372,6 +375,7 @@ function build {
 	fi
 	env "${configure_env[@]}" ./configure \
 		--prefix="${arch_dist_dir:?}" \
+		"${configure_machine_args[@]}" \
 		$configure_args || \
 	do_fail "build: ${lib_name} (${dest_arch}) configure"
 
