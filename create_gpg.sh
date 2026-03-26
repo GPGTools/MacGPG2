@@ -132,15 +132,33 @@ function unpack {
 	esac
 }
 function apply_patches {
-	patches=("$BASE_DIR/patches/$lib_name/"*.patch)
+	local patch_dir="$BASE_DIR/patches/$lib_name"
+	local local_patches=("$patch_dir/"*.patch)
+	# FreePG patches are curated separately so we can keep upstream imports
+	# distinct from MacGPG2-specific patches. Nested subfolders are ignored.
+	local freepg_patches=("$patch_dir/freepg/"*.patch)
 
-	if [[ -f "${patches[0]}" ]]; then
-		echo "  - Applying patches"
-		for patch in "${patches[@]}"; do
-			echo "    - Applying patch $patch"
-			patch -d "$dir_path" -p1 -t -N < "$patch" || do_fail "patch: failed to apply patch $patch"
-		done
+	if [[ "$lib_name" == "gnupg" ]]; then
+		apply_patch_set "FreePG" "${freepg_patches[@]}"
 	fi
+
+	apply_patch_set "MacGPG2" "${local_patches[@]}"
+}
+
+function apply_patch_set {
+	local label="$1"
+	shift
+	local patches=("$@")
+
+	if [[ ! -f "${patches[0]}" ]]; then
+		return
+	fi
+
+	echo "  - Applying $label patches"
+	for patch_file in "${patches[@]}"; do
+		echo "    - Applying patch $patch_file"
+		patch -d "$dir_path" -p1 -t -N < "$patch_file" || do_fail "patch: failed to apply patch $patch_file"
+	done
 }
 
 function define_build_vars {
