@@ -41,16 +41,16 @@
 	{
 		"name": "libgpg-error",
 		"url": "https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-${VERSION}.tar.bz2",
-		"version": "1.59",
-		"sha256": "a19bc5087fd97026d93cb4b45d51638d1a25202a5e1fbc3905799f424cfa6134",
+		"version": "1.61",
+		"sha256": "7a85413f2bc354f4f8aa832b718af122e48965e9e0eb9012ee659c13c6385c93",
     "configure_args": "--enable-install-gpg-error-config",
 		"installed_file": "lib/libgpg-error.dylib"
 	},
 	{
 		"name": "libgcrypt",
 		"url": "https://gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-${VERSION}.tar.bz2",
-		"version": "1.12.1",
-		"sha256": "7df5c08d952ba33f9b6bdabdb06a61a78b2cf62d2122c2d1d03a91a79832aa3c",
+		"version": "1.12.2",
+		"sha256": "7ce33c2492221a0436f96a8500215e9f3e3dcb5fd26a757cd415e7a843babd5e",
 		"installed_file": "lib/libgcrypt.dylib",
 		"configure_args": "--disable-asm"
 	},
@@ -64,15 +64,15 @@
 	{
 		"name": "libksba",
 		"url": "https://gnupg.org/ftp/gcrypt/libksba/libksba-${VERSION}.tar.bz2",
-		"version": "1.6.8",
-		"sha256": "0f4510f1c7a679c3545990a31479f391ad45d84e039176309d42f80cf41743f5",
+		"version": "1.7.0",
+		"sha256": "e1d3a5745911f5a663fddecf526541c4241052a9e4cafbc92dc7f4096c7efdac",
 		"installed_file": "lib/libksba.dylib"
 	},
 	{
 		"name": "sqlite",
 		"url": "https://www.sqlite.org/2026/sqlite-autoconf-${VERSION}.tar.gz",
-		"version": "3510300",
-		"sha256": "81f5be397049b0cae1b167f2225af7646fc0f82e4a9b3c48c9ea3a533e21d77a",
+		"version": "3530100",
+		"sha256": "83e6b2020a034e9a7ad4a72feea59e1ad52f162e09cbd26735a3ffb98359fc4f",
 		"configure_args": "--disable-readline --disable-static",
 		"installed_file": "lib/libsqlite3.dylib"
 	},
@@ -86,16 +86,16 @@
 	{
 		"name": "gnutls",
 		"url": "https://www.gnupg.org/ftp/gcrypt/gnutls/v3.8/gnutls-${VERSION}.tar.xz",
-		"version": "3.8.12",
-		"sha256": "a7b341421bfd459acf7a374ca4af3b9e06608dcd7bd792b2bf470bea012b8e51",
+		"version": "3.8.13",
+		"sha256": "ffed8ec1bf09c2426d4f14aae377de4753b53e537d685e604e99a8b16ca9c97e",
 		"configure_args": "--disable-hardware-acceleration --without-p11-kit --disable-doc --disable-cxx --disable-rpath --disable-nls --without-idn --without-brotli --without-zstd --disable-tests --disable-tools --with-included-unistring",
 		"installed_file": "lib/libgnutls.dylib"
 	},
 	{
 		"name": "gnupg",
 		"url": "https://gnupg.org/ftp/gcrypt/gnupg/gnupg-${VERSION}.tar.bz2",
-		"version": "2.5.18",
-		"sha256": "0dbd64e0322fe1a4813360d46539d5f8daf4a8fa235cf5fce464e8b0214a7e4f",
+		"version": "2.5.19",
+		"sha256": "722aa8a426dd9b44e0d194b73bfee3a3e617d65674cd4d1d062e6df29f1788c6",
 		"installed_file": "bin/gpg"
 	}
 ]
